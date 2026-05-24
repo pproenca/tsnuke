@@ -1,0 +1,65 @@
+import ts from "typescript";
+import { defineRule } from "../../define-rule.js";
+import type { RuleContext } from "../../define-rule.js";
+
+/** A deep chain of `../` segments signals a missing module boundary / path alias. */
+const MAX_RELATIVE_DEPTH = 4;
+
+/**
+ * SYN — flag deep relative imports/exports such as `../../../../deep/mod`.
+ *
+ * A specifier that climbs four or more directories typically reaches across a
+ * module boundary that should be a stable path alias instead. AST-only: we read
+ * the module specifier string literal and count its leading `../` segments.
+ */
+export const rule = defineRule(
+  {
+    id: "no-deep-relative-import",
+    severity: "warning",
+    category: "Module Boundaries & Architecture",
+    tier: "SYN",
+    fixKind: "manual",
+    tags: ["architecture"],
+    recommendation:
+      "Replace a deep relative import (`../../../../…`) with a path alias (e.g. `@app/…`); deep climbs couple modules across boundaries and break when files move.",
+  },
+  () => {
+    const check = (
+      moduleSpecifier: ts.Expression | undefined,
+      ctx: RuleContext,
+    ): void => {
+      if (moduleSpecifier === undefined) return;
+      if (!ts.isStringLiteral(moduleSpecifier)) return;
+
+      const segments = moduleSpecifier.text.split("/");
+      let depth = 0;
+      for (const segment of segments) {
+        if (segment === "..") depth += 1;
+        else break;
+      }
+      if (depth < MAX_RELATIVE_DEPTH) return;
+
+      const start = moduleSpecifier.getStart(ctx.sourceFile);
+      const { line, character } =
+        ctx.sourceFile.getLineAndCharacterOfPosition(start);
+      ctx.report({
+        filePath: ctx.filePath,
+        message: `Deep relative import (${depth} levels) signals a missing module boundary.`,
+        help: "Use a path alias instead of climbing four or more directories with `../`.",
+        line: line + 1,
+        column: character + 1,
+      });
+    };
+
+    return {
+      [ts.SyntaxKind.ImportDeclaration]: (node, ctx) => {
+        if (!ts.isImportDeclaration(node)) return;
+        check(node.moduleSpecifier, ctx);
+      },
+      [ts.SyntaxKind.ExportDeclaration]: (node, ctx) => {
+        if (!ts.isExportDeclaration(node)) return;
+        check(node.moduleSpecifier, ctx);
+      },
+    };
+  },
+);
