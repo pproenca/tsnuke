@@ -51,6 +51,10 @@ importers:
 
   packages/cli:
     dependencies:
+      typescript:
+        specifier: ^5.8.0
+        version: 5.9.3
+    devDependencies:
       '@effect/cli':
         specifier: ^0.75.1
         version: 0.75.1(@effect/platform@0.96.1(effect@3.21.2))(@effect/printer-ansi@0.49.0(@effect/typeclass@0.40.0(effect@3.21.2))(effect@3.21.2))(@effect/printer@0.49.0(@effect/typeclass@0.40.0(effect@3.21.2))(effect@3.21.2))(effect@3.21.2)
@@ -66,6 +70,9 @@ importers:
       '@effect/printer-ansi':
         specifier: ^0.49.0
         version: 0.49.0(@effect/typeclass@0.40.0(effect@3.21.2))(effect@3.21.2)
+      '@effect/vitest':
+        specifier: ^0.29.0
+        version: 0.29.0(effect@3.21.2)(vitest@3.2.4(@types/node@22.19.19)(yaml@2.9.0))
       '@ts-fix/build-report-effect':
         specifier: workspace:*
         version: link:../build-report
@@ -87,19 +94,12 @@ importers:
       '@ts-fix/rules-registry-effect':
         specifier: workspace:*
         version: link:../rules-registry
-      effect:
-        specifier: ^3.21.2
-        version: 3.21.2
-      typescript:
-        specifier: ^5.8.0
-        version: 5.9.3
-    devDependencies:
-      '@effect/vitest':
-        specifier: ^0.29.0
-        version: 0.29.0(effect@3.21.2)(vitest@3.2.4(@types/node@22.19.19)(yaml@2.9.0))
       '@types/node':
         specifier: ^22.10.0
         version: 22.19.19
+      effect:
+        specifier: ^3.21.2
+        version: 3.21.2
       esbuild:
         specifier: 0.27.7
         version: 0.27.7
