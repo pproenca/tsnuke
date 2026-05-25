@@ -20,7 +20,7 @@ import { FixKind, Severity, Tier } from "./Diagnostic.js";
  * — modeled as a Schema so a token set can be decoded at a trust boundary, while
  * predicates treat it as a plain string member of a `ReadonlySet`.
  */
-export const Capability = Schema.String;
+export const Capability = Schema.String.annotations({ identifier: "Capability" });
 export type Capability = typeof Capability.Type;
 
 /**
@@ -34,19 +34,42 @@ export type Capability = typeof Capability.Type;
  */
 export const RuleMeta = Schema.Struct({
   /** Stable public id, e.g. `"no-ts-ignore"`. Frozen contract (NFR forward-compat). */
-  id: Schema.String,
+  id: Schema.String.annotations({
+    description: 'Stable public id, e.g. `"no-ts-ignore"`. Frozen contract (NFR forward-compat).',
+  }),
   severity: Severity,
   /** Category name; the codegen registry derives this from the rule's directory. */
-  category: Schema.String,
+  category: Schema.String.annotations({
+    description: "Category name; the codegen registry derives this from the rule's directory.",
+  }),
   tier: Tier,
   /** ALL of these must be present in the capability set for the rule to activate (RULE-019). */
-  requires: Schema.optional(Schema.Array(Capability)),
+  requires: Schema.optional(
+    Schema.Array(Capability).annotations({
+      description:
+        "ALL of these must be present in the capability set for the rule to activate (RULE-019).",
+    }),
+  ),
   /** ANY of these present in the capability set disables the rule (RULE-019, inverted gating RULE-020). */
-  disabledBy: Schema.optional(Schema.Array(Capability)),
+  disabledBy: Schema.optional(
+    Schema.Array(Capability).annotations({
+      description:
+        "ANY of these present in the capability set disables the rule (RULE-019, inverted gating RULE-020).",
+    }),
+  ),
   /** Tags an ignore list can target (RULE-019). */
-  tags: Schema.optional(Schema.Array(Schema.String)),
+  tags: Schema.optional(
+    Schema.Array(Schema.String).annotations({
+      description: "Tags an ignore list can target (RULE-019).",
+    }),
+  ),
   /** When `false`, the rule is opt-in: it activates only under an explicit severity override (RULE-019). */
-  defaultEnabled: Schema.optional(Schema.Boolean),
+  defaultEnabled: Schema.optional(
+    Schema.Boolean.annotations({
+      description:
+        "When `false`, the rule is opt-in: it activates only under an explicit severity override (RULE-019).",
+    }),
+  ),
   fixKind: Schema.optional(FixKind),
   /**
    * Project-level finding message. CFG rules don't walk a file AST — when one activates,
@@ -54,10 +77,19 @@ export const RuleMeta = Schema.Struct({
    * `recommendation`). Per-file (SYN/TYP/GRAPH) rules set their message at `report()`
    * time and leave this undefined.
    */
-  message: Schema.optional(Schema.String),
+  message: Schema.optional(
+    Schema.String.annotations({
+      description:
+        "Project-level finding message. CFG rules don't walk a file AST — when one activates, core emits a single project-level diagnostic carrying this message (falling back to `recommendation`). Per-file (SYN/TYP/GRAPH) rules set their message at `report()` time and leave this undefined.",
+    }),
+  ),
   /** Static, offline `--explain` text rendered by the CLI (no model call). */
-  recommendation: Schema.optional(Schema.String),
-});
+  recommendation: Schema.optional(
+    Schema.String.annotations({
+      description: "Static, offline `--explain` text rendered by the CLI (no model call).",
+    }),
+  ),
+}).annotations({ identifier: "RuleMeta" });
 export type RuleMeta = typeof RuleMeta.Type;
 
 /**
