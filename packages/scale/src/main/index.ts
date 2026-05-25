@@ -24,3 +24,7 @@ export {
 } from "./memory.js";
 
 export { scopedProgram, withProgram } from "./scope.js";
+
+// Self-barrel: lets consumers `import { Scale } from "@ts-doctor/scale-effect"` and
+// reach the whole slice as a namespace, alongside the named re-exports above.
+export * as Scale from "./index.js";

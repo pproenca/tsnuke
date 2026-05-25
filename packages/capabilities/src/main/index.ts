@@ -22,3 +22,9 @@ export {
 } from "./RuleMeta.js";
 
 export { resolveSeverity, shouldActivate } from "./Capabilities.js";
+
+// Self-barrel: lets consumers `import { Capabilities } from "@ts-doctor/capabilities-effect"`
+// and reach the whole slice as a namespace, alongside the named re-exports above. Note
+// `Tier` stays out of this namespace because index.ts deliberately does not re-export it
+// (barrel hygiene — see the module doc above).
+export * as Capabilities from "./index.js";
