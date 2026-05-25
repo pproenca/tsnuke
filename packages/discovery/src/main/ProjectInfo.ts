@@ -21,11 +21,15 @@
 import { Schema } from "effect";
 
 /** Project kind discriminant (RULE-021 heuristics): app / lib / monorepo / unknown. */
-export const ProjectKind = Schema.Literal("app", "lib", "monorepo", "unknown");
+export const ProjectKind = Schema.Literal("app", "lib", "monorepo", "unknown").annotations({
+  identifier: "ProjectKind",
+});
 export type ProjectKind = typeof ProjectKind.Type;
 
 /** Module system inferred from `package.json#type` + tsconfig `module` (RULE-021). */
-export const ModuleSystem = Schema.Literal("esm", "cjs");
+export const ModuleSystem = Schema.Literal("esm", "cjs").annotations({
+  identifier: "ModuleSystem",
+});
 export type ModuleSystem = typeof ModuleSystem.Type;
 
 /** Build tool detected from deps/scripts/config files (RULE-021). `unknown` when none match. */
@@ -38,7 +42,7 @@ export const BuildTool = Schema.Literal(
   "bun",
   "babel",
   "unknown",
-);
+).annotations({ identifier: "BuildTool" });
 export type BuildTool = typeof BuildTool.Type;
 
 /**
@@ -47,26 +51,32 @@ export type BuildTool = typeof BuildTool.Type;
  * `computeCapabilities` consumes it. Mirrors legacy `types.ts:22-51`.
  */
 export const ProjectInfo = Schema.Struct({
-  /** Absolute path of the project root that was discovered. */
-  rootDirectory: Schema.String,
-  /** `package.json#name` if present (non-empty), else the directory basename. */
-  projectName: Schema.String,
-  /** Raw `typescript` version string (e.g. `"5.8.2"`), or null if unresolved. */
-  tsVersion: Schema.NullOr(Schema.String),
-  /** Major version parsed from `tsVersion`, or null. */
-  tsMajor: Schema.NullOr(Schema.Number),
+  rootDirectory: Schema.String.annotations({
+    description: "Absolute path of the project root that was discovered.",
+  }),
+  projectName: Schema.String.annotations({
+    description: "`package.json#name` if present (non-empty), else the directory basename.",
+  }),
+  tsVersion: Schema.NullOr(Schema.String).annotations({
+    description: 'Raw `typescript` version string (e.g. `"5.8.2"`), or null if unresolved.',
+  }),
+  tsMajor: Schema.NullOr(Schema.Number).annotations({
+    description: "Major version parsed from `tsVersion`, or null.",
+  }),
   projectKind: ProjectKind,
   moduleSystem: ModuleSystem,
   buildTool: BuildTool,
-  /** Map of tsconfig strict-family flags that are ON (e.g. `{ strict: true }`). */
-  strictFlags: Schema.Record({ key: Schema.String, value: Schema.Boolean }),
-  /**
-   * Whether the type-check is known-clean (BC-07). Discovery HARDCODES this `false`
-   * ("PENDING", RULE-021 suspected defect) — the engine reconciles the real value
-   * later from a `ts.Program`. See {@link ./discover.ts} and TRANSFORMATION_NOTES.
-   */
-  typecheckOk: Schema.Boolean,
-  /** Count of `.ts`/`.tsx` source files discovered (capped — RULE-012). */
-  sourceFileCount: Schema.Number,
-});
+  strictFlags: Schema.Record({ key: Schema.String, value: Schema.Boolean }).annotations({
+    description: "Map of tsconfig strict-family flags that are ON (e.g. `{ strict: true }`).",
+  }),
+  typecheckOk: Schema.Boolean.annotations({
+    description:
+      "Whether the type-check is known-clean (BC-07). Discovery HARDCODES this `false` " +
+      '("PENDING", RULE-021 suspected defect) — the engine reconciles the real value ' +
+      "later from a `ts.Program`. See ./discover.ts and TRANSFORMATION_NOTES.",
+  }),
+  sourceFileCount: Schema.Number.annotations({
+    description: "Count of `.ts`/`.tsx` source files discovered (capped — RULE-012).",
+  }),
+}).annotations({ identifier: "ProjectInfo" });
 export type ProjectInfo = typeof ProjectInfo.Type;

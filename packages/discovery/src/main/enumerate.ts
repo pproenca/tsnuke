@@ -122,11 +122,11 @@ const safeIsDirectory = (
  * preserved). Error channel `never` — unreadable dirs / failed stats are silently
  * skipped.
  */
-export const countSourceFiles = (
+export const countSourceFiles: (
   root: string,
-  cap: number = COUNT_CAP,
-): Effect.Effect<number, never, FileSystem.FileSystem> =>
-  Effect.gen(function* () {
+  cap?: number,
+) => Effect.Effect<number, never, FileSystem.FileSystem> = Effect.fn("Discovery.count")(
+  function* (root: string, cap: number = COUNT_CAP) {
     const fs = yield* FileSystem.FileSystem;
     let count = 0;
     const stack: string[] = [root];
@@ -148,7 +148,8 @@ export const countSourceFiles = (
       }
     }
     return count;
-  });
+  },
+);
 
 /**
  * COLLECT a project's source files (`.ts`/`.tsx`, excluding `.d.ts`, dot-entries, and
@@ -165,30 +166,31 @@ export const countSourceFiles = (
  * silent truncation, silent skip of unreadable dirs/failed stats — all preserved. Error
  * channel `never`.
  */
-export const collectSourceFiles = (
+export const collectSourceFiles: (
   root: string,
-  cap: number = COLLECT_CAP,
-): Effect.Effect<ReadonlyArray<string>, never, FileSystem.FileSystem> =>
-  Effect.gen(function* () {
-    const fs = yield* FileSystem.FileSystem;
-    const out: string[] = [];
-    const stack: string[] = [root];
-    while (stack.length > 0 && out.length < cap) {
-      const dir = stack.pop();
-      if (dir === undefined) break;
-      const entries = yield* safeReadDirectory(fs, dir);
-      for (const entry of entries) {
-        if (entry.startsWith(".") || SOURCE_SCAN_IGNORED_DIRS.has(entry)) continue;
-        const full = joinPath(dir, entry);
-        const isDir = yield* safeIsDirectory(fs, full);
-        if (isDir === undefined) continue; // failed stat → skip (legacy catch)
-        if (isDir) {
-          stack.push(full);
-        } else if (isSourceFile(entry)) {
-          out.push(full);
-          if (out.length >= cap) break;
-        }
+  cap?: number,
+) => Effect.Effect<ReadonlyArray<string>, never, FileSystem.FileSystem> = Effect.fn(
+  "Discovery.collect",
+)(function* (root: string, cap: number = COLLECT_CAP) {
+  const fs = yield* FileSystem.FileSystem;
+  const out: string[] = [];
+  const stack: string[] = [root];
+  while (stack.length > 0 && out.length < cap) {
+    const dir = stack.pop();
+    if (dir === undefined) break;
+    const entries = yield* safeReadDirectory(fs, dir);
+    for (const entry of entries) {
+      if (entry.startsWith(".") || SOURCE_SCAN_IGNORED_DIRS.has(entry)) continue;
+      const full = joinPath(dir, entry);
+      const isDir = yield* safeIsDirectory(fs, full);
+      if (isDir === undefined) continue; // failed stat → skip (legacy catch)
+      if (isDir) {
+        stack.push(full);
+      } else if (isSourceFile(entry)) {
+        out.push(full);
+        if (out.length >= cap) break;
       }
     }
-    return out;
-  });
+  }
+  return out;
+});
