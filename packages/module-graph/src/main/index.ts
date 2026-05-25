@@ -14,3 +14,7 @@
 
 export { buildModuleGraph } from "./buildModuleGraph.js";
 export type { GraphFileInput } from "./buildModuleGraph.js";
+
+// Self-barrel: backs `import { ModuleGraph } from "@ts-doctor/module-graph-effect"`
+// then `ModuleGraph.buildModuleGraph(...)` — additive, the named exports above stay.
+export * as ModuleGraph from "./index.js";
