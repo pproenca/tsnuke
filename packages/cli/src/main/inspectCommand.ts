@@ -323,7 +323,19 @@ const makeRealIo = (terminal: Terminal.Terminal): InspectIo => {
     // too (the `--fix` summary). The process edge keeps real stdout/stderr separation
     // for piping; tests assert on the captured text regardless of channel.
     stderr: (text) => terminal.display(text).pipe(Effect.orDie),
-    diagnose: (directory, options) => Effect.promise(() => diagnoseNode(directory, options)),
+    // `diagnoseNode` CAN reject (e.g. `TsconfigNotFoundError` on a non-TS directory),
+    // and `InspectIo.diagnose` declares a typed error channel for exactly that. Use
+    // `tryPromise` (NOT `promise`) so the rejection lands in the ERROR channel — a
+    // `promise` would route it to the DIE channel, where `bin.ts`'s `Cause.failureOption`
+    // misses it and falls back to the raw `Cause.pretty` dump (`(FiberFailure) …` + an
+    // internal stack frame). `catch: (e) => e` passes the original `Error` through
+    // unchanged so the process edge prints its clean `.message` (a bare `tryPromise`
+    // would wrap it in `UnknownException` and lose the message).
+    diagnose: (directory, options) =>
+      Effect.tryPromise({
+        try: () => diagnoseNode(directory, options),
+        catch: (e) => e,
+      }),
     applyFixes: (diagnostics, rootDir) =>
       Effect.promise(() => applyFixesToFilesNode(diagnostics, rootDir)),
     ruleCatalog,
