@@ -54,3 +54,23 @@ export interface DiagnoseResult {
   /** The ONE non-deterministic field (timing telemetry) — never feeds the score. */
   readonly elapsedMilliseconds: number;
 }
+
+/**
+ * The result of a `diagnoseWorkspace()` call — the monorepo boundary (BC-05). Always
+ * carries ≥1 project: a single-project directory yields one entry with `isWorkspace:
+ * false` (so callers can render it exactly like a `diagnose()` result); a workspace ROOT
+ * yields one entry per analyzable member with `isWorkspace: true`. The per-project
+ * `DiagnoseResult`s are produced each under their OWN `Scope`, so no project's `ts.Program`
+ * outlives its analysis (RULE-036 / BC-24). The BC-05 min-score rollup is the caller's
+ * concern (the `build-report` slice already does it over `projects`).
+ */
+export interface WorkspaceResult {
+  /** The directory `diagnoseWorkspace` was pointed at (absolute). */
+  readonly rootDirectory: string;
+  /** True when `rootDirectory` is a multi-package workspace (≥1 enumerated member). */
+  readonly isWorkspace: boolean;
+  /** One result per analyzed project (≥1), in deterministic directory order. */
+  readonly projects: ReadonlyArray<DiagnoseResult>;
+  /** Total wall-clock for the whole workspace run (sum of per-project, plus discovery). */
+  readonly elapsedMilliseconds: number;
+}

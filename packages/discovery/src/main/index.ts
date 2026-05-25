@@ -32,6 +32,11 @@ export {
 
 export { discoverTsProject } from "./discover.js";
 
+export {
+  enumerateWorkspaceProjects,
+  parsePnpmWorkspacePackages,
+} from "./workspace.js";
+
 export { type Capability, computeCapabilities } from "./capabilities.js";
 
 export {
@@ -39,6 +44,7 @@ export {
   collectSourceFilesNode,
   countSourceFilesNode,
   discoverTsProjectNode,
+  enumerateWorkspaceProjectsNode,
 } from "./node.js";
 
 /**

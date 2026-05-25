@@ -68,6 +68,10 @@ Exit codes: `0` ok · `1` gate tripped or error · `130` interrupted.
 When the project doesn't type-check, the type-aware tier is skipped and the score
 is flagged **partial** (computed on a different, not-directly-comparable scale).
 
+**Monorepos:** point it at a workspace root (`pnpm-workspace.yaml` / `package.json#workspaces`,
+no root `tsconfig.json`) and it discovers every member package with a `tsconfig.json`, scores
+each, and reports a per-project breakdown plus a summary equal to the **minimum project score**.
+
 ## For coding agents (MCP)
 
 tsnuke also ships an [MCP](https://modelcontextprotocol.io) server (`tsnuke-mcp`)

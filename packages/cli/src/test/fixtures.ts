@@ -6,7 +6,11 @@
 
 import { Effect } from "effect";
 import type { Diagnostic, RuleMeta } from "@tsnuke/contracts-effect";
-import type { DiagnoseResult, ProjectInfo } from "@tsnuke/engine-effect";
+import type {
+  DiagnoseResult,
+  ProjectInfo,
+  WorkspaceResult,
+} from "@tsnuke/engine-effect";
 import type { ApplyFilesResult } from "@tsnuke/fix-applier-effect";
 import type { InspectIo } from "../main/inspectHandler.js";
 
@@ -50,6 +54,25 @@ export const result = (over: Partial<DiagnoseResult> = {}): DiagnoseResult => ({
   ...over,
 });
 
+/** Wrap a single `DiagnoseResult` as a non-workspace `WorkspaceResult` (the common case). */
+export const single = (r: DiagnoseResult): WorkspaceResult => ({
+  rootDirectory: r.project.rootDirectory,
+  isWorkspace: false,
+  projects: [r],
+  elapsedMilliseconds: r.elapsedMilliseconds,
+});
+
+/** Build a multi-project (workspace) `WorkspaceResult` from N `DiagnoseResult`s. */
+export const workspace = (
+  rootDirectory: string,
+  projects: ReadonlyArray<DiagnoseResult>,
+): WorkspaceResult => ({
+  rootDirectory,
+  isWorkspace: true,
+  projects,
+  elapsedMilliseconds: projects.reduce((s, p) => s + p.elapsedMilliseconds, 0),
+});
+
 /** A tiny rule catalog for `--explain` lookups. */
 export const ruleCatalog: Record<string, RuleMeta> = {
   "no-any": {
@@ -70,11 +93,13 @@ export interface CapturingIo extends InspectIo {
 }
 
 /**
- * Build a capturing IO seam. `diagnoseResult` is the canned `diagnose` output;
- * `applyResult` is what `--fix` returns (default: nothing applied).
+ * Build a capturing IO seam. `analyzed` is the canned `analyze` output — a single
+ * `DiagnoseResult` (auto-wrapped as a non-workspace result, the common case) OR a
+ * `WorkspaceResult` for multi-project tests. `applyResult` is what `--fix` returns
+ * (default: nothing applied).
  */
 export const makeCapturingIo = (
-  diagnoseResult: DiagnoseResult,
+  analyzed: DiagnoseResult | WorkspaceResult,
   applyResult: ApplyFilesResult = {
     filesChanged: 0,
     appliedCount: 0,
@@ -84,13 +109,14 @@ export const makeCapturingIo = (
   const out: string[] = [];
   const err: string[] = [];
   const fixCalls: CapturingIo["fixCalls"] = [];
+  const ws: WorkspaceResult = "isWorkspace" in analyzed ? analyzed : single(analyzed);
   return {
     out,
     err,
     fixCalls,
     stdout: (text) => Effect.sync(() => void out.push(text)),
     stderr: (text) => Effect.sync(() => void err.push(text)),
-    diagnose: () => Effect.succeed(diagnoseResult),
+    analyze: () => Effect.succeed(ws),
     applyFixes: (diagnostics, rootDir) =>
       Effect.sync(() => {
         fixCalls.push({ diagnostics, rootDir });

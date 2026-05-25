@@ -81,6 +81,19 @@ Exit codes: `0` ok · `1` gate tripped or error · `130` interrupted.
 
 It analyzes **TypeScript projects** — point it at a directory with a `tsconfig.json`.
 
+### Monorepos
+
+Point it at a **workspace root** (a `pnpm-workspace.yaml` or `package.json#workspaces`, with
+no root `tsconfig.json` of its own) and it discovers every member package that has a
+`tsconfig.json`, scores each, and reports a per-project breakdown plus a **summary = the
+minimum project score** (breadth-not-depth, BC-05):
+
+```bash
+tsnuke .            # per-project sections + "Workspace: N project(s) · Score: <min>/100 …"
+tsnuke . --score    # just the min score across the workspace
+tsnuke . --json     # one report; projects[] per package + summary rollup
+```
+
 ## Programmatic API
 
 `@tsnuke/engine-effect` exposes the `diagnose()` boundary. `diagnoseNode` is the

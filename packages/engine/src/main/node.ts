@@ -23,8 +23,9 @@ import { FileSystem, Path } from "@effect/platform";
 import { NodeFileSystem, NodePath } from "@effect/platform-node";
 import { Effect, Layer } from "effect";
 import { diagnose } from "./diagnose.js";
+import { diagnoseWorkspace } from "./diagnoseWorkspace.js";
 import type { RunEngineOptions } from "./runEngine.js";
-import type { DiagnoseOptions, DiagnoseResult } from "./types.js";
+import type { DiagnoseOptions, DiagnoseResult, WorkspaceResult } from "./types.js";
 
 /**
  * The production Layer: the real Node-backed `FileSystem` + `Path` services. The single
@@ -49,4 +50,20 @@ export const diagnoseNode = (
 ): Promise<DiagnoseResult> =>
   Effect.runPromise(
     diagnose(directory, options).pipe(Effect.scoped, Effect.provide(NodeContext)),
+  );
+
+/**
+ * Runnable: diagnose a directory that may be a multi-package WORKSPACE (the monorepo
+ * boundary, BC-05) from real disk. `diagnoseWorkspace` discharges each per-project `Scope`
+ * internally, so no outer `Effect.scoped` is needed here — only {@link NodeContext}.
+ * REJECTS with {@link TsconfigNotFoundError} / {@link NoTypeScriptProjectError} when the
+ * directory is neither a TS project nor an analyzable workspace; resolves with a
+ * {@link WorkspaceResult} (always ≥1 project) otherwise.
+ */
+export const diagnoseWorkspaceNode = (
+  directory: string,
+  options: DiagnoseOptions & { readonly memory?: RunEngineOptions["memory"] } = {},
+): Promise<WorkspaceResult> =>
+  Effect.runPromise(
+    diagnoseWorkspace(directory, options).pipe(Effect.provide(NodeContext)),
   );

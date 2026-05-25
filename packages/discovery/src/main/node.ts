@@ -23,6 +23,7 @@ import {
 import { Effect, Layer } from "effect";
 import { discoverTsProject } from "./discover.js";
 import { collectSourceFiles, countSourceFiles } from "./enumerate.js";
+import { enumerateWorkspaceProjects } from "./workspace.js";
 import type { ProjectInfo } from "./ProjectInfo.js";
 
 /**
@@ -68,3 +69,13 @@ export const collectSourceFilesNode = (
       Effect.provide(NodeFileSystem.layer),
     ),
   );
+
+/**
+ * Runnable: enumerate the analyzable member projects of a workspace ROOT on disk
+ * (member dirs that contain a `tsconfig.json`). NEVER rejects (error channel `never`);
+ * `[]` when the directory is not a workspace or has no TS members.
+ */
+export const enumerateWorkspaceProjectsNode = (
+  dir: string,
+): Promise<ReadonlyArray<string>> =>
+  Effect.runPromise(enumerateWorkspaceProjects(dir).pipe(Effect.provide(NodeContext)));

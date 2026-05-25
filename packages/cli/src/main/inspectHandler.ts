@@ -4,7 +4,7 @@
  *
  * Flow (port of legacy, step-for-step):
  *   1. map flags → `DiagnoseOptions`            (`toDiagnoseOptions`)
- *   2. `diagnose()` (engine slice)              (via the injected `diagnose` seam)
+ *   2. `analyze()` (engine slice, monorepo-aware) (via the injected `analyze` seam)
  *   3. `--explain`/`--why` → `explain()` text   (offline; short-circuits, never gates)
  *   4. `--fix` → `applyFixesToFiles*` + a stderr summary line
  *   5. choose output: `--score` → score line; `--json` → `buildReport`(single project)+
@@ -28,6 +28,8 @@ import type { Diagnostic, RuleMeta } from "@tsnuke/contracts-effect";
 import type {
   DiagnoseOptions,
   DiagnoseResult,
+  ScoreResult,
+  WorkspaceResult,
 } from "@tsnuke/engine-effect";
 import type { ApplyFilesResult } from "@tsnuke/fix-applier-effect";
 import {
@@ -52,14 +54,16 @@ export interface InspectIo {
   /** Write to stderr (the `--fix` summary line). */
   readonly stderr: (text: string) => Effect.Effect<void>;
   /**
-   * Run the engine's single-project `diagnose` (RULE-018/036 etc. all live in the
-   * engine slice). Production wires `diagnoseNode`; tests inject a canned result. May
-   * fail with the engine's tagged discovery errors (→ exit 1 at the process edge).
+   * Analyze the target directory (RULE-018/036 etc. all live in the engine slice). This
+   * is the MONOREPO-aware boundary: production wires `diagnoseWorkspaceNode`, which
+   * returns a single-project {@link WorkspaceResult} for a plain TS project and a
+   * multi-project one for a workspace ROOT. Tests inject a canned result. May fail with
+   * the engine's tagged discovery errors (→ exit 1 at the process edge).
    */
-  readonly diagnose: (
+  readonly analyze: (
     directory: string,
     options: DiagnoseOptions,
-  ) => Effect.Effect<DiagnoseResult, unknown>;
+  ) => Effect.Effect<WorkspaceResult, unknown>;
   /**
    * Apply `--fix` edits over real files (fix-applier slice; CWE-59-safe, atomic).
    * Production wires `applyFixesToFilesNode(diagnostics, rootDir)`; tests inject a
@@ -105,10 +109,11 @@ export function findDiagnosticAt(
 
 /**
  * Build the single-project JSON report, then stringify it (RULE-034 wire shape via the
- * build-report slice). v1 is SINGLE-PROJECT — one `diagnose` result wrapped in a
- * 1-project report (legacy `buildJsonReport`, `inspect.ts:54-96`). The build-report
- * slice owns the summary rollup + schema/ok; the CLI only assembles its input and picks
- * the mode label (RULE-033) + indentation (`--json-compact`).
+ * build-report slice). One `diagnose` result wrapped in a 1-project report (legacy
+ * `buildJsonReport`, `inspect.ts:54-96`). The build-report slice owns the summary rollup +
+ * schema/ok; the CLI only assembles its input and picks the mode label (RULE-033) +
+ * indentation (`--json-compact`). Single-project output is byte-stable (the project
+ * `directory` stays `flags.directory`, as legacy).
  */
 export function buildJsonString(
   result: DiagnoseResult,
@@ -138,6 +143,96 @@ export function buildJsonString(
 }
 
 /**
+ * Build the MULTI-project (workspace) JSON report (BC-05). Each enumerated member becomes
+ * a `projects[]` entry keyed by its OWN directory; the build-report slice rolls them up to
+ * the min-score summary. Top-level `directory` is the workspace root.
+ */
+export function buildWorkspaceJsonString(
+  ws: WorkspaceResult,
+  flags: InspectFlags,
+  version: string,
+): string {
+  const report = buildReport({
+    version,
+    directory: flags.directory,
+    mode: "full",
+    diff: null,
+    projects: ws.projects.map((p) => ({
+      directory: p.project.rootDirectory,
+      diagnostics: p.diagnostics,
+      score: p.score?.score ?? null,
+      scorePartial: p.scorePartial,
+      skippedChecks: p.skippedChecks,
+      elapsedMilliseconds: p.elapsedMilliseconds,
+    })),
+    elapsedMilliseconds: ws.elapsedMilliseconds,
+    error: null,
+  });
+  return JSON.stringify(report, null, flags.jsonCompact ? 0 : 2);
+}
+
+/** A member directory, shown relative to the workspace root (the root itself → "."). */
+const relativeDir = (root: string, dir: string): string =>
+  dir === root ? "." : dir.startsWith(`${root}/`) ? dir.slice(root.length + 1) : dir;
+
+/**
+ * The workspace summary: the BC-05 min-score across members (via the build-report rollup),
+ * mapped back into the structural `ScoreResult` the format slice consumes. `null` score
+ * when no member was scorable.
+ */
+function workspaceSummaryScore(ws: WorkspaceResult, version: string): ScoreResult | null {
+  const summary = buildReport({
+    version,
+    directory: ws.rootDirectory,
+    mode: "full",
+    diff: null,
+    projects: ws.projects.map((p) => ({
+      directory: p.project.rootDirectory,
+      diagnostics: p.diagnostics,
+      score: p.score?.score ?? null,
+      scorePartial: p.scorePartial,
+      skippedChecks: p.skippedChecks,
+      elapsedMilliseconds: p.elapsedMilliseconds,
+    })),
+    elapsedMilliseconds: ws.elapsedMilliseconds,
+    error: null,
+  }).summary;
+  if (summary.score === null) return null;
+  return {
+    score: summary.score,
+    label: summary.scoreLabel ?? "",
+    partial: summary.scorePartial,
+  };
+}
+
+/**
+ * Render the pretty workspace report: a per-project section (its score header + grouped
+ * diagnostics, via the proven single-project `renderPretty`) followed by a BC-05 summary
+ * line (min score + aggregate error/warning counts across all members).
+ */
+export function renderWorkspacePretty(
+  ws: WorkspaceResult,
+  version: string,
+  showScore: boolean,
+): string {
+  const lines: string[] = [];
+  for (const p of ws.projects) {
+    lines.push(`▸ ${relativeDir(ws.rootDirectory, p.project.rootDirectory)}`);
+    lines.push(renderPretty(p.diagnostics, p.score, p.scorePartial, showScore));
+    lines.push("");
+  }
+  const all = ws.projects.flatMap((p) => p.diagnostics);
+  const errors = all.filter((d) => d.severity === "error").length;
+  const summaryScore = workspaceSummaryScore(ws, version);
+  const scoreText = showScore ? `${renderScoreLine(summaryScore, summaryScore?.partial ?? false)} · ` : "";
+  lines.push(
+    `Workspace: ${ws.projects.length} project(s) · ${scoreText}` +
+      `${errors} error(s), ${all.length - errors} warning(s).`,
+  );
+  return lines.join("\n");
+}
+
+/**
  * Run `inspect` end to end and return the intended process exit code (`0 | 1`). Does NOT
  * exit the process — the process edge (`bin.ts`) sets `process.exitCode`. A faithful
  * port of legacy `runInspect` over the injected {@link InspectIo} seam.
@@ -147,19 +242,21 @@ export const runInspect = Effect.fn("Cli.inspect")(function* (
   io: InspectIo,
   version: string,
 ) {
-    // 2. analyze (the one genuinely-effectful + possibly-failing step).
-    const result = yield* io.diagnose(flags.directory, toDiagnoseOptions(flags));
+    // 2. analyze (the one genuinely-effectful + possibly-failing step). The seam is
+    //    monorepo-aware: a plain project comes back as a 1-entry, `isWorkspace:false`
+    //    WorkspaceResult; a workspace ROOT as N entries with `isWorkspace:true`.
+    const ws = yield* io.analyze(flags.directory, toDiagnoseOptions(flags));
+    const single = ws.isWorkspace ? undefined : ws.projects[0];
+    // Diagnostics across every analyzed project (== the single project's, when not a ws).
+    const allDiagnostics = ws.projects.flatMap((p) => p.diagnostics);
 
     // 3. --explain / --why: offline, deterministic; short-circuits other output and
-    //    never gates (always exit 0). Ported from legacy `inspect.ts:121-140`.
+    //    never gates (always exit 0). Ported from legacy `inspect.ts:121-140`. Searches
+    //    across all members (a workspace has no single diagnostics list).
     const explainTarget = flags.explain ?? flags.why;
     if (explainTarget !== undefined) {
       const lookup = asRuleLookup(io.ruleCatalog);
-      const match = findDiagnosticAt(
-        result.diagnostics,
-        explainTarget.file,
-        explainTarget.line,
-      );
+      const match = findDiagnosticAt(allDiagnostics, explainTarget.file, explainTarget.line);
       const text =
         match !== undefined
           ? explain(match.rule, lookup, {
@@ -174,40 +271,72 @@ export const runInspect = Effect.fn("Cli.inspect")(function* (
     }
 
     // 4. --fix: apply auto-fix edits in place (RULE-005/032 — the fix-applier slice),
-    //    then continue to output. Legacy `inspect.ts:143-150`.
+    //    PER PROJECT (each member's edits resolve against its own root), then continue to
+    //    output. For a single project this is one call with identical totals. Legacy
+    //    `inspect.ts:143-150`.
     if (flags.fix) {
-      const applied = yield* io.applyFixes(
-        result.diagnostics,
-        result.project.rootDirectory,
+      const applieds = yield* Effect.forEach(
+        ws.projects,
+        (p) => io.applyFixes(p.diagnostics, p.project.rootDirectory),
+        { concurrency: 1 },
+      );
+      const totals = applieds.reduce(
+        (acc, a) => ({
+          appliedCount: acc.appliedCount + a.appliedCount,
+          filesChanged: acc.filesChanged + a.filesChanged,
+          skippedCount: acc.skippedCount + a.skippedCount,
+        }),
+        { appliedCount: 0, filesChanged: 0, skippedCount: 0 },
       );
       yield* io.stderr(
-        `Applied ${applied.appliedCount} fix(es) across ${applied.filesChanged} file(s)` +
-          (applied.skippedCount > 0
-            ? `; ${applied.skippedCount} skipped (conflicts).`
+        `Applied ${totals.appliedCount} fix(es) across ${totals.filesChanged} file(s)` +
+          (totals.skippedCount > 0
+            ? `; ${totals.skippedCount} skipped (conflicts).`
             : ".") +
           "\n",
       );
     }
 
-    // 5. choose output. Legacy `inspect.ts:152-167`. The engine's score result carries
-    //    `label` already (it maps the score slice's `band` → `label`), so the format
-    //    slice's structural `{ score, label, partial }` input is satisfied directly.
-    const output = flags.score
-      ? renderScoreLine(result.score, result.scorePartial)
-      : flags.json
-        ? buildJsonString(result, flags, version)
-        : flags.format === "agent"
-          ? JSON.stringify(
-              formatAgentReport(result.diagnostics, result.score, result.project.rootDirectory),
-              null,
-              2,
+    // 5. choose output. Legacy `inspect.ts:152-167`. The SINGLE-project branch is
+    //    byte-identical to legacy (the engine's score result carries `label` already).
+    //    The WORKSPACE branch renders a per-project breakdown + the BC-05 min summary.
+    const output =
+      single !== undefined
+        ? flags.score
+          ? renderScoreLine(single.score, single.scorePartial)
+          : flags.json
+            ? buildJsonString(single, flags, version)
+            : flags.format === "agent"
+              ? JSON.stringify(
+                  formatAgentReport(single.diagnostics, single.score, single.project.rootDirectory),
+                  null,
+                  2,
+                )
+              : renderPretty(single.diagnostics, single.score, single.scorePartial, flags.showScore)
+        : flags.score
+          ? renderScoreLine(
+              workspaceSummaryScore(ws, version),
+              workspaceSummaryScore(ws, version)?.partial ?? false,
             )
-          : renderPretty(result.diagnostics, result.score, result.scorePartial, flags.showScore);
+          : flags.json
+            ? buildWorkspaceJsonString(ws, flags, version)
+            : flags.format === "agent"
+              ? JSON.stringify(
+                  formatAgentReport(
+                    allDiagnostics,
+                    workspaceSummaryScore(ws, version),
+                    ws.rootDirectory,
+                  ),
+                  null,
+                  2,
+                )
+              : renderWorkspacePretty(ws, version, flags.showScore);
     yield* io.stdout(`${output}\n`);
 
-    // 6. exit-code gate (RULE-030, via the exit-code slice). `--score` never fails.
+    // 6. exit-code gate (RULE-030, via the exit-code slice) over ALL diagnostics.
+    //    `--score` never fails.
     return resolveExitCode({
-      diagnostics: result.diagnostics,
+      diagnostics: allDiagnostics,
       failOn: flags.failOn,
       scoreMode: flags.score,
     });

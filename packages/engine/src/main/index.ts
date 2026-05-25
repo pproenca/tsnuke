@@ -36,16 +36,20 @@ export {
 // ---- Orchestration (the public boundary) ----
 export { diagnose, overridesFromConfig } from "./diagnose.js";
 
+// ---- Orchestration (the monorepo boundary, BC-05) ----
+export { diagnoseWorkspace } from "./diagnoseWorkspace.js";
+
 // ---- Orchestration types (OWNED here) ----
 export type {
   DiagnoseOptions,
   DiagnoseResult,
+  WorkspaceResult,
   ScoreResult,
   ProjectInfo,
 } from "./types.js";
 
 // ---- Production runnable + Layer ----
-export { diagnoseNode, NodeContext } from "./node.js";
+export { diagnoseNode, diagnoseWorkspaceNode, NodeContext } from "./node.js";
 
 // ---- Self-barrel: opt-in namespace import (`import { Engine } from "..."`). ADDITIVE —
 // the named re-exports above remain the byte-stable surface cli + mcp import from. ---
