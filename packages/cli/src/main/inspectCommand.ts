@@ -375,7 +375,8 @@ export const inspectCommand = Command.make(
     }),
 ).pipe(Command.withDescription("Inspect a TypeScript project's health (the default command)."));
 
-/** Best-effort package version string for the JSON report. Legacy `cli.ts` used "0.0.0";
- * kept identical so `--json` output (`version` field) is byte-equivalent + consistent with
- * the MCP slice (architecture review H1). */
-export const VERSION = "0.0.0";
+/** Package version string for the `--version` banner and the `--json` report's `version`
+ * field. The esbuild bundle replaces `process.env.TSFIX_VERSION` with the real
+ * `package.json` version at build time (see `build.mjs`); source-mode and tests fall back
+ * to "0.0.0" (the legacy pinned value the equivalence tests pass explicitly). */
+export const VERSION = process.env.TSFIX_VERSION ?? "0.0.0";

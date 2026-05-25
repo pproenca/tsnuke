@@ -1,8 +1,31 @@
 {
   "name": "ts-fix",
   "version": "0.1.0",
-  "description": "The user-facing `ts-fix` CLI, re-imagined on `@effect/cli`: POSIX flag parsing, auto-help, and RULE-028 flag-exclusivity encoded as `Options` constraints. Wires the finished engine + format + fix-applier + build-report + exit-code slices into the default `inspect` command and the `install` subcommand. Equivalence is BEHAVIORAL (same flags accepted, same validation rejections, same output content, same exit codes), not a byte-verbatim port of the hand-rolled argv parser.",
+  "description": "A code-health linter and 0–100 scorer for TypeScript projects — a two-tier engine (syntactic + type-aware) over the in-process TypeScript compiler, with config and module-graph rules, an anti-slop family for LLM-generated code, and a local deterministic score. Runs offline via npx.",
   "license": "MIT",
+  "author": "Pedro Proença",
+  "homepage": "https://github.com/pproenca/ts-fix#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pproenca/ts-fix.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/pproenca/ts-fix/issues"
+  },
+  "keywords": [
+    "typescript",
+    "linter",
+    "lint",
+    "code-health",
+    "score",
+    "type-aware",
+    "static-analysis",
+    "effect",
+    "mcp",
+    "ai",
+    "cli"
+  ],
   "type": "module",
   "bin": {
     "ts-fix": "./dist/cli.js"

@@ -12,7 +12,9 @@
  * dependency and resolved from node_modules at runtime (matches the original design).
  */
 import { build } from "esbuild";
-import { chmodSync } from "node:fs";
+import { chmodSync, readFileSync } from "node:fs";
+
+const { version } = JSON.parse(readFileSync(new URL("./package.json", import.meta.url)));
 
 await build({
   entryPoints: ["src/main/bin.ts"],
@@ -23,6 +25,9 @@ await build({
   target: "node22",
   // `typescript` is the analysis backend — keep it external (a runtime dependency).
   external: ["typescript"],
+  // Bake the real package version into the bundle so `--version` and the JSON report's
+  // `version` field match what's published (source-mode/tests fall back to "0.0.0").
+  define: { "process.env.TSFIX_VERSION": JSON.stringify(version) },
   // ESM output needs a CJS-interop shim for any transitively-bundled CommonJS module that
   // reaches for `require`/`__dirname`. (The executable shebang is preserved from the entry
   // file `bin.ts` by esbuild and stays on line 1 — do NOT re-add it here or Node sees two.)
