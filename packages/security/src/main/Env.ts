@@ -23,11 +23,9 @@ const STRIPPED_PREFIX = "npm_config_";
  * Pure — does not mutate the input.
  */
 export function sanitizeEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
-  const out: NodeJS.ProcessEnv = {};
-  for (const [key, value] of Object.entries(env)) {
-    if (STRIPPED_KEYS.has(key)) continue;
-    if (key.startsWith(STRIPPED_PREFIX)) continue;
-    out[key] = value;
-  }
-  return out;
+  return Object.fromEntries(
+    Object.entries(env).filter(
+      ([key]) => !STRIPPED_KEYS.has(key) && !key.startsWith(STRIPPED_PREFIX),
+    ),
+  );
 }

@@ -11,7 +11,7 @@
  *
  * The guards stay PLAIN synchronous pure functions (Brief lines 25/91); the
  * Effect ecosystem appears only in the idiomatic tagged error
- * {@link InvalidGlobPatternError} (`effect/Data`). See TRANSFORMATION_NOTES.md
+ * {@link InvalidGlobPatternError} (`effect/Schema`). See TRANSFORMATION_NOTES.md
  * for the legacy → target mapping and the dormant-guard follow-ups (RULE-027).
  */
 
@@ -35,3 +35,6 @@ export {
 } from "./Plugins.js";
 
 export type { TsDoctorConfig } from "./Config.js";
+
+/** Self-barrel: `import { Security } from "@ts-doctor/security-effect"` resolves to this module's namespace. */
+export * as Security from "./index.js";
