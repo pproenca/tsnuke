@@ -66,3 +66,7 @@ export const asyncRules: ReadonlyArray<Rule> = [
   noFloatingPromises,
   noMisusedPromises,
 ];
+
+// Self-barrel: makes `import { RulesAsync } from "@ts-doctor/rules-async-effect"`
+// resolve to this module's namespace (additive — the named exports above stay).
+export * as RulesAsync from ".";
