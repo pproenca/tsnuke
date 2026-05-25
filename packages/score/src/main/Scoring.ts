@@ -91,11 +91,14 @@ export const computeScore = (diagnostics: ReadonlyArray<Diagnostic>): ScoreResul
     return { score: unsafeScore(PERFECT_SCORE), band: bandOf(PERFECT_SCORE) };
   }
 
+  // Distinct `plugin/rule` keys per severity (breadth-not-depth, RULE-001). A single
+  // pass populates both Sets — `error` → errors, everything else → warnings. Kept as
+  // one loop (not two functional passes) because this is hot-path math the brief pins
+  // as pure & fast, and the exhaustive equivalence oracle runs it ~13k times.
   const errorRules = new Set<string>();
   const warningRules = new Set<string>();
   for (const d of diagnostics) {
-    if (d.severity === "error") errorRules.add(ruleKey(d));
-    else warningRules.add(ruleKey(d));
+    (d.severity === "error" ? errorRules : warningRules).add(ruleKey(d));
   }
 
   const penalty =

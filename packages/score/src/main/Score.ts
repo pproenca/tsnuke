@@ -26,7 +26,10 @@ export const SCORE_OK = 50;
  * A project health score: an integer in `[0, 100]` (RULE-001). Branded so a raw
  * `number` can't be passed where a validated score is expected.
  */
-export const Score = Schema.Int.pipe(Schema.between(0, 100), Schema.brand("Score"));
+export const Score = Schema.Int.pipe(Schema.between(0, 100), Schema.brand("Score")).annotations({
+  identifier: "Score",
+  description: "Project health score, an integer in [0, 100].",
+});
 export type Score = typeof Score.Type;
 
 /**
@@ -51,7 +54,10 @@ export const decodeScore: (u: unknown) => Option.Option<Score> =
  * Band label (RULE-002). A literal union (modern) replaces legacy's bare `string`;
  * the three label strings are preserved verbatim for wire compatibility.
  */
-export const ScoreBand = Schema.Literal("Great", "Needs work", "Critical");
+export const ScoreBand = Schema.Literal("Great", "Needs work", "Critical").annotations({
+  identifier: "ScoreBand",
+  description: "Health band label derived from the score (RULE-002).",
+});
 export type ScoreBand = typeof ScoreBand.Type;
 
 /**
