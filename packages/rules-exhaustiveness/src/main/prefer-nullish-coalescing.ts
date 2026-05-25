@@ -16,12 +16,9 @@ import { defineRule } from "@ts-doctor/rules-core-effect";
 
 /** True iff `type` (or any union constituent) is `null` or `undefined`. */
 function isNullable(type: ts.Type): boolean {
-  const constituents = type.isUnion() ? type.types : [type];
   const nullish = ts.TypeFlags.Null | ts.TypeFlags.Undefined;
-  for (const c of constituents) {
-    if ((c.flags & nullish) !== 0) return true;
-  }
-  return false;
+  const parts = type.isUnion() ? type.types : [type];
+  return parts.some((c) => (c.flags & nullish) !== 0);
 }
 
 export const rule = defineRule(

@@ -17,28 +17,24 @@ import { defineRule } from "@ts-doctor/rules-core-effect";
 /** True if `type` (or every constituent of a union) is an array / tuple. */
 function isArrayLike(type: ts.Type, checker: ts.TypeChecker): boolean {
   const parts = type.isUnion() ? type.types : [type];
-  let sawArray = false;
-  for (const p of parts) {
-    // `any` / `unknown` / type params — can't be sure it's an array. Bail (no FP).
-    if (
-      p.flags &
-      (ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.TypeParameter)
-    ) {
-      return false;
-    }
-    // `null` / `undefined` constituents don't affect array-ness; skip them.
-    if (p.flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined)) continue;
 
-    const isArr =
-      checker.isArrayType(p) ||
-      checker.isTupleType(p) ||
-      // readonly arrays / array-likes: numeric index + a numeric `length`.
-      (p.getNumberIndexType() !== undefined &&
-        hasNumberLengthProp(p, checker));
-    if (!isArr) return false;
-    sawArray = true;
-  }
-  return sawArray;
+  // `any` / `unknown` / type params — can't be sure it's an array. Bail (no FP).
+  const imprecise =
+    ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.TypeParameter;
+  if (parts.some((p) => p.flags & imprecise)) return false;
+
+  // `null` / `undefined` constituents don't affect array-ness; skip them.
+  const nullish = ts.TypeFlags.Null | ts.TypeFlags.Undefined;
+  const relevant = parts.filter((p) => (p.flags & nullish) === 0);
+
+  const isArr = (p: ts.Type): boolean =>
+    checker.isArrayType(p) ||
+    checker.isTupleType(p) ||
+    // readonly arrays / array-likes: numeric index + a numeric `length`.
+    (p.getNumberIndexType() !== undefined && hasNumberLengthProp(p, checker));
+
+  // At least one array, and every non-nullish part is an array.
+  return relevant.length > 0 && relevant.every(isArr);
 }
 
 /** True if the type has a `length` property whose type is number-like. */

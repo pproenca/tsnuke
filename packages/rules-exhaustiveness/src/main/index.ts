@@ -67,3 +67,7 @@ export const exhaustivenessRules: ReadonlyArray<Rule> = [
   preferNullishCoalescing,
   switchExhaustivenessCheck,
 ];
+
+// Self-barrel: `import { RulesExhaustiveness } from "@ts-doctor/rules-exhaustiveness-effect"`
+// resolves to this module's namespace (additive — the named exports above stay stable).
+export * as RulesExhaustiveness from ".";
