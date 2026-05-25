@@ -125,3 +125,88 @@ describe("end-to-end: ts-doctor <dir>", () => {
     expect(Exit.isFailure(exit)).toBe(true);
   });
 });
+
+// ── Regression: the `@effect/cli` boolean tri-state bug ──────────────────────────────
+// `Options.boolean(name, { negationNames }).pipe(Options.optional)` yields `Some(false)`
+// when the flag is ABSENT (a boolean option always resolves) — never `None`. That made
+// every "auto" / "default-on" toggle collapse into "force-off": the type-aware Tier-2 was
+// silently skipped (partial score) on every DEFAULT run, the pretty score line vanished,
+// and inline-disable directives were ignored. These tests drive the REAL argv parser
+// end-to-end — the bug hid because the prior unit tests injected `Option.none` directly,
+// modelling a parser output that never actually occurs. See `inspectCommand.triStateBoolean`.
+describe("regression: boolean tri-state defaults (real argv parse)", () => {
+  const writeCleanProject = (): void => {
+    writeFileSync(join(dir, "tsconfig.json"), STRICT_TSCONFIG);
+    mkdirSync(join(dir, "src"));
+    writeFileSync(
+      join(dir, "src", "index.ts"),
+      "export const inc = (n: number): number => n + 1;\n",
+    );
+  };
+  const writeSuppressedAnyProject = (): void => {
+    writeFileSync(join(dir, "tsconfig.json"), STRICT_TSCONFIG);
+    mkdirSync(join(dir, "src"));
+    // The directive on line 1 suppresses `no-explicit-any` on line 2 (the `any`).
+    writeFileSync(
+      join(dir, "src", "bad.ts"),
+      "// ts-doctor-disable-next-line no-explicit-any\n" +
+        "export function f(x: any): number {\n  return Number(x);\n}\n",
+    );
+  };
+  const agentRuleIds = (stdout: string): string[] =>
+    (JSON.parse(stdout).categories as { rules: { rule: string }[] }[]).flatMap((c) =>
+      c.rules.map((r) => r.rule),
+    );
+
+  it("DEFAULT run auto-enables Tier-2 on a clean project (score NOT partial)", async () => {
+    writeCleanProject();
+    const stdout = await runCli([dir, "--score"]);
+    expect(stdout).toContain("Score:");
+    expect(stdout).not.toContain("partial"); // the bug: was partial-by-default
+  });
+
+  it("--no-deep still forces Tier-2 OFF (score IS partial)", async () => {
+    writeCleanProject();
+    const stdout = await runCli([dir, "--score", "--no-deep"]);
+    expect(stdout).toContain("partial");
+  });
+
+  it("--deep forces Tier-2 ON (score NOT partial)", async () => {
+    writeCleanProject();
+    const stdout = await runCli([dir, "--score", "--deep"]);
+    expect(stdout).not.toContain("partial");
+  });
+
+  it("--deep + --no-deep is rejected by the parser (mutual exclusivity)", async () => {
+    writeCleanProject();
+    const env = e2eLayer();
+    const exit = await Effect.runPromiseExit(
+      run(["node", "ts-doctor", dir, "--deep", "--no-deep"]).pipe(Effect.provide(env.layer)),
+    );
+    expect(Exit.isFailure(exit)).toBe(true);
+  });
+
+  it("DEFAULT pretty output shows the score line (--show-score default on)", async () => {
+    writeCleanProject();
+    const stdout = await runCli([dir]);
+    expect(stdout).toContain("Score:");
+  });
+
+  it("--no-score hides the score line in pretty output", async () => {
+    writeCleanProject();
+    const stdout = await runCli([dir, "--no-score"]);
+    expect(stdout).not.toContain("Score:");
+  });
+
+  it("DEFAULT run honours inline-disable directives (--respect-inline-disables default on)", async () => {
+    writeSuppressedAnyProject();
+    const stdout = await runCli([dir, "--format", "agent"]);
+    expect(agentRuleIds(stdout)).not.toContain("no-explicit-any"); // suppressed
+  });
+
+  it("--no-respect-inline-disables surfaces the otherwise-suppressed diagnostic", async () => {
+    writeSuppressedAnyProject();
+    const stdout = await runCli([dir, "--format", "agent", "--no-respect-inline-disables"]);
+    expect(agentRuleIds(stdout)).toContain("no-explicit-any"); // directive ignored
+  });
+});

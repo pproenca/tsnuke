@@ -90,6 +90,9 @@ importers:
       effect:
         specifier: ^3.21.2
         version: 3.21.2
+      typescript:
+        specifier: ^5.8.0
+        version: 5.9.3
     devDependencies:
       '@effect/vitest':
         specifier: ^0.29.0
@@ -97,9 +100,9 @@ importers:
       '@types/node':
         specifier: ^22.10.0
         version: 22.19.19
-      typescript:
-        specifier: ^5.8.0
-        version: 5.9.3
+      esbuild:
+        specifier: 0.27.7
+        version: 0.27.7
       vitest:
         specifier: ^3.2.0
         version: 3.2.4(@types/node@22.19.19)(yaml@2.9.0)
@@ -371,6 +374,9 @@ importers:
       effect:
         specifier: ^3.21.2
         version: 3.21.2
+      typescript:
+        specifier: ^5.8.0
+        version: 5.9.3
     devDependencies:
       '@effect/vitest':
         specifier: ^0.29.0
@@ -378,9 +384,9 @@ importers:
       '@types/node':
         specifier: ^22.10.0
         version: 22.19.19
-      typescript:
-        specifier: ^5.8.0
-        version: 5.9.3
+      esbuild:
+        specifier: 0.27.7
+        version: 0.27.7
       vitest:
         specifier: ^3.2.0
         version: 3.2.4(@types/node@22.19.19)(yaml@2.9.0)

@@ -25,7 +25,7 @@
 import { Args, Command, Options, ValidationError } from "@effect/cli";
 import { HelpDoc } from "@effect/cli";
 import { Terminal } from "@effect/platform";
-import { Effect, Option } from "effect";
+import { Effect, Either, Option } from "effect";
 import type { RuleMeta } from "@ts-doctor/contracts-effect";
 import { diagnoseNode } from "@ts-doctor/engine-effect";
 import { applyFixesToFilesNode } from "@ts-doctor/fix-applier-effect";
@@ -48,32 +48,75 @@ const directoryArg = Args.directory({ name: "directory" }).pipe(
 );
 
 // ── analysis toggles ─────────────────────────────────────────────────────────────────
-// `--lint` / `--no-lint`, etc. carry a `negationNames` so the `--no-…` form parses; each
-// is `optional` so "neither passed" is `Option.none` → resolved to the legacy default.
-const lintOpt = Options.boolean("lint", { negationNames: ["no-lint"] }).pipe(
-  Options.optional,
-  Options.withDescription("Run lint-tier rules (default on; --no-lint to disable)."),
+/**
+ * A REAL tri-state boolean, built from two presence flags. This is the CORRECT
+ * replacement for `Options.boolean(name, { negationNames }).pipe(Options.optional)`,
+ * which CANNOT express a tri-state in `@effect/cli`: a boolean option always resolves
+ * (absent ⇒ `false`), so `optional` yields `Some(false)`, never `None`. That collapsed
+ * "auto" / "default-on" into "force-off" — silently disabling the type-aware Tier-2,
+ * dropping the score line, and ignoring inline-disables on every default run.
+ *
+ *   `--name`     ⇒ `Some(true)`   (force on)
+ *   `--negName`  ⇒ `Some(false)`  (force off)
+ *   neither      ⇒ `None`         (caller's default — via `getOrElse`/`getOrUndefined`)
+ *   BOTH         ⇒ a parser `ValidationError` (the mutual-exclusivity the negatable
+ *                  boolean used to give for free).
+ *
+ * The result type is `Options<Option<boolean>>` — IDENTICAL to the old `optional` shape —
+ * so `resolveInspectFlags` (and its tests) consume it unchanged; only the absent case is
+ * now honestly `None` instead of `Some(false)`.
+ */
+const triStateBoolean = (
+  name: string,
+  negName: string,
+  description: string,
+): Options.Options<Option.Option<boolean>> =>
+  Options.all({
+    on: Options.boolean(name),
+    off: Options.boolean(negName),
+  }).pipe(
+    Options.mapEffect(({ on, off }) =>
+      on && off
+        ? Effect.fail(
+            ValidationError.invalidValue(
+              HelpDoc.p(`--${name} and --${negName} are mutually exclusive.`),
+            ),
+          )
+        : Effect.succeed(
+            on
+              ? Option.some(true)
+              : off
+                ? Option.some(false)
+                : Option.none<boolean>(),
+          ),
+    ),
+    Options.withDescription(description),
+  );
+
+const lintOpt = triStateBoolean(
+  "lint",
+  "no-lint",
+  "Run lint-tier rules (default on; --no-lint to disable).",
 );
-const deadCodeOpt = Options.boolean("dead-code", { negationNames: ["no-dead-code"] }).pipe(
-  Options.optional,
-  Options.withDescription("Run dead-code rules (default on; --no-dead-code to disable)."),
+const deadCodeOpt = triStateBoolean(
+  "dead-code",
+  "no-dead-code",
+  "Run dead-code rules (default on; --no-dead-code to disable).",
 );
-// RULE-035 deep tri-state: Option.none ⇒ AUTO (undefined), Some(true) ⇒ force on,
-// Some(false) ⇒ force off. The `optional` over a negatable boolean is the tri-state.
-const deepOpt = Options.boolean("deep", { negationNames: ["no-deep"] }).pipe(
-  Options.optional,
-  Options.withDescription(
-    "Force the type-aware Tier-2 pass on/off (--deep/--no-deep); omit to auto-decide.",
-  ),
+// RULE-035 deep tri-state: None ⇒ AUTO (undefined), Some(true) ⇒ force on,
+// Some(false) ⇒ force off. (Was a broken boolean+optional that always read Some(false).)
+const deepOpt = triStateBoolean(
+  "deep",
+  "no-deep",
+  "Force the type-aware Tier-2 pass on/off (--deep/--no-deep); omit to auto-decide.",
 );
 const verboseOpt = Options.boolean("verbose").pipe(
   Options.withDescription("Verbose engine output."),
 );
-const respectInlineDisablesOpt = Options.boolean("respect-inline-disables", {
-  negationNames: ["no-respect-inline-disables"],
-}).pipe(
-  Options.optional,
-  Options.withDescription("Honour inline-disable directives (default on)."),
+const respectInlineDisablesOpt = triStateBoolean(
+  "respect-inline-disables",
+  "no-respect-inline-disables",
+  "Honour inline-disable directives (default on).",
 );
 
 // ── output selectors ─────────────────────────────────────────────────────────────────
@@ -90,9 +133,10 @@ const failOnOpt = Options.choice("fail-on", ["error", "warning", "none"]).pipe(
 const scoreOpt = Options.boolean("score").pipe(
   Options.withDescription("Print only the score line; never gates (exit 0)."),
 );
-const showScoreOpt = Options.boolean("show-score", { negationNames: ["no-score"] }).pipe(
-  Options.optional,
-  Options.withDescription("Show the score in pretty output (default on; --no-score off)."),
+const showScoreOpt = triStateBoolean(
+  "show-score",
+  "no-score",
+  "Show the score in pretty output (default on; --no-score off).",
 );
 const jsonOpt = Options.boolean("json").pipe(
   Options.withDescription("Emit the versioned JSON report (RULE-034)."),
@@ -297,9 +341,22 @@ export const inspectCommand = Command.make(
   { directory: directoryArg, options: rawOptions },
   ({ directory, options }) =>
     Effect.gen(function* () {
-      const partial = yield* resolveInspectFlags(options);
-      const flags: InspectFlags = { ...partial, directory };
       const terminal = yield* Terminal.Terminal;
+      // RULE-028 / malformed-`--explain` rejections (resolveInspectFlags → ValidationError)
+      // are HANDLER-phase: `@effect/cli` only auto-renders PARSE-phase errors, so a raw
+      // failure here would reach `bin.ts` and dump the cause as JSON. Catch it and emit the
+      // SAME terse `ts-doctor: <message>` line the process edge uses for every other error
+      // (the ValidationError carries its message as a `HelpDoc`). Parser-phase errors
+      // (unknown flag, --deep/--no-deep, bad --format) are still rendered by the library.
+      const resolved = yield* Effect.either(resolveInspectFlags(options));
+      if (Either.isLeft(resolved)) {
+        yield* terminal
+          .display(`ts-doctor: ${HelpDoc.toAnsiText(resolved.left.error).trim()}\n`)
+          .pipe(Effect.orDie);
+        process.exitCode = 1;
+        return;
+      }
+      const flags: InspectFlags = { ...resolved.right, directory };
       const code = yield* runInspect(flags, makeRealIo(terminal), VERSION);
       // The process edge reads `process.exitCode`; set it here for the success path.
       // (Engine failures bypass this and are mapped to 1 at `bin.ts`.)

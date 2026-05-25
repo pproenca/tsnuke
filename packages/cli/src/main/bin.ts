@@ -18,6 +18,7 @@
  * the runtime's default.
  */
 
+import { ValidationError } from "@effect/cli";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Cause, Effect, Exit } from "effect";
 import { run } from "./cli.js";
@@ -54,6 +55,14 @@ const program = run(process.argv).pipe(
         return;
       }
       const failure = Cause.failureOption(cause);
+      // `@effect/cli` already renders ValidationErrors (unknown/missing flags, RULE-028,
+      // mutual-exclusivity) to the terminal as a clean usage message. Re-dumping the raw
+      // cause here only produced a redundant `ts-doctor: Error: {…JSON…}` line — so for a
+      // ValidationError we keep the library's output and just carry the non-zero exit.
+      if (failure._tag === "Some" && ValidationError.isValidationError(failure.value)) {
+        process.exitCode = 1;
+        return;
+      }
       const message = Exit.match(Exit.failCause(cause), {
         onFailure: () =>
           failure._tag === "Some" && failure.value instanceof Error

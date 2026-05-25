@@ -5,12 +5,13 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "ts-doctor": "./src/main/bin.ts"
+    "ts-doctor": "./dist/cli.js"
   },
   "exports": {
     ".": "./src/main/index.ts"
   },
   "scripts": {
+    "build": "node build.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
@@ -28,12 +29,13 @@
     "@ts-doctor/fix-applier-effect": "workspace:*",
     "@ts-doctor/format-effect": "workspace:*",
     "@ts-doctor/rules-registry-effect": "workspace:*",
-    "effect": "^3.21.2"
+    "effect": "^3.21.2",
+    "typescript": "^5.8.0"
   },
   "devDependencies": {
     "@effect/vitest": "^0.29.0",
     "@types/node": "^22.10.0",
-    "typescript": "^5.8.0",
+    "esbuild": "0.27.7",
     "vitest": "^3.2.0"
   }
 }
