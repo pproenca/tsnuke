@@ -42,3 +42,6 @@ export {
 
 // ---- SDK wiring (stdio McpServer) ----
 export { createServer, main } from "./server.js";
+
+// ---- Self-barrel: the module's namespace (`import { Mcp } from "@ts-doctor/mcp-effect"`) ----
+export * as Mcp from "./index.js";
