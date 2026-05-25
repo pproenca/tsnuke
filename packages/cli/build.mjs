@@ -1,11 +1,11 @@
 /**
- * Build the runnable `ts-doctor` binary.
+ * Build the runnable `ts-fix` binary.
  *
  * The package sources export `src/main/*.ts` directly (scaffold convenience: typecheck +
  * vitest resolve from source with no prior build). That is NOT runnable as a real process:
  * the relative imports carry `.js` extensions that resolve to on-disk `.ts` files, and
  * Node's native type-stripping does not rewrite `.js`→`.ts`, so `node src/main/bin.ts`
- * fails with ERR_MODULE_NOT_FOUND. We therefore BUNDLE the CLI (entry + every `@ts-doctor/*`
+ * fails with ERR_MODULE_NOT_FOUND. We therefore BUNDLE the CLI (entry + every `@ts-fix/*`
  * workspace slice + effect/@effect, resolved from source) into one self-contained ESM file.
  *
  * `typescript` stays EXTERNAL — it is the engine's analysis backend (~9 MB), declared as a

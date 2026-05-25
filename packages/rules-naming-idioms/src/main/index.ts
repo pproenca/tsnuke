@@ -1,12 +1,12 @@
 /**
- * `@ts-doctor/rules-naming-idioms-effect` — the `naming-idioms` SYN rule category
+ * `@ts-fix/rules-naming-idioms-effect` — the `naming-idioms` SYN rule category
  * (RULE-025), the LARGEST SYN category: 14 plain-TS AST/token predicates ported
- * verbatim from the legacy `packages/ts-doctor-rules/src/rules/naming-idioms/**`.
+ * verbatim from the legacy `packages/ts-fix-rules/src/rules/naming-idioms/**`.
  *
  * Each rule is a pure `SyntaxKind → visitor` map plugging into the rule substrate
- * (`defineRule` / `RuleContext` / `runRule`) from `@ts-doctor/rules-core-effect`. The
+ * (`defineRule` / `RuleContext` / `runRule`) from `@ts-fix/rules-core-effect`. The
  * data CONTRACTS (`Diagnostic`, `RuleMeta`, `Rule`) live in
- * `@ts-doctor/contracts-effect` / `@ts-doctor/rules-core-effect` and are NOT re-exported
+ * `@ts-fix/contracts-effect` / `@ts-fix/rules-core-effect` and are NOT re-exported
  * here (barrel hygiene — this slice does not re-publish symbols it does not own).
  *
  * Preserved quirks (equivalence proof = the ported legacy vectors in `src/test/**`):
@@ -18,7 +18,7 @@
  * The engine drives these via `runRule` (the Tier-1 walk/dispatch driver in rules-core).
  */
 
-import type { Rule } from "@ts-doctor/rules-core-effect";
+import type { Rule } from "@ts-fix/rules-core-effect";
 
 import { rule as consistentTypeDefinitions } from "./consistent-type-definitions.js";
 import { rule as noArrayConstructor } from "./no-array-constructor.js";
@@ -71,6 +71,6 @@ export const namingIdiomsRules: ReadonlyArray<Rule> = [
   tripleEquals,
 ];
 
-// Self-barrel: `import { RulesNamingIdioms } from "@ts-doctor/rules-naming-idioms-effect"`
+// Self-barrel: `import { RulesNamingIdioms } from "@ts-fix/rules-naming-idioms-effect"`
 // resolves to this module's namespace. Additive — the named exports above stay the surface.
 export * as RulesNamingIdioms from "./index.js";

@@ -2,7 +2,7 @@
  * Characterization tests for `resolveExitCode` — RULE-030 (the resolver half).
  *
  * Written BEFORE the implementation; `../main/index.js` must make these pass and
- * must match the legacy oracle (`legacy/ts-doctor/.../exit-code.ts:56-60`) exactly.
+ * must match the legacy oracle (`legacy/ts-fix/.../exit-code.ts:56-60`) exactly.
  *
  * RULE-030 (resolver — precedence order is load-bearing):
  *   1. `hadError === true`  -> 1   (the run itself threw)

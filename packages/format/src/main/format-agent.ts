@@ -15,15 +15,15 @@
  * ── Effect-TS slice port ──────────────────────────────────────────────────────
  * Ported VERBATIM from `legacy/.../packages/core/src/format-agent.ts`. The two
  * deviations are pure plumbing, NOT behavior:
- *   1. `Diagnostic`/`FixKind`/`Tier` are imported from `@ts-doctor/contracts-effect`
- *      (the canonical de-vendored Schema types) instead of the legacy `@ts-doctor/rules`.
+ *   1. `Diagnostic`/`FixKind`/`Tier` are imported from `@ts-fix/contracts-effect`
+ *      (the canonical de-vendored Schema types) instead of the legacy `@ts-fix/rules`.
  *      The structural shapes are identical (proven by the contracts compat tests).
  *   2. The legacy `score` param was `Pick<ScoreResult, "score" | "label"> | null`;
  *      this slice does NOT depend on the score/engine slices, so the structural
  *      `{ score, label }` shape is inlined as a local type. RULE-032 sort logic is
  *      unchanged.
  */
-import type { Diagnostic, FixKind, Tier } from "@ts-doctor/contracts-effect";
+import type { Diagnostic, FixKind, Tier } from "@ts-fix/contracts-effect";
 
 /** One occurrence of a rule firing. */
 export interface AgentOccurrence {

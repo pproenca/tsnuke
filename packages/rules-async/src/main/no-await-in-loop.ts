@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { defineRule } from "@ts-doctor/rules-core-effect";
+import { defineRule } from "@ts-fix/rules-core-effect";
 
 /**
  * SYN — flag an `await` that sits (directly) inside a loop body. Awaiting per
@@ -14,8 +14,8 @@ import { defineRule } from "@ts-doctor/rules-core-effect";
  * outer loop.
  *
  * Ported VERBATIM from legacy
- * `packages/ts-doctor-rules/src/rules/async/no-await-in-loop.ts`; the only change is
- * importing `defineRule` from `@ts-doctor/rules-core-effect`.
+ * `packages/ts-fix-rules/src/rules/async/no-await-in-loop.ts`; the only change is
+ * importing `defineRule` from `@ts-fix/rules-core-effect`.
  */
 
 /** True iff `node` is a loop statement we care about. */

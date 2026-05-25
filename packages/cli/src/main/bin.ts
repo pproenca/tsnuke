@@ -10,7 +10,7 @@
  * What stays here (the carried exit-code contract — RULE-030, legacy `cli.ts:51-84`):
  *   - SIGINT / SIGTERM → exit 130.
  *   - stdout EPIPE (piped into `head` etc.) → exit 0, not a crash.
- *   - an uncaught error → exit 1 with `ts-doctor: <message>` on stderr (terse, like
+ *   - an uncaught error → exit 1 with `ts-fix: <message>` on stderr (terse, like
  *     legacy — NOT Effect's default pretty cause dump).
  *
  * `NodeRuntime.runMain` ALSO installs interrupt handling; the explicit signal handlers
@@ -42,7 +42,7 @@ installProcessEdge();
 
 /**
  * The runnable program: parse + dispatch + run, then map any failure to the legacy terse
- * `ts-doctor: <message>` + exit 1. `@effect/cli` `ValidationError`s (bad flags, RULE-028
+ * `ts-fix: <message>` + exit 1. `@effect/cli` `ValidationError`s (bad flags, RULE-028
  * rejections) are surfaced by the runtime's own reporting (non-zero exit); engine/tagged
  * failures are caught here so the message matches legacy's terse style.
  */
@@ -57,7 +57,7 @@ const program = run(process.argv).pipe(
       const failure = Cause.failureOption(cause);
       // `@effect/cli` already renders ValidationErrors (unknown/missing flags, RULE-028,
       // mutual-exclusivity) to the terminal as a clean usage message. Re-dumping the raw
-      // cause here only produced a redundant `ts-doctor: Error: {…JSON…}` line — so for a
+      // cause here only produced a redundant `ts-fix: Error: {…JSON…}` line — so for a
       // ValidationError we keep the library's output and just carry the non-zero exit.
       if (failure._tag === "Some" && ValidationError.isValidationError(failure.value)) {
         process.exitCode = 1;
@@ -70,7 +70,7 @@ const program = run(process.argv).pipe(
             : Cause.pretty(cause),
         onSuccess: () => "",
       });
-      process.stderr.write(`ts-doctor: ${message}\n`);
+      process.stderr.write(`ts-fix: ${message}\n`);
       process.exitCode = 1;
     }),
   ),

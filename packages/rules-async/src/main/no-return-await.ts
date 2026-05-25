@@ -1,6 +1,6 @@
 import ts from "typescript";
-import { defineRule } from "@ts-doctor/rules-core-effect";
-import type { RuleContext } from "@ts-doctor/rules-core-effect";
+import { defineRule } from "@ts-fix/rules-core-effect";
+import type { RuleContext } from "@ts-fix/rules-core-effect";
 
 /**
  * SYN — `return await x` is redundant: an `async` function already wraps its
@@ -12,8 +12,8 @@ import type { RuleContext } from "@ts-doctor/rules-core-effect";
  * return lives directly in a `try` block (before crossing a function boundary).
  *
  * Ported VERBATIM from legacy
- * `packages/ts-doctor-rules/src/rules/async/no-return-await.ts`; the only change is
- * importing `defineRule`/`RuleContext` from `@ts-doctor/rules-core-effect`.
+ * `packages/ts-fix-rules/src/rules/async/no-return-await.ts`; the only change is
+ * importing `defineRule`/`RuleContext` from `@ts-fix/rules-core-effect`.
  */
 
 /**

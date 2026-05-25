@@ -3,7 +3,7 @@
  * and the `<file>:<line>` parser — the PURE half of the CLI.
  *
  * ── Re-imagining note ────────────────────────────────────────────────────────────
- * Legacy hand-rolled `legacy/.../packages/ts-doctor/src/flags.ts` (323 LOC) with a
+ * Legacy hand-rolled `legacy/.../packages/ts-fix/src/flags.ts` (323 LOC) with a
  * bespoke argv `switch` (`parseInspectFlags`) plus a `validateModeFlags` gate. On
  * `@effect/cli`, argv→record parsing is the library's job (POSIX, auto-help,
  * completions), so `parseInspectFlags` is GONE — `inspectCommand.ts` declares the same

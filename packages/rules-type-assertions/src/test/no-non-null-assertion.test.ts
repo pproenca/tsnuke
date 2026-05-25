@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { runRule } from "@ts-doctor/rules-core-effect";
+import { runRule } from "@ts-fix/rules-core-effect";
 import { rule } from "../main/no-non-null-assertion.js";
 
 // Ported VERBATIM from legacy `.../type-assertions/no-non-null-assertion.test.ts`,

@@ -1,5 +1,5 @@
 /**
- * `@ts-doctor/security-effect` — public surface of the Effect-TS security slice.
+ * `@ts-fix/security-effect` — public surface of the Effect-TS security slice.
  *
  * Five pure security guards, FROZEN verbatim from react-doctor (domain-agnostic):
  *  - {@link validateGlobPattern} — glob ReDoS caps (RULE-014, BC-17)
@@ -34,7 +34,7 @@ export {
   type LoadedPlugin,
 } from "./Plugins.js";
 
-export type { TsDoctorConfig } from "./Config.js";
+export type { TsFixConfig } from "./Config.js";
 
-/** Self-barrel: `import { Security } from "@ts-doctor/security-effect"` resolves to this module's namespace. */
+/** Self-barrel: `import { Security } from "@ts-fix/security-effect"` resolves to this module's namespace. */
 export * as Security from "./index.js";

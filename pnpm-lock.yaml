@@ -10,10 +10,10 @@ importers:
 
   packages/build-report:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/score-effect':
+      '@ts-fix/score-effect':
         specifier: workspace:*
         version: link:../score
       effect:
@@ -32,7 +32,7 @@ importers:
 
   packages/capabilities:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
       effect:
@@ -66,25 +66,25 @@ importers:
       '@effect/printer-ansi':
         specifier: ^0.49.0
         version: 0.49.0(@effect/typeclass@0.40.0(effect@3.21.2))(effect@3.21.2)
-      '@ts-doctor/build-report-effect':
+      '@ts-fix/build-report-effect':
         specifier: workspace:*
         version: link:../build-report
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/engine-effect':
+      '@ts-fix/engine-effect':
         specifier: workspace:*
         version: link:../engine
-      '@ts-doctor/exit-code-effect':
+      '@ts-fix/exit-code-effect':
         specifier: workspace:*
         version: link:../exit-code
-      '@ts-doctor/fix-applier-effect':
+      '@ts-fix/fix-applier-effect':
         specifier: workspace:*
         version: link:../fix-applier
-      '@ts-doctor/format-effect':
+      '@ts-fix/format-effect':
         specifier: workspace:*
         version: link:../format
-      '@ts-doctor/rules-registry-effect':
+      '@ts-fix/rules-registry-effect':
         specifier: workspace:*
         version: link:../rules-registry
       effect:
@@ -153,10 +153,10 @@ importers:
       '@effect/platform-node':
         specifier: ^0.106.0
         version: 0.106.0(@effect/cluster@0.58.2(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/sql@0.51.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/workflow@0.18.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/sql@0.51.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(effect@3.21.2)
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/errors-effect':
+      '@ts-fix/errors-effect':
         specifier: workspace:*
         version: link:../errors
       effect:
@@ -184,40 +184,40 @@ importers:
       '@effect/platform-node':
         specifier: ^0.106.0
         version: 0.106.0(@effect/cluster@0.58.2(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/sql@0.51.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/workflow@0.18.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/sql@0.51.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(effect@3.21.2)
-      '@ts-doctor/capabilities-effect':
+      '@ts-fix/capabilities-effect':
         specifier: workspace:*
         version: link:../capabilities
-      '@ts-doctor/config-effect':
+      '@ts-fix/config-effect':
         specifier: workspace:*
         version: link:../config
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/discovery-effect':
+      '@ts-fix/discovery-effect':
         specifier: workspace:*
         version: link:../discovery
-      '@ts-doctor/engine-plan-effect':
+      '@ts-fix/engine-plan-effect':
         specifier: workspace:*
         version: link:../engine-plan
-      '@ts-doctor/errors-effect':
+      '@ts-fix/errors-effect':
         specifier: workspace:*
         version: link:../errors
-      '@ts-doctor/filter-pipeline-effect':
+      '@ts-fix/filter-pipeline-effect':
         specifier: workspace:*
         version: link:../filter-pipeline
-      '@ts-doctor/module-graph-effect':
+      '@ts-fix/module-graph-effect':
         specifier: workspace:*
         version: link:../module-graph
-      '@ts-doctor/rules-core-effect':
+      '@ts-fix/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
-      '@ts-doctor/rules-registry-effect':
+      '@ts-fix/rules-registry-effect':
         specifier: workspace:*
         version: link:../rules-registry
-      '@ts-doctor/scale-effect':
+      '@ts-fix/scale-effect':
         specifier: workspace:*
         version: link:../scale
-      '@ts-doctor/score-effect':
+      '@ts-fix/score-effect':
         specifier: workspace:*
         version: link:../score
       effect:
@@ -239,7 +239,7 @@ importers:
 
   packages/engine-plan:
     dependencies:
-      '@ts-doctor/capabilities-effect':
+      '@ts-fix/capabilities-effect':
         specifier: workspace:*
         version: link:../capabilities
       effect:
@@ -290,7 +290,7 @@ importers:
 
   packages/filter-pipeline:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
       effect:
@@ -315,7 +315,7 @@ importers:
       '@effect/platform-node':
         specifier: ^0.106.0
         version: 0.106.0(@effect/cluster@0.58.2(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/sql@0.51.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/workflow@0.18.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/sql@0.51.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(effect@3.21.2)
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
       effect:
@@ -334,7 +334,7 @@ importers:
 
   packages/format:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
       effect:
@@ -359,16 +359,16 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@4.4.3)
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/engine-effect':
+      '@ts-fix/engine-effect':
         specifier: workspace:*
         version: link:../engine
-      '@ts-doctor/format-effect':
+      '@ts-fix/format-effect':
         specifier: workspace:*
         version: link:../format
-      '@ts-doctor/rules-registry-effect':
+      '@ts-fix/rules-registry-effect':
         specifier: workspace:*
         version: link:../rules-registry
       effect:
@@ -393,7 +393,7 @@ importers:
 
   packages/module-graph:
     dependencies:
-      '@ts-doctor/rules-core-effect':
+      '@ts-fix/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -409,10 +409,10 @@ importers:
 
   packages/rules-async:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/rules-core-effect':
+      '@ts-fix/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -428,7 +428,7 @@ importers:
 
   packages/rules-core:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
       effect:
@@ -447,10 +447,10 @@ importers:
 
   packages/rules-declaration-api:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/rules-core-effect':
+      '@ts-fix/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -466,10 +466,10 @@ importers:
 
   packages/rules-error-handling:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/rules-core-effect':
+      '@ts-fix/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -485,10 +485,10 @@ importers:
 
   packages/rules-exhaustiveness:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/rules-core-effect':
+      '@ts-fix/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -504,10 +504,10 @@ importers:
 
   packages/rules-generics:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/rules-core-effect':
+      '@ts-fix/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -523,10 +523,10 @@ importers:
 
   packages/rules-graph:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/rules-core-effect':
+      '@ts-fix/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
     devDependencies:
@@ -542,10 +542,10 @@ importers:
 
   packages/rules-module-boundaries:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/rules-core-effect':
+      '@ts-fix/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -561,10 +561,10 @@ importers:
 
   packages/rules-naming-idioms:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/rules-core-effect':
+      '@ts-fix/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -580,46 +580,46 @@ importers:
 
   packages/rules-registry:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/rules-async-effect':
+      '@ts-fix/rules-async-effect':
         specifier: workspace:*
         version: link:../rules-async
-      '@ts-doctor/rules-core-effect':
+      '@ts-fix/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
-      '@ts-doctor/rules-declaration-api-effect':
+      '@ts-fix/rules-declaration-api-effect':
         specifier: workspace:*
         version: link:../rules-declaration-api
-      '@ts-doctor/rules-error-handling-effect':
+      '@ts-fix/rules-error-handling-effect':
         specifier: workspace:*
         version: link:../rules-error-handling
-      '@ts-doctor/rules-exhaustiveness-effect':
+      '@ts-fix/rules-exhaustiveness-effect':
         specifier: workspace:*
         version: link:../rules-exhaustiveness
-      '@ts-doctor/rules-generics-effect':
+      '@ts-fix/rules-generics-effect':
         specifier: workspace:*
         version: link:../rules-generics
-      '@ts-doctor/rules-graph-effect':
+      '@ts-fix/rules-graph-effect':
         specifier: workspace:*
         version: link:../rules-graph
-      '@ts-doctor/rules-module-boundaries-effect':
+      '@ts-fix/rules-module-boundaries-effect':
         specifier: workspace:*
         version: link:../rules-module-boundaries
-      '@ts-doctor/rules-naming-idioms-effect':
+      '@ts-fix/rules-naming-idioms-effect':
         specifier: workspace:*
         version: link:../rules-naming-idioms
-      '@ts-doctor/rules-security-effect':
+      '@ts-fix/rules-security-effect':
         specifier: workspace:*
         version: link:../rules-security
-      '@ts-doctor/rules-type-assertions-effect':
+      '@ts-fix/rules-type-assertions-effect':
         specifier: workspace:*
         version: link:../rules-type-assertions
-      '@ts-doctor/rules-type-performance-effect':
+      '@ts-fix/rules-type-performance-effect':
         specifier: workspace:*
         version: link:../rules-type-performance
-      '@ts-doctor/rules-type-safety-effect':
+      '@ts-fix/rules-type-safety-effect':
         specifier: workspace:*
         version: link:../rules-type-safety
       effect:
@@ -638,10 +638,10 @@ importers:
 
   packages/rules-security:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/rules-core-effect':
+      '@ts-fix/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -657,10 +657,10 @@ importers:
 
   packages/rules-type-assertions:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/rules-core-effect':
+      '@ts-fix/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -676,10 +676,10 @@ importers:
 
   packages/rules-type-performance:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/rules-core-effect':
+      '@ts-fix/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -695,10 +695,10 @@ importers:
 
   packages/rules-type-safety:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-doctor/rules-core-effect':
+      '@ts-fix/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -733,7 +733,7 @@ importers:
 
   packages/score:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
       effect:
@@ -752,7 +752,7 @@ importers:
 
   packages/security:
     dependencies:
-      '@ts-doctor/contracts-effect':
+      '@ts-fix/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
       effect:

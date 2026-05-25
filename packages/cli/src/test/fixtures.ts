@@ -5,15 +5,15 @@
  */
 
 import { Effect } from "effect";
-import type { Diagnostic, RuleMeta } from "@ts-doctor/contracts-effect";
-import type { DiagnoseResult, ProjectInfo } from "@ts-doctor/engine-effect";
-import type { ApplyFilesResult } from "@ts-doctor/fix-applier-effect";
+import type { Diagnostic, RuleMeta } from "@ts-fix/contracts-effect";
+import type { DiagnoseResult, ProjectInfo } from "@ts-fix/engine-effect";
+import type { ApplyFilesResult } from "@ts-fix/fix-applier-effect";
 import type { InspectIo } from "../main/inspectHandler.js";
 
 /** Build a sample diagnostic with overridable fields. */
 export const diag = (over: Partial<Diagnostic> = {}): Diagnostic => ({
   filePath: "/proj/src/a.ts",
-  plugin: "ts-doctor",
+  plugin: "ts-fix",
   rule: "no-any",
   severity: "warning",
   message: "Avoid `any`.",

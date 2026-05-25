@@ -1,17 +1,17 @@
 # Transformation Notes — `rules-core` substrate → Effect-TS
 
-Strangler-fig slice produced for the ts-doctor modernization. Builds the **rule
+Strangler-fig slice produced for the ts-fix modernization. Builds the **rule
 SUBSTRATE** (`defineRule` + rule context/visitor shape + registry + diagnostic
 identity) plus the AST-free `strictness` rule category (RULE-020) as the first
 proof-of-pattern — the foundation the ~88 rule predicates and the engine plug into.
 
-Source (READ-ONLY): `legacy/ts-doctor/packages/ts-doctor-rules/src/`
+Source (READ-ONLY): `legacy/ts-fix/packages/ts-fix-rules/src/`
 \— `define-rule.ts` (124→ substrate), `identity.ts` (BC-13), `types.ts`
 (`ModuleGraph`), `rules/strictness/{enable-strict, enable-no-unchecked-indexed-access,
 enable-exact-optional-property-types, enable-use-unknown-in-catch}.ts`.
-Target: `modernized/rules-core/effect/` (package `@ts-doctor/rules-core-effect`).
+Target: `modernized/rules-core/effect/` (package `@ts-fix/rules-core-effect`).
 
-This slice is the **FIRST NEW consumer of `@ts-doctor/contracts-effect`**: it
+This slice is the **FIRST NEW consumer of `@ts-fix/contracts-effect`**: it
 IMPORTS `Diagnostic` / `RuleMeta` (and transitively `Severity` / `Tier` / `FixKind` /
 `Fix` / `TextEdit` / `Capability`) from contracts rather than vendoring them —
 exactly the de-vendor direction the contracts package was created to enable.
@@ -31,9 +31,9 @@ import resolves and the equivalence proof holds (modern substrate === frozen leg
 
 ## 1. Mapping table (legacy → target, per behavior)
 
-| Behavior | Legacy `ts-doctor-rules/src/…` | Target |
+| Behavior | Legacy `ts-fix-rules/src/…` | Target |
 |----------|--------------------------------|--------|
-| `PLUGIN_NAME = "ts-doctor"` (BC-18) | `define-rule.ts:5` | `src/main/defineRule.ts` |
+| `PLUGIN_NAME = "ts-fix"` (BC-18) | `define-rule.ts:5` | `src/main/defineRule.ts` |
 | `ReportInput` (Omit/Partial shape) | `define-rule.ts:13-17` | `src/main/defineRule.ts` |
 | `RuleContext` (`sourceFile`/`checker?`/`filePath`/`report`) | `define-rule.ts:20-35` | `src/main/defineRule.ts` |
 | `RuleVisitors` (`{ [K in ts.SyntaxKind]?: … }`) | `define-rule.ts:38-40` | `src/main/defineRule.ts` |
@@ -51,15 +51,15 @@ import resolves and the equivalence proof holds (modern substrate === frozen leg
 | `enable-exact-optional-property-types` (RULE-020) | `rules/strictness/enable-exact-optional-property-types.ts` | same path |
 | `enable-use-unknown-in-catch` (RULE-020, dual gate) | `rules/strictness/enable-use-unknown-in-catch.ts` | same path |
 | rule registry (the 4 rules) | `rule-registry.generated.ts` (codegen) | `src/main/registry.ts` (manual v1 seam) |
-| `Diagnostic` / `RuleMeta` / `Severity` / `Tier` / `FixKind` | `types.ts` (owned by rules) | **imported** from `@ts-doctor/contracts-effect` |
+| `Diagnostic` / `RuleMeta` / `Severity` / `Tier` / `FixKind` | `types.ts` (owned by rules) | **imported** from `@ts-fix/contracts-effect` |
 
 ---
 
 ## 2. Deliberate deviations from legacy
 
 ### D1 — Import `Diagnostic` / `RuleMeta` from contracts instead of vendoring ✅
-Legacy `ts-doctor-rules` OWNED these types in `types.ts`. The modernization
-consolidated the cross-cutting domain contracts into `@ts-doctor/contracts-effect`
+Legacy `ts-fix-rules` OWNED these types in `types.ts`. The modernization
+consolidated the cross-cutting domain contracts into `@ts-fix/contracts-effect`
 (the score / filter-pipeline / build-report slices each vendored identical copies).
 This slice is the **first NEW consumer**: it imports `Diagnostic` / `RuleMeta` from
 contracts (and transitively the `Severity` / `Tier` / `FixKind` / `Fix` / `TextEdit`
@@ -157,16 +157,16 @@ stay strongly non-optional. Pinned by `createRuleContext.test.ts`
 ## 5. Toolchain / housekeeping notes
 
 - **`file:` workspace dependency:** `package.json` declares
-  `"@ts-doctor/contracts-effect": "file:../../contracts/effect"`. `pnpm install` links
-  it; the package-name import (`from "@ts-doctor/contracts-effect"`) resolves to the
+  `"@ts-fix/contracts-effect": "file:../../contracts/effect"`. `pnpm install` links
+  it; the package-name import (`from "@ts-fix/contracts-effect"`) resolves to the
   contracts slice's `src/main/index.ts` (its `exports` entry). This is the same
-  `file:`-dep pattern build-report uses for `@ts-doctor/score-effect`.
+  `file:`-dep pattern build-report uses for `@ts-fix/score-effect`.
 - **`typescript` is a real DEPENDENCY (not devDependency):** the substrate's context
   types wrap the TS compiler API (`ts.SourceFile` / `ts.TypeChecker` / `ts.SyntaxKind`
   / `ts.Node`), so `typescript` is part of the public type surface and consumers need
   it at type-check time. Imported as `import type ts from "typescript"` (type-only).
 - **Vitest `.ts`-dependency transpile:** `vitest.config.ts` sets
-  `test.server.deps.inline: ["@ts-doctor/contracts-effect"]` so esbuild compiles the
+  `test.server.deps.inline: ["@ts-fix/contracts-effect"]` so esbuild compiles the
   dependency's TypeScript at test time (otherwise Vitest tries to load the `.ts` entry
   as pre-built and fails to parse it). Same fix as build-report's score dep.
 - **`pnpm-workspace.yaml`** approves the `esbuild` build (vitest needs it), matching
@@ -217,6 +217,6 @@ would emit. **No changes required.**
   `legacy/`. Deferred as a dedicated test-infra pass (not a per-slice quick fix).
 
 **Recorded (LOW):** post-de-vendor, a few capabilities doc comments / test prose still
-say "vendored contract" where it is now imported from `@ts-doctor/contracts-effect`
+say "vendored contract" where it is now imported from `@ts-fix/contracts-effect`
 (accuracy only); `capabilities` barrel additively exposes `decodeRuleMeta` (harmless,
 `engine-plan` doesn't use it).

@@ -22,7 +22,7 @@
  */
 
 import { Array as Arr, Option } from "effect";
-import type { Diagnostic } from "@ts-doctor/contracts-effect";
+import type { Diagnostic } from "@ts-fix/contracts-effect";
 import {
   ERROR_RULE_PENALTY,
   PERFECT_SCORE,

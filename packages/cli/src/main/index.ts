@@ -1,8 +1,8 @@
 /**
- * `@ts-doctor/cli-effect` — public surface of the user-facing CLI, re-imagined on
+ * `ts-fix` — public surface of the user-facing CLI, re-imagined on
  * `@effect/cli`.
  *
- * The CLI is normally invoked via the `ts-doctor` bin (`bin.ts`); this barrel exports the
+ * The CLI is normally invoked via the `ts-fix` bin (`bin.ts`); this barrel exports the
  * testable building blocks so the behavioral contract can be exercised without spawning a
  * process:
  *   - the command tree (`command`, `run`) and the per-command `Command`s,
@@ -51,6 +51,6 @@ export {
   type PlannedWrite,
 } from "./installHandler.js";
 
-// ── Self-barrel: lets `import { Cli } from "@ts-doctor/cli-effect"` resolve to the
+// ── Self-barrel: lets `import { Cli } from "ts-fix"` resolve to the
 //    module namespace, while the named re-exports above stay for direct imports. ──
 export * as Cli from "./index.js";

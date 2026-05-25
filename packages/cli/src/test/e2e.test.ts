@@ -1,5 +1,5 @@
 /**
- * Full end-to-end `ts-doctor <dir>` runs through the `@effect/cli` command tree against a
+ * Full end-to-end `ts-fix <dir>` runs through the `@effect/cli` command tree against a
  * REAL temp TS project, with a capturing Terminal Layer (so stdout is asserted, not
  * spawned). Proves the whole pipe — POSIX parse → `inspect` handler → engine `diagnose`
  * → output → exit code — works as one wired unit.
@@ -31,7 +31,7 @@ let dir: string;
 let savedExitCode: typeof process.exitCode;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "tsdoctor-e2e-"));
+  dir = mkdtempSync(join(tmpdir(), "tsfix-e2e-"));
   savedExitCode = process.exitCode;
   process.exitCode = undefined;
 });
@@ -45,12 +45,12 @@ const runCli = async (argv: readonly string[]): Promise<string> => {
   const env = e2eLayer();
   // `@effect/cli` strips the node/script prefix, so prepend two placeholders.
   await Effect.runPromise(
-    run(["node", "ts-doctor", ...argv]).pipe(Effect.provide(env.layer)),
+    run(["node", "ts-fix", ...argv]).pipe(Effect.provide(env.layer)),
   );
   return env.output.join("");
 };
 
-describe("end-to-end: ts-doctor <dir>", () => {
+describe("end-to-end: ts-fix <dir>", () => {
   it("CLEAN project + --score → score line + exit 0", async () => {
     writeFileSync(join(dir, "tsconfig.json"), STRICT_TSCONFIG);
     mkdirSync(join(dir, "src"));
@@ -100,8 +100,8 @@ describe("end-to-end: ts-doctor <dir>", () => {
 
   it("install subcommand dispatch → writes stub files, exit 0", async () => {
     await runCli(["install", "--cwd", dir]);
-    expect(readFileSync(join(dir, ".agent/skills/ts-doctor/SKILL.md"), "utf8")).toContain(
-      "name: ts-doctor",
+    expect(readFileSync(join(dir, ".agent/skills/ts-fix/SKILL.md"), "utf8")).toContain(
+      "name: ts-fix",
     );
     expect(readFileSync(join(dir, ".git/hooks/pre-push"), "utf8")).toContain("exit 0");
     expect(process.exitCode).toBe(0);
@@ -110,7 +110,7 @@ describe("end-to-end: ts-doctor <dir>", () => {
   it("--help (auto-help, a new @effect/cli capability) succeeds, doesn't crash", async () => {
     const env = e2eLayer();
     const exit = await Effect.runPromiseExit(
-      run(["node", "ts-doctor", "--help"]).pipe(Effect.provide(env.layer)),
+      run(["node", "ts-fix", "--help"]).pipe(Effect.provide(env.layer)),
     );
     // `@effect/cli` renders built-in help to its own console sink; we only assert the
     // program resolves cleanly (help is the library's job, new vs the hand-rolled parser).
@@ -120,7 +120,7 @@ describe("end-to-end: ts-doctor <dir>", () => {
   it("an unknown flag is rejected by the POSIX parser", async () => {
     const env = e2eLayer();
     const exit = await Effect.runPromiseExit(
-      run(["node", "ts-doctor", "--definitely-not-a-flag"]).pipe(Effect.provide(env.layer)),
+      run(["node", "ts-fix", "--definitely-not-a-flag"]).pipe(Effect.provide(env.layer)),
     );
     expect(Exit.isFailure(exit)).toBe(true);
   });
@@ -149,7 +149,7 @@ describe("regression: boolean tri-state defaults (real argv parse)", () => {
     // The directive on line 1 suppresses `no-explicit-any` on line 2 (the `any`).
     writeFileSync(
       join(dir, "src", "bad.ts"),
-      "// ts-doctor-disable-next-line no-explicit-any\n" +
+      "// ts-fix-disable-next-line no-explicit-any\n" +
         "export function f(x: any): number {\n  return Number(x);\n}\n",
     );
   };
@@ -181,7 +181,7 @@ describe("regression: boolean tri-state defaults (real argv parse)", () => {
     writeCleanProject();
     const env = e2eLayer();
     const exit = await Effect.runPromiseExit(
-      run(["node", "ts-doctor", dir, "--deep", "--no-deep"]).pipe(Effect.provide(env.layer)),
+      run(["node", "ts-fix", dir, "--deep", "--no-deep"]).pipe(Effect.provide(env.layer)),
     );
     expect(Exit.isFailure(exit)).toBe(true);
   });
@@ -214,7 +214,7 @@ describe("regression: boolean tri-state defaults (real argv parse)", () => {
 // ── Regression: engine errors must reach the FAIL channel, not the DIE channel ────────
 // The production `diagnose` seam wraps `diagnoseNode` — which REJECTS on a non-TS
 // directory (`TsconfigNotFoundError`). It was wired with `Effect.promise`, routing the
-// rejection to the DIE channel; `bin.ts` extracts its terse `ts-doctor: <message>` via
+// rejection to the DIE channel; `bin.ts` extracts its terse `ts-fix: <message>` via
 // `Cause.failureOption` (the FAIL channel only), so a die fell through to the raw
 // `Cause.pretty` dump — `(FiberFailure) TsconfigNotFoundError: … \n  at file://…cli.js:NNN`.
 // The fix uses `Effect.tryPromise({ catch: (e) => e })` so the original `Error` lands in
@@ -226,7 +226,7 @@ describe("regression: engine error reaches the fail channel (real diagnoseNode)"
     // No tsconfig.json written — `diagnoseNode` rejects with `TsconfigNotFoundError`.
     const env = e2eLayer();
     const exit = await Effect.runPromiseExit(
-      run(["node", "ts-doctor", dir]).pipe(Effect.provide(env.layer)),
+      run(["node", "ts-fix", dir]).pipe(Effect.provide(env.layer)),
     );
     expect(Exit.isFailure(exit)).toBe(true);
     if (Exit.isFailure(exit)) {
@@ -241,7 +241,7 @@ describe("regression: engine error reaches the fail channel (real diagnoseNode)"
   it("the surfaced failure is an Error whose .message is bin.ts-printable (clean, no cause dump)", async () => {
     const env = e2eLayer();
     const exit = await Effect.runPromiseExit(
-      run(["node", "ts-doctor", dir]).pipe(Effect.provide(env.layer)),
+      run(["node", "ts-fix", dir]).pipe(Effect.provide(env.layer)),
     );
     expect(Exit.isFailure(exit)).toBe(true);
     if (Exit.isFailure(exit)) {
@@ -249,12 +249,12 @@ describe("regression: engine error reaches the fail channel (real diagnoseNode)"
       expect(failure._tag).toBe("Some");
       if (failure._tag === "Some") {
         // Replicates bin.ts's extraction: an `Error` failure → its `.message` is printed
-        // verbatim as `ts-doctor: <message>`. Assert it's the clean human message, with
+        // verbatim as `ts-fix: <message>`. Assert it's the clean human message, with
         // none of the `Cause.pretty` leakage (`FiberFailure`, an internal stack frame).
         expect(failure.value).toBeInstanceOf(Error);
         const message = (failure.value as Error).message;
         expect(message).toContain("No tsconfig.json found");
-        expect(message).toContain("ts-doctor analyzes TypeScript projects only");
+        expect(message).toContain("ts-fix analyzes TypeScript projects only");
         expect(message).not.toContain("FiberFailure");
         expect(message).not.toMatch(/\bat .*cli\.js:/);
       }

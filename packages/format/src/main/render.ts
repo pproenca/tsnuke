@@ -7,10 +7,10 @@
  * Pure: returns a string. The CLI edge writes it to stdout.
  *
  * ── Effect-TS slice port ──────────────────────────────────────────────────────
- * Ported VERBATIM from `legacy/.../packages/ts-doctor/src/render.ts`. Deviations
+ * Ported VERBATIM from `legacy/.../packages/ts-fix/src/render.ts`. Deviations
  * are pure plumbing, NOT behavior:
- *   1. `Diagnostic` is imported from `@ts-doctor/contracts-effect` (the canonical
- *      de-vendored Schema type) instead of the legacy `@ts-doctor/rules`.
+ *   1. `Diagnostic` is imported from `@ts-fix/contracts-effect` (the canonical
+ *      de-vendored Schema type) instead of the legacy `@ts-fix/rules`.
  *   2. The score input keeps the LEGACY structural `ScoreResult` shape
  *      `{ score; label; partial }` (legacy `core/types.ts`) — render is a PURE
  *      consumer of a structural input and does NOT depend on the engine/score
@@ -20,7 +20,7 @@
  *      `scorePartial` boolean param, exactly as in the legacy signature. The
  *      output strings are preserved byte-for-byte.
  */
-import type { Diagnostic } from "@ts-doctor/contracts-effect";
+import type { Diagnostic } from "@ts-fix/contracts-effect";
 
 /**
  * The legacy `ScoreResult` structural shape (legacy `core/types.ts`). Render is a

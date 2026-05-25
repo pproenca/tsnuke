@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Diagnostic } from "@ts-doctor/contracts-effect";
+import type { Diagnostic } from "@ts-fix/contracts-effect";
 import { formatAgentReport } from "../main/index.js";
 import { frozenFormatAgentReport, type FrozenDiagnostic } from "./legacy-frozen.js";
 
@@ -7,7 +7,7 @@ import { frozenFormatAgentReport, type FrozenDiagnostic } from "./legacy-frozen.
 function diag(over: Partial<Diagnostic> & Pick<Diagnostic, "rule">): Diagnostic {
   return {
     filePath: "/repo/src/a.ts",
-    plugin: "ts-doctor",
+    plugin: "ts-fix",
     severity: "warning",
     message: `msg-${over.rule}`,
     help: `help-${over.rule}`,
@@ -149,12 +149,12 @@ describe("equivalence vs frozen legacy formatAgentReport", () => {
   // Crafted inputs that exercise dedup, all three fix kinds + no-fix, every tier,
   // multiple categories, repo-root stripping, occurrence sort, and the null score.
   const crafted: FrozenDiagnostic[] = [
-    { filePath: "/repo/src/z.ts", plugin: "ts-doctor", rule: "syn-cm", severity: "warning", message: "m1", help: "h1", line: 10, column: 4, category: "Zeta", tier: "SYN", fix: { kind: "codemod", edits: [] } },
-    { filePath: "/repo/src/a.ts", plugin: "ts-doctor", rule: "syn-cm", severity: "warning", message: "m1", help: "h1", line: 2, column: 1, category: "Zeta", tier: "SYN", fix: { kind: "codemod", edits: [] } },
-    { filePath: "/repo/src/a.ts", plugin: "ts-doctor", rule: "syn-af", severity: "error", message: "m2", help: "h2", url: "https://x.test", line: 1, column: 1, category: "Alpha", tier: "SYN", fix: { kind: "auto-fix", edits: [] } },
-    { filePath: "/repo/src/b.ts", plugin: "ts-doctor", rule: "typ-x", severity: "warning", message: "m3", help: "h3", line: 3, column: 7, category: "Alpha", tier: "TYP" },
-    { filePath: "/repo/src/c.ts", plugin: "ts-doctor", rule: "graph-y", severity: "warning", message: "m4", help: "h4", line: 4, column: 2, category: "Mid", tier: "GRAPH", fix: { kind: "manual", edits: [] } },
-    { filePath: "/repo/src/d.ts", plugin: "ts-doctor", rule: "cfg-z", severity: "error", message: "m5", help: "h5", line: 5, column: 9, category: "Mid", tier: "CFG" },
+    { filePath: "/repo/src/z.ts", plugin: "ts-fix", rule: "syn-cm", severity: "warning", message: "m1", help: "h1", line: 10, column: 4, category: "Zeta", tier: "SYN", fix: { kind: "codemod", edits: [] } },
+    { filePath: "/repo/src/a.ts", plugin: "ts-fix", rule: "syn-cm", severity: "warning", message: "m1", help: "h1", line: 2, column: 1, category: "Zeta", tier: "SYN", fix: { kind: "codemod", edits: [] } },
+    { filePath: "/repo/src/a.ts", plugin: "ts-fix", rule: "syn-af", severity: "error", message: "m2", help: "h2", url: "https://x.test", line: 1, column: 1, category: "Alpha", tier: "SYN", fix: { kind: "auto-fix", edits: [] } },
+    { filePath: "/repo/src/b.ts", plugin: "ts-fix", rule: "typ-x", severity: "warning", message: "m3", help: "h3", line: 3, column: 7, category: "Alpha", tier: "TYP" },
+    { filePath: "/repo/src/c.ts", plugin: "ts-fix", rule: "graph-y", severity: "warning", message: "m4", help: "h4", line: 4, column: 2, category: "Mid", tier: "GRAPH", fix: { kind: "manual", edits: [] } },
+    { filePath: "/repo/src/d.ts", plugin: "ts-fix", rule: "cfg-z", severity: "error", message: "m5", help: "h5", line: 5, column: 9, category: "Mid", tier: "CFG" },
   ];
 
   const ported = crafted as unknown as Diagnostic[];

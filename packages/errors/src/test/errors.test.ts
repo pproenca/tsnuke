@@ -5,7 +5,7 @@
  * `../main/index.js` is written AFTER these tests and must make them pass.
  *
  * RULE-037: a discovery failure is a typed, discriminated error carrying a
- * `_tag` ∈ {TsDoctorError, ProjectNotFoundError, NoTypeScriptProjectError,
+ * `_tag` ∈ {TsFixError, ProjectNotFoundError, NoTypeScriptProjectError,
  * TsconfigNotFoundError, AmbiguousProjectError}. It propagates to the CLI (exit 1)
  * or to `serializeError` (`report.ok = false`), which flattens the `.cause` chain.
  *
@@ -17,7 +17,7 @@
  *   1. each error is `instanceof Error`;
  *   2. `_tag` AND `name` equal the legacy strings ("ProjectNotFoundError" etc.);
  *   3. `cause` lands on the NATIVE `.cause` property and is retrievable;
- *   4. `isTsDoctorError` is true for all five tags, false otherwise;
+ *   4. `isTsFixError` is true for all five tags, false otherwise;
  *   5. each carries a `message`.
  *
  * The differential proof against a vendored frozen copy of the legacy classes
@@ -29,10 +29,10 @@ import {
   AmbiguousProjectError,
   NoTypeScriptProjectError,
   ProjectNotFoundError,
-  TS_DOCTOR_ERROR_TAGS,
+  TS_FIX_ERROR_TAGS,
   TsconfigNotFoundError,
-  TsDoctorError,
-  isTsDoctorError,
+  TsFixError,
+  isTsFixError,
 } from "../main/index.js";
 
 /**
@@ -40,7 +40,7 @@ import {
  * is one `[tag, factory]` so the contract is asserted uniformly across all five.
  */
 const cases = [
-  ["TsDoctorError", (m: string, o?: { cause?: unknown }) => new TsDoctorError(m, o)],
+  ["TsFixError", (m: string, o?: { cause?: unknown }) => new TsFixError(m, o)],
   ["ProjectNotFoundError", (m: string, o?: { cause?: unknown }) => new ProjectNotFoundError(m, o)],
   ["NoTypeScriptProjectError", (m: string, o?: { cause?: unknown }) => new NoTypeScriptProjectError(m, o)],
   ["TsconfigNotFoundError", (m: string, o?: { cause?: unknown }) => new TsconfigNotFoundError(m, o)],
@@ -54,26 +54,26 @@ describe("RULE-037 — five discriminant tags exist with exact tag/name values",
     expect(e.name).toBe(tag);
   });
 
-  it("TS_DOCTOR_ERROR_TAGS stays in lockstep with the exported classes (drift guard)", () => {
+  it("TS_FIX_ERROR_TAGS stays in lockstep with the exported classes (drift guard)", () => {
     // The `_tag`-membership guard replaced the legacy shared-base `instanceof` (D2), so the
     // set and the exported classes are two sources of truth. Adding a 6th error (a new
     // `cases` row) without updating the set — or leaving a stale tag in it — fails HERE,
-    // so `isTsDoctorError` can't silently drift from `AnyTsDoctorError` (architecture review).
-    expect(TS_DOCTOR_ERROR_TAGS.size).toBe(cases.length);
+    // so `isTsFixError` can't silently drift from `AnyTsFixError` (architecture review).
+    expect(TS_FIX_ERROR_TAGS.size).toBe(cases.length);
     for (const [tag] of cases) {
-      expect(TS_DOCTOR_ERROR_TAGS.has(tag)).toBe(true);
+      expect(TS_FIX_ERROR_TAGS.has(tag)).toBe(true);
     }
   });
 
-  it("TS_DOCTOR_ERROR_TAGS lists exactly the five legacy tags", () => {
+  it("TS_FIX_ERROR_TAGS lists exactly the five legacy tags", () => {
     // Frozen tag set is what the structural guard discriminates on (RULE-037).
-    expect([...TS_DOCTOR_ERROR_TAGS].sort()).toStrictEqual(
+    expect([...TS_FIX_ERROR_TAGS].sort()).toStrictEqual(
       [
         "AmbiguousProjectError",
         "NoTypeScriptProjectError",
         "ProjectNotFoundError",
         "TsconfigNotFoundError",
-        "TsDoctorError",
+        "TsFixError",
       ].sort(),
     );
   });
@@ -125,14 +125,14 @@ describe("RULE-037 — cause lands on the NATIVE .cause property (serializeError
   });
 });
 
-describe("RULE-037 — isTsDoctorError discriminates all five tags (serializeError dependency #4)", () => {
-  it.each(cases)("isTsDoctorError(%s) === true", (_tag, make) => {
-    expect(isTsDoctorError(make("boom"))).toBe(true);
+describe("RULE-037 — isTsFixError discriminates all five tags (serializeError dependency #4)", () => {
+  it.each(cases)("isTsFixError(%s) === true", (_tag, make) => {
+    expect(isTsFixError(make("boom"))).toBe(true);
   });
 
-  it("isTsDoctorError narrows the type to TsDoctorError union", () => {
+  it("isTsFixError narrows the type to TsFixError union", () => {
     const value: unknown = new AmbiguousProjectError("two matched");
-    if (isTsDoctorError(value)) {
+    if (isTsFixError(value)) {
       // type-level: `value._tag` must be accessible after the guard.
       expect(value._tag).toBe("AmbiguousProjectError");
     } else {
@@ -140,15 +140,15 @@ describe("RULE-037 — isTsDoctorError discriminates all five tags (serializeErr
     }
   });
 
-  it("isTsDoctorError(false) for non-errors and foreign errors", () => {
-    expect(isTsDoctorError(undefined)).toBe(false);
-    expect(isTsDoctorError(null)).toBe(false);
-    expect(isTsDoctorError(42)).toBe(false);
-    expect(isTsDoctorError("ProjectNotFoundError")).toBe(false);
-    expect(isTsDoctorError(new Error("plain"))).toBe(false);
-    expect(isTsDoctorError({ _tag: "ProjectNotFoundError" })).toBe(false);
-    expect(isTsDoctorError({})).toBe(false);
+  it("isTsFixError(false) for non-errors and foreign errors", () => {
+    expect(isTsFixError(undefined)).toBe(false);
+    expect(isTsFixError(null)).toBe(false);
+    expect(isTsFixError(42)).toBe(false);
+    expect(isTsFixError("ProjectNotFoundError")).toBe(false);
+    expect(isTsFixError(new Error("plain"))).toBe(false);
+    expect(isTsFixError({ _tag: "ProjectNotFoundError" })).toBe(false);
+    expect(isTsFixError({})).toBe(false);
     // a foreign tagged error with an unknown _tag must NOT match
-    expect(isTsDoctorError(new Error("x") as unknown)).toBe(false);
+    expect(isTsFixError(new Error("x") as unknown)).toBe(false);
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule, runTypeAwareRule } from "@ts-doctor/rules-core-effect";
+import { runRule, runTypeAwareRule } from "@ts-fix/rules-core-effect";
 import { rule } from "../main/no-misused-promises.js";
 
 describe("no-misused-promises (TYP / BC-10) — RULE-025 async", () => {
@@ -54,7 +54,7 @@ describe("no-misused-promises (TYP / BC-10) — RULE-025 async", () => {
     expect(diags).toHaveLength(1);
     const d = diags[0]!;
     expect(d.category).toBe("Async / Promises");
-    expect(d.plugin).toBe("ts-doctor");
+    expect(d.plugin).toBe("ts-fix");
     expect(d.message).toBe(
       "Promise used as a condition: a Promise is always truthy (missing `await`?).",
     );

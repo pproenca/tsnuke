@@ -1,14 +1,14 @@
 /**
- * COMPATIBILITY / SUPERSET PROOF — canonical `TsDoctorConfig` family vs the legacy
+ * COMPATIBILITY / SUPERSET PROOF — canonical `TsFixConfig` family vs the legacy
  * type AND all three vendored copies (RULE-024 / RULE-040).
  *
  * Three slices vendor a config contract today:
- *   - config slice:          the FULL TsDoctorConfig (all 6 fields) — already canonical.
+ *   - config slice:          the FULL TsFixConfig (all 6 fields) — already canonical.
  *   - filter-pipeline slice:  a 3-field SUBSET (ignore/rules/categories), and its
  *                             IgnoreConfig omits `tags`.
  *   - security slice:         the BARE `{ plugins?: readonly string[] }` (one field).
  *
- * The canonical TsDoctorConfig here is the FULL legacy contract (`core/types.ts:151-164`).
+ * The canonical TsFixConfig here is the FULL legacy contract (`core/types.ts:151-164`).
  * These tests PIN that it accepts every shape all three vendored copies produce — so
  * filter-pipeline and security can de-vendor onto it — and rejects out-of-contract values.
  *
@@ -25,7 +25,7 @@ import {
   FailOn,
   IgnoreConfig,
   IgnoreOverride,
-  TsDoctorConfig,
+  TsFixConfig,
 } from "../main/index.js";
 
 const decode = <A, I>(s: Schema.Schema<A, I>) => Schema.decodeUnknownEither(s);
@@ -84,14 +84,14 @@ describe("IgnoreOverride / IgnoreConfig — canonical superset of both vendored 
   });
 });
 
-describe("TsDoctorConfig — canonical FULL config is a SUPERSET of legacy + all 3 vendored copies", () => {
+describe("TsFixConfig — canonical FULL config is a SUPERSET of legacy + all 3 vendored copies", () => {
   it("accepts the empty `{}` config (the no-op identity all copies accept)", () => {
-    expect(accepts(TsDoctorConfig, {})).toBe(true);
+    expect(accepts(TsFixConfig, {})).toBe(true);
   });
 
   it("accepts the FULL legacy shape (all 6 fields present)", () => {
     expect(
-      accepts(TsDoctorConfig, {
+      accepts(TsFixConfig, {
         ignore: {
           rules: ["no-ts-ignore"],
           files: ["dist/**"],
@@ -108,10 +108,10 @@ describe("TsDoctorConfig — canonical FULL config is a SUPERSET of legacy + all
   });
 
   it("accepts the filter-pipeline SUBSET shape (only ignore/rules/categories) — de-vendor proof", () => {
-    // filter-pipeline's vendored TsDoctorConfig has exactly these 3 fields; prove the
+    // filter-pipeline's vendored TsFixConfig has exactly these 3 fields; prove the
     // narrower shape is valid under the full canonical config.
     expect(
-      accepts(TsDoctorConfig, {
+      accepts(TsFixConfig, {
         ignore: { rules: ["no-ts-ignore"], files: ["dist/**"] },
         rules: { "no-ts-ignore": "off" },
         categories: { types: "warn" },
@@ -120,29 +120,29 @@ describe("TsDoctorConfig — canonical FULL config is a SUPERSET of legacy + all
   });
 
   it("accepts the security SUBSET shape (only `{ plugins }`) — de-vendor proof", () => {
-    // security's vendored TsDoctorConfig is `{ plugins?: readonly string[] }`.
-    expect(accepts(TsDoctorConfig, { plugins: ["@scope/plugin", "./local-plugin.js"] })).toBe(true);
-    expect(accepts(TsDoctorConfig, { plugins: [] })).toBe(true);
-    expect(accepts(TsDoctorConfig, {})).toBe(true); // plugins omitted
+    // security's vendored TsFixConfig is `{ plugins?: readonly string[] }`.
+    expect(accepts(TsFixConfig, { plugins: ["@scope/plugin", "./local-plugin.js"] })).toBe(true);
+    expect(accepts(TsFixConfig, { plugins: [] })).toBe(true);
+    expect(accepts(TsFixConfig, {})).toBe(true); // plugins omitted
   });
 
   it("rejects out-of-contract values", () => {
     // rules/categories use CONFIG vocab — "warning" (engine spelling) is invalid there.
-    expect(rejects(TsDoctorConfig, { rules: { r: "warning" } })).toBe(true);
+    expect(rejects(TsFixConfig, { rules: { r: "warning" } })).toBe(true);
     // failOn uses ENGINE vocab — "warn" (config spelling) is invalid there.
-    expect(rejects(TsDoctorConfig, { failOn: "warn" })).toBe(true);
+    expect(rejects(TsFixConfig, { failOn: "warn" })).toBe(true);
     // plugins must be strings.
-    expect(rejects(TsDoctorConfig, { plugins: [1, 2] })).toBe(true);
+    expect(rejects(TsFixConfig, { plugins: [1, 2] })).toBe(true);
     // customRulesOnly must be boolean.
-    expect(rejects(TsDoctorConfig, { customRulesOnly: "yes" })).toBe(true);
+    expect(rejects(TsFixConfig, { customRulesOnly: "yes" })).toBe(true);
     // ignore.overrides entry must carry files.
-    expect(rejects(TsDoctorConfig, { ignore: { overrides: [{ rules: ["r"] }] } })).toBe(true);
+    expect(rejects(TsFixConfig, { ignore: { overrides: [{ rules: ["r"] }] } })).toBe(true);
   });
 });
 
-describe("TsDoctorConfig — round-trip decode(encode(x)) === x", () => {
+describe("TsFixConfig — round-trip decode(encode(x)) === x", () => {
   it("round-trips a representative full config", () => {
-    const value: typeof TsDoctorConfig.Type = {
+    const value: typeof TsFixConfig.Type = {
       ignore: {
         rules: ["no-ts-ignore"],
         files: ["dist/**"],
@@ -155,14 +155,14 @@ describe("TsDoctorConfig — round-trip decode(encode(x)) === x", () => {
       rules: { "no-ts-ignore": "error", "no-explicit-any": "warn" },
       categories: { types: "off" },
     };
-    const decoded = Schema.decodeSync(TsDoctorConfig)(Schema.encodeSync(TsDoctorConfig)(value));
+    const decoded = Schema.decodeSync(TsFixConfig)(Schema.encodeSync(TsFixConfig)(value));
     expect(decoded).toStrictEqual(value);
   });
 
   it("round-trips the empty config", () => {
-    const value: typeof TsDoctorConfig.Type = {};
+    const value: typeof TsFixConfig.Type = {};
     expect(
-      Schema.decodeSync(TsDoctorConfig)(Schema.encodeSync(TsDoctorConfig)(value)),
+      Schema.decodeSync(TsFixConfig)(Schema.encodeSync(TsFixConfig)(value)),
     ).toStrictEqual(value);
   });
 });

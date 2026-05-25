@@ -13,7 +13,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import type { Tier } from "@ts-doctor/contracts-effect";
+import type { Tier } from "@ts-fix/contracts-effect";
 
 import {
   graphRuleRegistry,

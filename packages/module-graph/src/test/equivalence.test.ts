@@ -4,7 +4,7 @@
  * No legacy `.test.ts` existed for `module-graph.ts`, so "equivalence" cannot mean
  * "re-run the legacy tests". Instead we pin the modern `buildModuleGraph` against a
  * vendored, frozen snapshot of the legacy algorithm itself (`./oracle.ts`, a verbatim
- * copy of `legacy/ts-doctor/packages/core/src/module-graph.ts` + helpers `candidatesFor`
+ * copy of `legacy/ts-fix/packages/core/src/module-graph.ts` + helpers `candidatesFor`
  * / `exportedNamesOfStatement`). For every crafted fixture we assert modern === oracle,
  * comparing the full `ModuleGraph` DEEPLY: the `imports`/`exports` arrays (order-sensitive,
  * since edges are encounter-ordered) and the `usedExports`/`wildcardUsed` Set contents
@@ -20,7 +20,7 @@ import { buildModuleGraph } from "../main/buildModuleGraph.js";
 import type { GraphFileInput } from "../main/buildModuleGraph.js";
 import { buildModuleGraphOracle } from "./oracle.js";
 import type { OracleModuleGraph } from "./oracle.js";
-import type { ModuleGraph } from "@ts-doctor/rules-core-effect";
+import type { ModuleGraph } from "@ts-fix/rules-core-effect";
 
 // ---------------------------------------------------------------------------
 // Deep, structure-aware comparison of two ModuleGraphs (Map/Set aware).

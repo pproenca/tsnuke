@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-doctor/rules-core-effect";
+import { runRule } from "@ts-fix/rules-core-effect";
 import { rule } from "../main/generic-param-count-budget.js";
 
 describe("SYN rule — generic-param-count-budget (RULE-007)", () => {
@@ -35,7 +35,7 @@ describe("SYN rule — generic-param-count-budget (RULE-007)", () => {
     expect(d.tier).toBe("SYN");
     expect(d.severity).toBe("warning");
     expect(d.category).toBe("Generics & Type-Level Complexity");
-    expect(d.plugin).toBe("ts-doctor");
+    expect(d.plugin).toBe("ts-fix");
     expect(d.message).toBe(
       "Too many type parameters: 5 declared (budget is 4).",
     );

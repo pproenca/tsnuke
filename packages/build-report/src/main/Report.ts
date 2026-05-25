@@ -9,7 +9,7 @@
  * values of these schema types but are not themselves `Effect`-wrapped.
  *
  * VENDORED from legacy `packages/core/src/types.ts` (`JsonReportV1` family). These
- * report-aggregation types are OWNED by `@ts-doctor/core`; vendored here so the
+ * report-aggregation types are OWNED by `@ts-fix/core`; vendored here so the
  * slice is self-contained — DE-VENDOR as a follow-up when the core Effect slice lands.
  *
  * ⚠ WIRE-COMPAT (RULE-034): `JsonReportSummary.scoreLabel` keeps the legacy WIRE
@@ -19,7 +19,7 @@
  */
 
 import { Schema } from "effect";
-import { Diagnostic } from "@ts-doctor/contracts-effect";
+import { Diagnostic } from "@ts-fix/contracts-effect";
 
 /** The report schema version. Bump (and add a new union arm) on breaking change (RULE-034). */
 export const JSON_REPORT_SCHEMA_VERSION = 1 as const;

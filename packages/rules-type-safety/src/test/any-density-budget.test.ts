@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-doctor/rules-core-effect";
+import { runRule } from "@ts-fix/rules-core-effect";
 import { rule } from "../main/any-density-budget.js";
 
 // Ported VERBATIM from legacy `.../type-safety/any-density-budget.test.ts`, then

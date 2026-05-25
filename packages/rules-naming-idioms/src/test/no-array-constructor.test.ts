@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-doctor/rules-core-effect";
+import { runRule } from "@ts-fix/rules-core-effect";
 import { rule } from "../main/no-array-constructor.js";
 
 // Ported VERBATIM from legacy `.../naming-idioms/no-array-constructor.test.ts`.

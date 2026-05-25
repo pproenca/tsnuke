@@ -1,8 +1,8 @@
 /**
- * `@ts-doctor/config-effect` — public surface of the Effect-TS config slice.
+ * `@ts-fix/config-effect` — public surface of the Effect-TS config slice.
  *
  * RULE-024 (lenient config loading, drop-not-throw) END-TO-END over the
- * `TsDoctorConfig` contract (RULE-040 severity vocabulary):
+ * `TsFixConfig` contract (RULE-040 severity vocabulary):
  *   - PURE core: `sanitizeConfig` (`sanitize.ts`) — total synchronous validation.
  *   - EFFECTFUL loader: `loadConfig`/`loadConfigWithWarnings` (`loadConfig.ts`) —
  *     the FIRST genuinely-effectful slice, an `Effect<...>` over `@effect/platform`
@@ -21,7 +21,7 @@ export {
   FailOn,
   IgnoreConfig,
   IgnoreOverride,
-  TsDoctorConfig,
+  TsFixConfig,
 } from "./Config.js";
 
 export type { SanitizeResult } from "./sanitize.js";

@@ -26,7 +26,7 @@ describe("runRule (SYN AST driver)", () => {
     );
     const out = runRule(rule, "const a = 1;\nconst b = 2;");
     expect(out).toHaveLength(2);
-    expect(out[0]?.plugin).toBe("ts-doctor"); // forced by createRuleContext
+    expect(out[0]?.plugin).toBe("ts-fix"); // forced by createRuleContext
     expect(out[0]?.rule).toBe("test-stmt"); // defaulted from meta.id
   });
 
@@ -107,7 +107,7 @@ describe("runGraphRule (GRAPH driver — whole-graph analyze)", () => {
     );
     const out = runGraphRule(rule, graph(["/a.ts", "/b.ts"], []));
     expect(out).toHaveLength(2);
-    expect(out[0]?.plugin).toBe("ts-doctor"); // forced
+    expect(out[0]?.plugin).toBe("ts-fix"); // forced
     expect(out[0]?.tier).toBe("GRAPH"); // defaulted from meta
     expect(out.map((d) => d.filePath)).toEqual(["/a.ts", "/b.ts"]);
   });

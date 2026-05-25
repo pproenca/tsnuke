@@ -1,11 +1,11 @@
 /**
- * `@ts-doctor/mcp-effect` — public surface of the ts-doctor MCP server slice.
+ * `@ts-fix/mcp-effect` — public surface of the ts-fix MCP server slice.
  *
  * The MCP (Model Context Protocol) server exposes the linter to coding agents (the
  * primary consumer, per the AI-native design) over three tools:
- *   - `ts_doctor_diagnose(directory, deep?)` → agent-tuned report + score
- *   - `ts_doctor_explain(rule)`              → offline rule explanation
- *   - `ts_doctor_list_rules()`               → the rule catalog
+ *   - `ts_fix_diagnose(directory, deep?)` → agent-tuned report + score
+ *   - `ts_fix_explain(rule)`              → offline rule explanation
+ *   - `ts_fix_list_rules()`               → the rule catalog
  *
  * Two layers, faithfully ported from legacy `packages/mcp`:
  *   - `tools.ts` — the PURE, SDK-free handlers, rewired onto the modern engine/format/
@@ -43,5 +43,5 @@ export {
 // ---- SDK wiring (stdio McpServer) ----
 export { createServer, main } from "./server.js";
 
-// ---- Self-barrel: the module's namespace (`import { Mcp } from "@ts-doctor/mcp-effect"`) ----
+// ---- Self-barrel: the module's namespace (`import { Mcp } from "@ts-fix/mcp-effect"`) ----
 export * as Mcp from "./index.js";

@@ -8,7 +8,7 @@ export default defineConfig({
     // the per-test timeout so the real-compile cases run reliably (they assert real engine
     // output end-to-end). Unit/handler tests are unaffected (they finish in ms).
     testTimeout: 60000,
-    // EVERY `@ts-doctor/*` dependency the CLI consumes is a `file:` link whose entry
+    // EVERY `@ts-fix/*` dependency the CLI consumes is a `file:` link whose entry
     // point is a `.ts` file (`exports: "./src/main/index.ts"`). Inline ALL of them — plus
     // their full transitive `.ts`-entry closure — so Vitest's esbuild transform compiles
     // their TypeScript at test time instead of trying to load them as pre-built deps
@@ -19,39 +19,39 @@ export default defineConfig({
       deps: {
         inline: [
           // Direct deps the CLI imports.
-          "@ts-doctor/build-report-effect",
-          "@ts-doctor/contracts-effect",
-          "@ts-doctor/engine-effect",
-          "@ts-doctor/exit-code-effect",
-          "@ts-doctor/fix-applier-effect",
-          "@ts-doctor/format-effect",
-          "@ts-doctor/rules-registry-effect",
+          "@ts-fix/build-report-effect",
+          "@ts-fix/contracts-effect",
+          "@ts-fix/engine-effect",
+          "@ts-fix/exit-code-effect",
+          "@ts-fix/fix-applier-effect",
+          "@ts-fix/format-effect",
+          "@ts-fix/rules-registry-effect",
           // Transitive: the engine + build-report pull these in.
-          "@ts-doctor/capabilities-effect",
-          "@ts-doctor/config-effect",
-          "@ts-doctor/discovery-effect",
-          "@ts-doctor/engine-plan-effect",
-          "@ts-doctor/errors-effect",
-          "@ts-doctor/filter-pipeline-effect",
-          "@ts-doctor/module-graph-effect",
-          "@ts-doctor/rules-core-effect",
-          "@ts-doctor/scale-effect",
-          "@ts-doctor/score-effect",
+          "@ts-fix/capabilities-effect",
+          "@ts-fix/config-effect",
+          "@ts-fix/discovery-effect",
+          "@ts-fix/engine-plan-effect",
+          "@ts-fix/errors-effect",
+          "@ts-fix/filter-pipeline-effect",
+          "@ts-fix/module-graph-effect",
+          "@ts-fix/rules-core-effect",
+          "@ts-fix/scale-effect",
+          "@ts-fix/score-effect",
           // Transitive: every per-category rule slice the registry aggregates (each a
           // `.ts`-entry `file:` dep). Without these, importing `ruleRegistry` /
           // `graphRuleRegistry` would fail to parse their `.ts` sources at test time.
-          "@ts-doctor/rules-type-performance-effect",
-          "@ts-doctor/rules-declaration-api-effect",
-          "@ts-doctor/rules-security-effect",
-          "@ts-doctor/rules-naming-idioms-effect",
-          "@ts-doctor/rules-generics-effect",
-          "@ts-doctor/rules-type-assertions-effect",
-          "@ts-doctor/rules-async-effect",
-          "@ts-doctor/rules-error-handling-effect",
-          "@ts-doctor/rules-type-safety-effect",
-          "@ts-doctor/rules-exhaustiveness-effect",
-          "@ts-doctor/rules-module-boundaries-effect",
-          "@ts-doctor/rules-graph-effect",
+          "@ts-fix/rules-type-performance-effect",
+          "@ts-fix/rules-declaration-api-effect",
+          "@ts-fix/rules-security-effect",
+          "@ts-fix/rules-naming-idioms-effect",
+          "@ts-fix/rules-generics-effect",
+          "@ts-fix/rules-type-assertions-effect",
+          "@ts-fix/rules-async-effect",
+          "@ts-fix/rules-error-handling-effect",
+          "@ts-fix/rules-type-safety-effect",
+          "@ts-fix/rules-exhaustiveness-effect",
+          "@ts-fix/rules-module-boundaries-effect",
+          "@ts-fix/rules-graph-effect",
         ],
       },
     },

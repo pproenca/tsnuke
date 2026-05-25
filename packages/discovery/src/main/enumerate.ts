@@ -1,7 +1,7 @@
 /**
  * Source-file enumeration over the `@effect/platform` `FileSystem` service
  * (RULE-012: source-file discovery caps). Source of truth (READ-ONLY):
- * `legacy/ts-doctor/packages/core/src/discover-ts-project.ts:111-153` (`countSourceFiles`,
+ * `legacy/ts-fix/packages/core/src/discover-ts-project.ts:111-153` (`countSourceFiles`,
  * cap 5000) and `:174-207` (`collectSourceFiles`, cap 10000).
  *
  * Both are an ITERATIVE DFS (an explicit stack — no recursion-depth limit on deep

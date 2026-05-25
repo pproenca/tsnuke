@@ -14,7 +14,7 @@
 
 import { describe, expect, it } from "vitest";
 import { applyFixes, groupFixesByFile } from "../main/applyFixes.js";
-import type { Diagnostic, Fix, TextEdit } from "@ts-doctor/contracts-effect";
+import type { Diagnostic, Fix, TextEdit } from "@ts-fix/contracts-effect";
 
 /** Build an `auto-fix` Fix from a list of edits. */
 const autoFix = (...edits: TextEdit[]): Fix => ({ kind: "auto-fix", edits });
@@ -188,7 +188,7 @@ describe("applyFixes — equal-start ties resolve by descending end (pass-1 only
 // ===========================================================================
 const diag = (filePath: string, fix?: Fix): Diagnostic => ({
   filePath,
-  plugin: "ts-doctor",
+  plugin: "ts-fix",
   rule: "r",
   severity: "warning",
   message: "m",

@@ -1,6 +1,6 @@
 import ts from "typescript";
-import { defineRule } from "@ts-doctor/rules-core-effect";
-import type { RuleContext } from "@ts-doctor/rules-core-effect";
+import { defineRule } from "@ts-fix/rules-core-effect";
+import type { RuleContext } from "@ts-fix/rules-core-effect";
 
 /**
  * TYP (Tier-2, type-aware) — flag passing an `any`-typed value into a typed

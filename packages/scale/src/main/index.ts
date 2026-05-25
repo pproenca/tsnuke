@@ -1,7 +1,7 @@
 /**
- * `@ts-doctor/scale-effect` — public surface of the Effect-TS scale slice.
+ * `@ts-fix/scale-effect` — public surface of the Effect-TS scale slice.
  *
- * Two cleanly-separated halves of ts-doctor's scale guard:
+ * Two cleanly-separated halves of ts-fix's scale guard:
  *
  *  - **RULE-013 — Tier-2 memory-ceiling guard** ({@link ./memory.ts}): a PURE,
  *    synchronous decision over injected RSS. NOT `Effect`-wrapped (no IO to
@@ -25,6 +25,6 @@ export {
 
 export { scopedProgram, withProgram } from "./scope.js";
 
-// Self-barrel: lets consumers `import { Scale } from "@ts-doctor/scale-effect"` and
+// Self-barrel: lets consumers `import { Scale } from "@ts-fix/scale-effect"` and
 // reach the whole slice as a namespace, alongside the named re-exports above.
 export * as Scale from "./index.js";

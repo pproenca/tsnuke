@@ -1,4 +1,4 @@
-import { defineGraphRule } from "@ts-doctor/rules-core-effect";
+import { defineGraphRule } from "@ts-fix/rules-core-effect";
 
 /**
  * GRAPH — flag circular import dependencies between modules (RULE-015).
@@ -10,8 +10,8 @@ import { defineGraphRule } from "@ts-doctor/rules-core-effect";
  * each file that closes a cycle is reported once (at line 1).
  *
  * Ported VERBATIM from legacy
- * `packages/ts-doctor-rules/src/rules/module-boundaries/no-import-cycles.ts`; the only
- * change is importing `defineGraphRule` from the `@ts-doctor/rules-core-effect` substrate
+ * `packages/ts-fix-rules/src/rules/module-boundaries/no-import-cycles.ts`; the only
+ * change is importing `defineGraphRule` from the `@ts-fix/rules-core-effect` substrate
  * rather than the legacy `../../define-rule.js`. The analyze body — the 3-color DFS and the
  * report-the-cycle-target-once-at-line-1 logic — is unchanged.
  */

@@ -1,6 +1,6 @@
 # Characterization tests — `engine-plan` module (Effect-TS target)
 
-These tests **define "done"** for the Effect-TS rewrite of `ts-doctor`'s PURE
+These tests **define "done"** for the Effect-TS rewrite of `ts-fix`'s PURE
 two-tier engine planner (`planEngineRun`, **RULE-018** — the partial-honesty
 contract, the single most behavior-defining rule in the system). They were
 written *before* the implementation. The implementation lives at
@@ -10,7 +10,7 @@ specifiers, per the legacy convention; the `Bundler` moduleResolution in
 **RED**, and that is the correct starting state.
 
 The legacy module is the oracle
-(`legacy/ts-doctor/packages/core/src/engine-plan.ts`, read-only). We are proving
+(`legacy/ts-fix/packages/core/src/engine-plan.ts`, read-only). We are proving
 *equivalence first*; this slice has **zero intentional behavioral deviations**
 (the only structural change is consuming the capabilities slice's
 `resolveSeverity` instead of legacy's byte-identical private copy).
@@ -20,7 +20,7 @@ The legacy module is the oracle
 | Rule | What | File |
 |------|------|------|
 | RULE-018 | Two-tier eligibility & `typecheck:ok` gate; partial-honesty | `planEngineRun.test.ts`, `equivalence.test.ts` |
-| RULE-019/020 | Activation predicate (consumed from `@ts-doctor/capabilities-effect`) | exercised via the REAL `shouldActivate` |
+| RULE-019/020 | Activation predicate (consumed from `@ts-fix/capabilities-effect`) | exercised via the REAL `shouldActivate` |
 
 ## The partial-honesty contract (preserve EXACTLY)
 
@@ -50,7 +50,7 @@ The legacy module is the oracle
 3. Each cell asserts the FULL `EnginePlan` deep-equals (`toStrictEqual`):
    `tier1 / tier2 / tier2Enabled / skippedCheckReasons / skippedChecks / scorePartial`.
 4. Run with **BOTH** the REAL `shouldActivate` (from the consumed
-   `@ts-doctor/capabilities-effect` slice) AND a trivial injected predicate
+   `@ts-fix/capabilities-effect` slice) AND a trivial injected predicate
    (`() => true`). Expected divergence: **0** in every cell.
 
 ## Running
@@ -76,13 +76,13 @@ import {
 import type {
   EnginePlan,
   SeverityOverrides,    // ReadonlyMap<string, Severity | "off">
-  ActivatePredicate,    // matches @ts-doctor/capabilities-effect#shouldActivate
+  ActivatePredicate,    // matches @ts-fix/capabilities-effect#shouldActivate
   RuleMeta, Severity, Capability, // re-exported from the consumed capabilities slice
 } from "../main/index.js";
 ```
 
 - `RuleMeta`/`Severity`/`Capability` are **re-exported** from
-  `@ts-doctor/capabilities-effect` (not re-vendored). `Tier` is derived as
+  `@ts-fix/capabilities-effect` (not re-vendored). `Tier` is derived as
   `RuleMeta["tier"]`.
 - `planEngineRun` is a **plain synchronous pure function** — NOT `Effect`-wrapped.
 - The activation predicate is **INJECTED** so the planner is testable in isolation;

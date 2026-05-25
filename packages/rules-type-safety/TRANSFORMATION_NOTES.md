@@ -1,9 +1,9 @@
 # Transformation Notes — `type-safety` rule category → Effect-TS
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-doctor type-safety effect`.
-Source (READ-ONLY): `legacy/ts-doctor/packages/ts-doctor-rules/src/rules/type-safety/**`
+Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix type-safety effect`.
+Source (READ-ONLY): `legacy/ts-fix/packages/ts-fix-rules/src/rules/type-safety/**`
 (6 SYN rules + 6 TYP rules + their colocated `*.test.ts` behavioral specs). Target:
-`modernized/rules-type-safety/effect/` (package `@ts-doctor/rules-type-safety-effect`).
+`modernized/rules-type-safety/effect/` (package `@ts-fix/rules-type-safety-effect`).
 
 Implements **RULE-006** (`any` density budget, >5 / file, exclusive) and the
 **RULE-025** type-safety row (per-rule detection predicates for the `type-safety`
@@ -16,7 +16,7 @@ substrate's own design).
 
 **Result:** 72/72 characterization tests pass across 13 files · `tsc --noEmit` clean
 under `strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes`. Both `file:`
-deps (`@ts-doctor/rules-core-effect`, `@ts-doctor/contracts-effect`) link and inline
+deps (`@ts-fix/rules-core-effect`, `@ts-fix/contracts-effect`) link and inline
 correctly under Vitest's esbuild transform. The 6 TYP rules run through
 `runTypeAwareRule` (real one-file `ts.Program` + live `ts.TypeChecker`); the 6 SYN rules
 run through `runRule`. Each TYP rule is also proven inert under `runRule` (no checker).
@@ -58,9 +58,9 @@ TYP rules, the 1-based `line + 1` / `column + 1`, and the message + help text. T
 edit applied to each rule file was the import rewrite:
 
   - `import { defineRule } from "../../define-rule.js"` →
-    `import { defineRule } from "@ts-doctor/rules-core-effect"`
+    `import { defineRule } from "@ts-fix/rules-core-effect"`
   - `import type { RuleContext } from "../../define-rule.js"` →
-    `import type { RuleContext } from "@ts-doctor/rules-core-effect"` (the 4 rules that
+    `import type { RuleContext } from "@ts-fix/rules-core-effect"` (the 4 rules that
     take a shared `RuleContext`-typed helper: `no-record-string-unknown`,
     `no-unknown-return`, `no-wrapper-object-types`, `prefer-type-guard-predicate`,
     `no-unsafe-argument`, `no-unsafe-member-access`).
@@ -86,13 +86,13 @@ help, 1-based position). What changed is purely structural:
 
 1. **Substrate is consumed, not vendored.** Legacy rules imported `defineRule` /
    `RuleContext` from a sibling file (`../../define-rule.js`). Here they import them from
-   `@ts-doctor/rules-core-effect`, and the `Diagnostic`/`RuleMeta` contracts live in
-   `@ts-doctor/contracts-effect`. This slice is a CONSUMER of both `file:` deps and does
+   `@ts-fix/rules-core-effect`, and the `Diagnostic`/`RuleMeta` contracts live in
+   `@ts-fix/contracts-effect`. This slice is a CONSUMER of both `file:` deps and does
    not re-publish or re-vendor any of their symbols (barrel hygiene — `src/main/index.ts`
    exports only the 12 rules + the `typeSafetyRules` bundle).
 
 2. **Drivers come from rules-core.** Tests import `runRule` (SYN) and `runTypeAwareRule`
-   (TYP) from `@ts-doctor/rules-core-effect` instead of the legacy
+   (TYP) from `@ts-fix/rules-core-effect` instead of the legacy
    `../../test-utils.js`. These are the SAME walk/dispatch the engine uses, so the tests
    exercise the production path, not a test-only fork. The TYP rules run under a real
    one-file `ts.Program` built with the default lib, so the checker resolves `Promise`,

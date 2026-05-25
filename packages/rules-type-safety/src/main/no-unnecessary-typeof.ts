@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { defineRule } from "@ts-doctor/rules-core-effect";
+import { defineRule } from "@ts-fix/rules-core-effect";
 
 /**
  * TYP — flag a `typeof x === "..."` comparison the type system already settles:

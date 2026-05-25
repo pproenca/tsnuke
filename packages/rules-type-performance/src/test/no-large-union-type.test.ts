@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-doctor/rules-core-effect";
+import { runRule } from "@ts-fix/rules-core-effect";
 import { rule } from "../main/no-large-union-type.js";
 
 // 13 string-literal members — over MAX_UNION_MEMBERS = 12. (Legacy vector.)
@@ -33,7 +33,7 @@ describe("no-large-union-type (SYN) — RULE-008", () => {
     expect(d.tier).toBe("SYN");
     expect(d.severity).toBe("warning");
     expect(d.category).toBe("Type Performance");
-    expect(d.plugin).toBe("ts-doctor");
+    expect(d.plugin).toBe("ts-fix");
     expect(d.message).toBe(
       "Very large union type `T` (13 members) slows type instantiation.",
     );

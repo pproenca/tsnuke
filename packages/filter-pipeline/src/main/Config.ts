@@ -2,9 +2,9 @@
  * Config contract for the filter pipeline — DE-VENDORED.
  *
  * This slice previously VENDORED a 3-field subset (`ignore`/`rules`/`categories`) of
- * legacy `TsDoctorConfig` plus `ConfigSeverity`/`IgnoreConfig`/`IgnoreOverride`. Those
- * are now consolidated in `@ts-doctor/contracts-effect` (the canonical `effect/Schema`
- * home), whose `TsDoctorConfig` is a proven structural SUPERSET of the old subset — so
+ * legacy `TsFixConfig` plus `ConfigSeverity`/`IgnoreConfig`/`IgnoreOverride`. Those
+ * are now consolidated in `@ts-fix/contracts-effect` (the canonical `effect/Schema`
+ * home), whose `TsFixConfig` is a proven structural SUPERSET of the old subset — so
  * every existing read (`config.rules` / `config.categories` / `config.ignore`) still
  * typechecks unchanged. Re-exported here to preserve the public surface and keep the
  * `./Config.js` import paths stable across the slice.
@@ -21,5 +21,5 @@ export {
   ConfigSeverity,
   IgnoreOverride,
   IgnoreConfig,
-  TsDoctorConfig,
-} from "@ts-doctor/contracts-effect";
+  TsFixConfig,
+} from "@ts-fix/contracts-effect";

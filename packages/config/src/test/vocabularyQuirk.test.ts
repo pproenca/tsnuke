@@ -1,7 +1,7 @@
 /**
  * The `warn` ↔ `warning` vocabulary quirk — RULE-040 (config severity vocabulary).
  *
- * ts-doctor speaks TWO severity vocabularies in the config contract, and
+ * ts-fix speaks TWO severity vocabularies in the config contract, and
  * `sanitizeConfig` MUST preserve both verbatim:
  *
  *   - `failOn`            uses the ENGINE vocab:  "error" | "warning" | "none"

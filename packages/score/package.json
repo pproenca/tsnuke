@@ -1,7 +1,7 @@
 {
-  "name": "@ts-doctor/score-effect",
+  "name": "@ts-fix/score-effect",
   "version": "0.1.0",
-  "description": "Effect-native rewrite of ts-doctor's local health scoring (RULE-001/002/003/041). Strangler-fig slice — pure functions on the Effect ecosystem (Schema/Option/branded types).",
+  "description": "Effect-native rewrite of ts-fix's local health scoring (RULE-001/002/003/041). Strangler-fig slice — pure functions on the Effect ecosystem (Schema/Option/branded types).",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ts-doctor/contracts-effect": "workspace:*",
+    "@ts-fix/contracts-effect": "workspace:*",
     "effect": "^3.21.2"
   },
   "devDependencies": {

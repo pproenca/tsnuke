@@ -1,7 +1,7 @@
 /**
- * `@ts-doctor/rules-module-boundaries-effect` — the `module-boundaries` SYN rule category.
+ * `@ts-fix/rules-module-boundaries-effect` — the `module-boundaries` SYN rule category.
  *
- * Three pure AST predicates that plug into the `@ts-doctor/rules-core-effect` substrate
+ * Three pure AST predicates that plug into the `@ts-fix/rules-core-effect` substrate
  * (`defineRule` + the per-file `SyntaxKind → visitor` shape); the engine drives them via
  * the SAME walk/dispatch as `runRule`:
  *   - {@link noDeepRelativeImport} (RULE-011) — import/export whose specifier has >= 4
@@ -10,8 +10,8 @@
  *   - {@link publicApiMustBeExplicit} — wildcard re-export `export * from "..."`.
  *
  * The substrate (`defineRule`/`runRule`/`Rule`/`RuleContext`) is imported from
- * `@ts-doctor/rules-core-effect`; the data contracts (`Diagnostic`/`RuleMeta`) live in
- * `@ts-doctor/contracts-effect`. This slice does NOT re-export either's symbols (barrel
+ * `@ts-fix/rules-core-effect`; the data contracts (`Diagnostic`/`RuleMeta`) live in
+ * `@ts-fix/contracts-effect`. This slice does NOT re-export either's symbols (barrel
  * hygiene — it publishes only what it owns: the three rules + the category registry).
  *
  * DEFERRED: the category's fourth rule, `no-import-cycles` (tier GRAPH), is NOT migrated
@@ -19,7 +19,7 @@
  * + a GRAPH driver that land in a later batch. See TRANSFORMATION_NOTES.md §4.
  */
 
-import type { Rule } from "@ts-doctor/rules-core-effect";
+import type { Rule } from "@ts-fix/rules-core-effect";
 
 import { rule as noDeepRelativeImport } from "./no-deep-relative-import.js";
 import { rule as noDefaultExport } from "./no-default-export.js";
@@ -42,6 +42,6 @@ export const moduleBoundariesRules: ReadonlyArray<Rule> = [
   publicApiMustBeExplicit,
 ];
 
-// Self-barrel: `import { RulesModuleBoundaries } from "@ts-doctor/rules-module-boundaries-effect"`
+// Self-barrel: `import { RulesModuleBoundaries } from "@ts-fix/rules-module-boundaries-effect"`
 // resolves to this module's namespace. Additive — the named exports above stay the surface.
 export * as RulesModuleBoundaries from "./index.js";

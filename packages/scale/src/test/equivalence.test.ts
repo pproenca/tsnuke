@@ -32,7 +32,7 @@ import {
 // ===========================================================================
 
 // ---------------------------------------------------------------------------
-// ORACLE: Frozen copy of legacy/ts-doctor/packages/core/src/scale.ts:110-125.
+// ORACLE: Frozen copy of legacy/ts-fix/packages/core/src/scale.ts:110-125.
 // For differential testing ONLY — do not "fix" it.
 // ---------------------------------------------------------------------------
 const LEGACY_DEFAULT_TIER2_MEMORY_CEILING_BYTES = 2_000_000_000;
@@ -101,7 +101,7 @@ describe("equivalence — RULE-013: exhaustive boundary grid, ZERO divergence", 
 // ===========================================================================
 
 // ---------------------------------------------------------------------------
-// ORACLE: Frozen copy of legacy/ts-doctor/packages/core/src/scale.ts:58-103
+// ORACLE: Frozen copy of legacy/ts-fix/packages/core/src/scale.ts:58-103
 // (withDisposable + withDisposableProgram, the hand-rolled using/try-finally).
 // For differential testing ONLY.
 // ---------------------------------------------------------------------------

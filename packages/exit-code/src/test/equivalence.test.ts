@@ -28,7 +28,7 @@ import type { ExitCodeInputs, Severity } from "../main/index.js";
 
 // ---------------------------------------------------------------------------
 // ORACLE: Frozen verbatim copy of
-//   legacy/ts-doctor/packages/ts-doctor/src/exit-code.ts:18-60
+//   legacy/ts-fix/packages/ts-fix/src/exit-code.ts:18-60
 // (the gate + resolver). For differential testing ONLY — do not "fix" it. The
 // only edits from the original are: inlining the `FailOn` literal type and the
 // `Pick<Diagnostic,"severity">` shape so the oracle is self-contained.

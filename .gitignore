@@ -4,3 +4,4 @@ coverage/
 *.tsbuildinfo
 .turbo/
 .DS_Store
+.claude/

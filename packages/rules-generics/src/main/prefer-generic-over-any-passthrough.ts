@@ -1,6 +1,6 @@
 import ts from "typescript";
-import { defineRule } from "@ts-doctor/rules-core-effect";
-import type { RuleContext } from "@ts-doctor/rules-core-effect";
+import { defineRule } from "@ts-fix/rules-core-effect";
+import type { RuleContext } from "@ts-fix/rules-core-effect";
 
 /**
  * TYP — a function with an `any`-typed parameter that flows to an `any` return
@@ -14,9 +14,9 @@ import type { RuleContext } from "@ts-doctor/rules-core-effect";
  * return type is `any`. Requires the checker (to see inferred `any` returns).
  *
  * Ported VERBATIM from legacy
- * `packages/ts-doctor-rules/src/rules/generics/prefer-generic-over-any-passthrough.ts`;
+ * `packages/ts-fix-rules/src/rules/generics/prefer-generic-over-any-passthrough.ts`;
  * the only change is importing `defineRule` / `RuleContext` from the
- * `@ts-doctor/rules-core-effect` substrate rather than the legacy `../../define-rule.js`.
+ * `@ts-fix/rules-core-effect` substrate rather than the legacy `../../define-rule.js`.
  * The legacy `ctx.checker === undefined` early-return guard is preserved exactly — the
  * engine drives this rule on the `typecheck:ok` path that supplies `ctx.checker` (the
  * `runTypeAwareRule` driver in tests).

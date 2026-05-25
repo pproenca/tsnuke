@@ -28,7 +28,7 @@ import { buildReport, serializeError } from "../main/index.js";
 import type { BuildReportInput, Diagnostic } from "../main/index.js";
 
 // ===========================================================================
-// ORACLE — frozen copy of legacy/ts-doctor/packages/core/src/score.ts:72-92.
+// ORACLE — frozen copy of legacy/ts-fix/packages/core/src/score.ts:72-92.
 // scoreLabel + summarizeMonorepoScore. For differential testing ONLY.
 // (Legacy scoreLabel returns plain `string`; the half-UP rounding lives in
 //  legacy computeScore which is NOT used here — build-report MINs already-rounded
@@ -58,7 +58,7 @@ function legacySummarizeMonorepoScore(
 }
 
 // ===========================================================================
-// ORACLE — frozen copy of legacy/ts-doctor/packages/core/src/build-report.ts:50-124.
+// ORACLE — frozen copy of legacy/ts-fix/packages/core/src/build-report.ts:50-124.
 // serializeError / summarize / buildReport. For differential testing ONLY — do
 // not "fix" it; it defines legacy behavior we are proving equivalence to.
 // ===========================================================================
@@ -148,7 +148,7 @@ function diag(
   over: Partial<Diagnostic> & Pick<Diagnostic, "rule" | "severity" | "filePath">,
 ): Diagnostic {
   return {
-    plugin: "ts-doctor",
+    plugin: "ts-fix",
     message: `msg-${seq++}`,
     help: "h",
     line: 1,

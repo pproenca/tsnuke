@@ -1,6 +1,6 @@
 import ts from "typescript";
-import { defineRule } from "@ts-doctor/rules-core-effect";
-import type { RuleContext } from "@ts-doctor/rules-core-effect";
+import { defineRule } from "@ts-fix/rules-core-effect";
+import type { RuleContext } from "@ts-fix/rules-core-effect";
 
 /**
  * SYN — flag a `throw` or `return` inside a `finally` block. Either one

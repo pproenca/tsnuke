@@ -1,10 +1,10 @@
 # Transformation Notes — module-graph builder → Effect-TS
 
 Strangler-fig slice produced by
-`/code-modernization:modernize-transform ts-doctor module-graph effect`.
+`/code-modernization:modernize-transform ts-fix module-graph effect`.
 
-Source (READ-ONLY): `legacy/ts-doctor/packages/core/src/module-graph.ts` (215 lines).
-Target: `modernized/module-graph/effect/` (package `@ts-doctor/module-graph-effect`).
+Source (READ-ONLY): `legacy/ts-fix/packages/core/src/module-graph.ts` (215 lines).
+Target: `modernized/module-graph/effect/` (package `@ts-fix/module-graph-effect`).
 
 Transforms the GRAPH-tier **module-graph builder** `buildModuleGraph(files)` — the pure
 function that assembles the cross-file `ModuleGraph` the GRAPH rules (e.g. RULE-015
@@ -14,7 +14,7 @@ set.
 
 **Result:** 45/45 tests pass (32 characterization + 13 differential-equivalence) ·
 `tsc --noEmit` clean under `strict` + `noUncheckedIndexedAccess` +
-`exactOptionalPropertyTypes` + `verbatimModuleSyntax` · the `@ts-doctor/rules-core-effect`
+`exactOptionalPropertyTypes` + `verbatimModuleSyntax` · the `@ts-fix/rules-core-effect`
 `file:` dep links and the `ModuleGraph` type import resolves.
 
 ---
@@ -27,7 +27,7 @@ set.
 | `interface GraphFileInput` (`{ filePath; text }`) | `src/main/buildModuleGraph.ts` → exported `GraphFileInput` (defined HERE) |
 | `candidatesFor(base)` (extension/index candidates + `.js`→`.ts` stem-swap) | private fn in `buildModuleGraph.ts` (verbatim) |
 | `exportedNamesOfStatement(node)` (exported-decl name collection) | private fn in `buildModuleGraph.ts` (verbatim) |
-| `import type { ModuleGraph } from "@ts-doctor/rules"` | `import type { ModuleGraph } from "@ts-doctor/rules-core-effect"` (now OWNED by rules-core) |
+| `import type { ModuleGraph } from "@ts-fix/rules"` | `import type { ModuleGraph } from "@ts-fix/rules-core-effect"` (now OWNED by rules-core) |
 | package barrel | `src/main/index.ts` (exports `buildModuleGraph` + `GraphFileInput`) |
 | (no legacy `.test.ts` existed) | `src/test/buildModuleGraph.test.ts` (characterization) + `src/test/oracle.ts` (frozen legacy snapshot) + `src/test/equivalence.test.ts` (differential proof) |
 
@@ -64,9 +64,9 @@ points outside the set simply yields no edge. This keeps the builder trivially t
 crafted in-memory projects and free of any I/O capability requirement.
 
 ### D3 — `ModuleGraph` imported from rules-core (not redefined, not in contracts)
-The legacy file imported `ModuleGraph` from `@ts-doctor/rules`; the modernized type is OWNED
-by `@ts-doctor/rules-core-effect` (single-site GRAPH-tier input, deliberately NOT in the
-shared `@ts-doctor/contracts-effect`). We `import type { ModuleGraph }` from rules-core —
+The legacy file imported `ModuleGraph` from `@ts-fix/rules`; the modernized type is OWNED
+by `@ts-fix/rules-core-effect` (single-site GRAPH-tier input, deliberately NOT in the
+shared `@ts-fix/contracts-effect`). We `import type { ModuleGraph }` from rules-core —
 which is **erased at runtime** under `verbatimModuleSyntax`, so this is a compile-time-only
 link and introduces no runtime dependency on rules-core. `GraphFileInput`, by contrast, is
 **defined here** (the builder owns its own input shape, as the legacy file did).
@@ -80,7 +80,7 @@ build-only.
 ### D5 — Barrel hygiene
 `src/main/index.ts` publishes only what this slice owns: `buildModuleGraph` (value) and
 `GraphFileInput` (type). It does NOT re-export `ModuleGraph` — consumers import that from its
-owner, `@ts-doctor/rules-core-effect` (mirrors the rules-core / type-performance barrel
+owner, `@ts-fix/rules-core-effect` (mirrors the rules-core / type-performance barrel
 discipline of not re-publishing types they don't own).
 
 ---
@@ -122,7 +122,7 @@ the legacy algorithm itself**:
 ## 4. What was NOT migrated (and why)
 
 - **Not `Effect`-wrapped** (see D1) — pure sync function over in-memory text.
-- **`ModuleGraph` not copied** — consumed read-only as a type from `@ts-doctor/rules-core-effect`.
+- **`ModuleGraph` not copied** — consumed read-only as a type from `@ts-fix/rules-core-effect`.
 - **No dead code** in the legacy file — every branch is live and ported; nothing dropped.
 
 ---
@@ -150,7 +150,7 @@ the legacy algorithm itself**:
 - **`src/main` + `src/test` layout** + ESM + `.js` import specifiers + `verbatimModuleSyntax`
   tsconfig + `pnpm-workspace.yaml` `allowBuilds: esbuild` follow the established slice
   conventions (score / rules-core / type-performance).
-- **`vitest.config.ts`** inlines `@ts-doctor/rules-core-effect` + `@ts-doctor/contracts-effect`
+- **`vitest.config.ts`** inlines `@ts-fix/rules-core-effect` + `@ts-fix/contracts-effect`
   defensively (same pattern as type-performance). In practice the only rules-core usage here
   is the `import type { ModuleGraph }` (erased at runtime), so vitest never loads its JS — but
   the inline is kept so any future value-import / transitive `.ts`-entry transpile is compiled

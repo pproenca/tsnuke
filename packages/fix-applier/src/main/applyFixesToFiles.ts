@@ -1,7 +1,7 @@
 /**
  * The EFFECTFUL `--fix` file shell — `applyFixesToFiles` (RULE-005's IO edge).
  * Source of truth (READ-ONLY):
- * `legacy/ts-doctor/packages/ts-doctor/src/fix-applier.ts:223-244`
+ * `legacy/ts-fix/packages/ts-fix/src/fix-applier.ts:223-244`
  * (`applyFixesToFiles` over the injected synchronous `FileIo` seam).
  *
  * Where the pure splicer (`./applyFixes.ts`) is plain string math, THIS is the
@@ -47,7 +47,7 @@ import { NodeFileSystem, NodePath } from "@effect/platform-node";
 import { Effect, Layer } from "effect";
 import { applyFixes, groupFixesByFile } from "./applyFixes.js";
 import { isInsideRoot } from "./pathContainment.js";
-import type { Diagnostic } from "@ts-doctor/contracts-effect";
+import type { Diagnostic } from "@ts-fix/contracts-effect";
 
 /** Aggregate outcome of applying fixes across many files. */
 export interface ApplyFilesResult {
@@ -173,7 +173,7 @@ export const applyFixesToFilesDetailed = Effect.fn("FixApplier.applyToFilesDetai
       //    original is untouched until the rename lands).
       const tmpPath = path.join(
         realDir,
-        `.${path.basename(group.filePath)}.${tmpSeq++}.tsdoctor-fix.tmp`,
+        `.${path.basename(group.filePath)}.${tmpSeq++}.tsfix-fix.tmp`,
       );
 
       const writeAtomic = Effect.gen(function* () {

@@ -2,9 +2,9 @@
  * RULE-029 — the MCP tool input-validation contract, now enforced by `effect/Schema`
  * (the zod replacement). For each tool we assert the `Schema.decodeUnknownEither` decode
  * ACCEPTS valid args (`Right`) and REJECTS invalid ones (`Left`):
- *   - `ts_doctor_diagnose`   : { directory: string, deep?: boolean }
- *   - `ts_doctor_explain`    : { rule: string }
- *   - `ts_doctor_list_rules` : {}
+ *   - `ts_fix_diagnose`   : { directory: string, deep?: boolean }
+ *   - `ts_fix_explain`    : { rule: string }
+ *   - `ts_fix_list_rules` : {}
  *
  * Also confirms the JSON Schemas derived from the same Schema advertise the right
  * required fields, and (the load-bearing deviation invariant) that zod is imported
@@ -25,7 +25,7 @@ import {
   ListRulesJsonSchema,
 } from "../main/schemas.js";
 
-describe("RULE-029 — ts_doctor_diagnose args { directory: string, deep?: boolean }", () => {
+describe("RULE-029 — ts_fix_diagnose args { directory: string, deep?: boolean }", () => {
   it("ACCEPTS { directory } (deep omitted)", () => {
     const r = decodeDiagnoseArgs({ directory: "/repo" });
     expect(Either.isRight(r)).toBe(true);
@@ -62,7 +62,7 @@ describe("RULE-029 — ts_doctor_diagnose args { directory: string, deep?: boole
   });
 });
 
-describe("RULE-029 — ts_doctor_explain args { rule: string }", () => {
+describe("RULE-029 — ts_fix_explain args { rule: string }", () => {
   it("ACCEPTS { rule: string }", () => {
     const r = decodeExplainArgs({ rule: "no-explicit-any" });
     expect(Either.isRight(r)).toBe(true);
@@ -79,7 +79,7 @@ describe("RULE-029 — ts_doctor_explain args { rule: string }", () => {
   });
 });
 
-describe("RULE-029 — ts_doctor_list_rules args {}", () => {
+describe("RULE-029 — ts_fix_list_rules args {}", () => {
   it("ACCEPTS {} (no params)", () => {
     expect(Either.isRight(decodeListRulesArgs({}))).toBe(true);
   });
@@ -100,19 +100,19 @@ describe("RULE-029 — ts_doctor_list_rules args {}", () => {
 });
 
 describe("JSON Schemas derived from the effect/Schema (tool discovery)", () => {
-  it("ts_doctor_diagnose requires `directory`, allows optional `deep`", () => {
+  it("ts_fix_diagnose requires `directory`, allows optional `deep`", () => {
     const js = DiagnoseJsonSchema as { required?: string[]; properties?: object };
     expect(js.required).toStrictEqual(["directory"]);
     expect(js.properties).toHaveProperty("directory");
     expect(js.properties).toHaveProperty("deep");
   });
 
-  it("ts_doctor_explain requires `rule`", () => {
+  it("ts_fix_explain requires `rule`", () => {
     const js = ExplainJsonSchema as { required?: string[] };
     expect(js.required).toStrictEqual(["rule"]);
   });
 
-  it("ts_doctor_list_rules has no required fields", () => {
+  it("ts_fix_list_rules has no required fields", () => {
     const js = ListRulesJsonSchema as { required?: string[] };
     expect(js.required ?? []).toStrictEqual([]);
   });

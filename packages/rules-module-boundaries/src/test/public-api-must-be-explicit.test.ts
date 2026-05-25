@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-doctor/rules-core-effect";
+import { runRule } from "@ts-fix/rules-core-effect";
 import { rule } from "../main/public-api-must-be-explicit.js";
 
 describe("public-api-must-be-explicit (SYN)", () => {
@@ -25,7 +25,7 @@ describe("public-api-must-be-explicit (SYN)", () => {
     expect(d.tier).toBe("SYN");
     expect(d.severity).toBe("warning");
     expect(d.category).toBe("Module Boundaries & Architecture");
-    expect(d.plugin).toBe("ts-doctor");
+    expect(d.plugin).toBe("ts-fix");
     expect(d.message).toBe(
       "`export *` makes the public API implicit and defeats tree-shaking.",
     );

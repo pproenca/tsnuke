@@ -1,8 +1,8 @@
 # Transformation Notes — `scale` → Effect-TS
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-doctor scale effect`.
-Source (READ-ONLY): `legacy/ts-doctor/packages/core/src/scale.ts` (126 lines).
-Target: `modernized/scale/effect/` (package `@ts-doctor/scale-effect`).
+Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix scale effect`.
+Source (READ-ONLY): `legacy/ts-fix/packages/core/src/scale.ts` (126 lines).
+Target: `modernized/scale/effect/` (package `@ts-fix/scale-effect`).
 
 Two cleanly-separated halves:
 - **RULE-013** — Tier-2 memory-ceiling guard: kept a **PURE** synchronous predicate.

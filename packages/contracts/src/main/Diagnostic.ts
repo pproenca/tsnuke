@@ -6,7 +6,7 @@
  * / `Fix` / `Diagnostic`, consolidating the IDENTICAL copies that the `score`,
  * `filter-pipeline`, and `build-report` slices each vendor today (the cross-cutting
  * drift the architecture-critic flagged as the highest-value follow-up). It mirrors
- * the legacy `@ts-doctor/rules` types (`packages/ts-doctor-rules/src/types.ts`) and is
+ * the legacy `@ts-fix/rules` types (`packages/ts-fix-rules/src/types.ts`) and is
  * a faithful structural SUPERSET of every vendored copy — proven in
  * `src/test/Diagnostic.compat.test.ts`, so de-vendoring those slices later is safe.
  *
@@ -24,9 +24,9 @@
 import { Schema } from "effect";
 
 /**
- * Diagnostic severity — the ENGINE vocabulary. ts-doctor v1 has no `info` level
+ * Diagnostic severity — the ENGINE vocabulary. ts-fix v1 has no `info` level
  * (RULE-031). Identical across all five vendored copies (score/filter-pipeline/
- * build-report/capabilities and legacy `ts-doctor-rules`). Distinct on purpose from
+ * build-report/capabilities and legacy `ts-fix-rules`). Distinct on purpose from
  * the config-file vocabulary `ConfigSeverity` (`Config.ts`, `error`/`warn`/`off`) and
  * from `FailOn` — the `warn` vs `warning` split is preserved deliberately (RULE-040).
  */
@@ -93,9 +93,9 @@ export type Fix = typeof Fix.Type;
  */
 export const Diagnostic = Schema.Struct({
   filePath: Schema.String,
-  /** Always `"ts-doctor"` in v1 (first-party catalog only). */
+  /** Always `"ts-fix"` in v1 (first-party catalog only). */
   plugin: Schema.String.annotations({
-    description: 'Always `"ts-doctor"` in v1 (first-party catalog only).',
+    description: 'Always `"ts-fix"` in v1 (first-party catalog only).',
   }),
   /** The rule id that produced this diagnostic. */
   rule: Schema.String.annotations({

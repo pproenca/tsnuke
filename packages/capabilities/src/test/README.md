@@ -1,6 +1,6 @@
 # Characterization tests — `capabilities` module (Effect-TS target)
 
-These tests **define "done"** for the Effect-TS rewrite of `ts-doctor`'s
+These tests **define "done"** for the Effect-TS rewrite of `ts-fix`'s
 capability-gated rule-activation predicate. They were written *before* the
 implementation. The implementation lives at `src/main/index.ts` (imported as
 `../main/index.js` — `.js` on relative specifiers, per the legacy convention; the
@@ -8,7 +8,7 @@ implementation. The implementation lives at `src/main/index.ts` (imported as
 module exists the suite is **RED**, and that is the correct starting state.
 
 The legacy module is the oracle
-(`legacy/ts-doctor/packages/ts-doctor-rules/src/capabilities.ts`, read-only). We
+(`legacy/ts-fix/packages/ts-fix-rules/src/capabilities.ts`, read-only). We
 are proving *equivalence first*. Unlike the `score` slice, this transformation has
 **ZERO intentional behavioral deviations** — the predicate (and its load-bearing
 short-circuit order) is preserved exactly. Expected divergence: **0**.

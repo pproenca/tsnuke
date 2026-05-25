@@ -1,15 +1,15 @@
 # Transformation Notes — GRAPH-tier rules → Effect-TS
 
 Strangler-fig slice produced by
-`/code-modernization:modernize-transform ts-doctor rules-graph effect`.
+`/code-modernization:modernize-transform ts-fix rules-graph effect`.
 
-Source (READ-ONLY): `legacy/ts-doctor/packages/ts-doctor-rules/src/rules/` (the two GRAPH
+Source (READ-ONLY): `legacy/ts-fix/packages/ts-fix-rules/src/rules/` (the two GRAPH
 rules + their `*.test.ts`), plus the `Diagnostic` / `RuleMeta` contracts and the
 `defineGraphRule` / `runGraphRule` / `createGraphRuleContext` / `ModuleGraph` substrate, now
-owned by `@ts-doctor/contracts-effect` and `@ts-doctor/rules-core-effect` respectively.
-Target: `modernized/rules-graph/effect/` (package `@ts-doctor/rules-graph-effect`).
+owned by `@ts-fix/contracts-effect` and `@ts-fix/rules-core-effect` respectively.
+Target: `modernized/rules-graph/effect/` (package `@ts-fix/rules-graph-effect`).
 
-Implements ts-doctor's **2 GRAPH-tier rules**: **RULE-015** (`no-import-cycles` — 3-color
+Implements ts-fix's **2 GRAPH-tier rules**: **RULE-015** (`no-import-cycles` — 3-color
 iterative DFS over the cross-file module graph) and **RULE-025 (dead-code row)**
 (`no-unused-exports` — conservative unused-export detection, gated `requires:["app"]`). Both
 are Tier **GRAPH**: they analyze the cross-file `ModuleGraph` core builds, NOT a single
@@ -30,7 +30,7 @@ GRAPH driver) drives every test.
 | `no-import-cycles` | RULE-015 (import-cycle detection, 3-color DFS, GRAPH) | `…/module-boundaries/no-import-cycles.ts` | `src/main/no-import-cycles.ts` |
 | `no-unused-exports` | RULE-025 (dead-code row: requires `app`, exempts wildcard/namespace/dynamic, GRAPH) | `…/dead-code/no-unused-exports.ts` | `src/main/no-unused-exports.ts` |
 | graph barrel + `graphRules` registry | — (v1 manual codegen seam → `graphRuleRegistry`) | (codegen would fold into the global registry) | `src/main/index.ts` |
-| `runGraphRule` test driver | the `run(graph)` helper in legacy `*.test.ts` | imported from `@ts-doctor/rules-core-effect` (not vendored) | `src/test/*.test.ts` |
+| `runGraphRule` test driver | the `run(graph)` helper in legacy `*.test.ts` | imported from `@ts-fix/rules-core-effect` (not vendored) | `src/test/*.test.ts` |
 | legacy `*.test.ts` vectors | the behavioral spec | `…/module-boundaries/no-import-cycles.test.ts` + `…/dead-code/no-unused-exports.test.ts` | ported into `src/test/*.test.ts` |
 
 Each predicate was ported **VERBATIM**: same META (id / severity / category / tier `GRAPH` /
@@ -50,18 +50,18 @@ now living in `rules-core-effect`.
 structural / dependency-routing:
 
 ### D1 — Import the substrate, do NOT re-vendor it
-- `defineGraphRule` is imported from `@ts-doctor/rules-core-effect` instead of the legacy
+- `defineGraphRule` is imported from `@ts-fix/rules-core-effect` instead of the legacy
   relative `../../define-rule.js`. (It is a runtime VALUE — not a type — so it is a regular
   import, inlined by Vitest.)
 - `runGraphRule` (the GRAPH driver — the legacy tests' inline `run(graph)` helper that builds
   a `createGraphRuleContext` and calls `rule.analyze(ctx)`) is imported from
-  `@ts-doctor/rules-core-effect` in the tests, so the tests exercise the REAL production
+  `@ts-fix/rules-core-effect` in the tests, so the tests exercise the REAL production
   driver — the same `createGraphRuleContext` + `analyze` pass the engine uses on the GRAPH
   path — not a test-only copy.
-- `ModuleGraph` is imported as `import type` from `@ts-doctor/rules-core-effect` (it OWNS the
+- `ModuleGraph` is imported as `import type` from `@ts-fix/rules-core-effect` (it OWNS the
   GRAPH-tier input; it is not in contracts). The rule bodies never name `ModuleGraph` directly
   (it flows in via `ctx.graph`); only the test fixtures type-annotate it.
-- `Diagnostic` / `RuleMeta` come from `@ts-doctor/contracts-effect` transitively (the rules
+- `Diagnostic` / `RuleMeta` come from `@ts-fix/contracts-effect` transitively (the rules
   never name them; they flow through `defineGraphRule` / `ctx.report`). This slice re-vendors
   no contract or substrate symbol.
 
@@ -82,12 +82,12 @@ GRAPH rules do **not** touch the TS compiler API at all — they reason about an
 (`rules-core-effect`, `contracts-effect`) are the only runtime deps.
 
 ### D4 — Two `file:` deps + double inline (consumption pattern)
-`package.json` adds `@ts-doctor/rules-core-effect` **and** `@ts-doctor/contracts-effect` as
+`package.json` adds `@ts-fix/rules-core-effect` **and** `@ts-fix/contracts-effect` as
 `file:` deps. `vitest.config.ts` inlines **both** (`server.deps.inline`) because each is a
 `.ts`-entry `file:` link and `defineGraphRule` / `runGraphRule` / `createGraphRuleContext` are
 runtime values pulled from rules-core. **Note (architecture review):** unlike the sibling SYN
 slices, these GRAPH rule bodies never NAME a contracts symbol in `src/` — `GraphRule` (= `RuleMeta`
-& `{ analyze }`) flows from rules-core. The direct `@ts-doctor/contracts-effect` dep is therefore
+& `{ analyze }`) flows from rules-core. The direct `@ts-fix/contracts-effect` dep is therefore
 declared for **hermetic TYPE resolution**: under pnpm's strict (non-hoisted) `node_modules`, `tsc`
 resolving `GraphRule` needs `RuleMeta`'s definition (in contracts) reachable from THIS package, so
 the transitively-required contract must be a direct dep — not because `src/` imports it. (Dropping

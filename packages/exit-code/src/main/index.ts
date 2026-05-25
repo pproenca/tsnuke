@@ -1,5 +1,5 @@
 /**
- * `@ts-doctor/exit-code-effect` — public surface of the Effect-TS exit-code slice.
+ * `@ts-fix/exit-code-effect` — public surface of the Effect-TS exit-code slice.
  *
  * Implements RULE-030 (process exit-code resolution / `--fail-on` gate) and
  * RULE-031 (severity vocabulary, no `info`). See TRANSFORMATION_NOTES.md for the

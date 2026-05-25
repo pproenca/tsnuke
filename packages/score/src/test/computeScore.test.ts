@@ -37,7 +37,7 @@ function diag(
   over: Partial<Diagnostic> & Pick<Diagnostic, "rule" | "severity">,
 ): Diagnostic {
   return {
-    plugin: "ts-doctor",
+    plugin: "ts-fix",
     ...over,
   } as Diagnostic;
 }
@@ -117,7 +117,7 @@ describe("computeScore — RULE-001 (breadth-not-depth distinctness)", () => {
   // is a DISTINCT key (2 distinct error rules -> penalty 3 -> raw 97 -> 97).
   it("same rule id under different plugins -> 2 distinct keys -> 97", () => {
     const ds = [
-      diag({ plugin: "ts-doctor", rule: "no-any", severity: "error" }),
+      diag({ plugin: "ts-fix", rule: "no-any", severity: "error" }),
       diag({ plugin: "other", rule: "no-any", severity: "error" }),
     ];
     expect(computeScore(ds).score).toBe(97);

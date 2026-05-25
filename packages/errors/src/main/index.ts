@@ -1,8 +1,8 @@
 /**
- * `@ts-doctor/errors-effect` — public surface of the Effect-TS tagged-errors slice.
+ * `@ts-fix/errors-effect` — public surface of the Effect-TS tagged-errors slice.
  *
  * Implements RULE-037 (tagged discovery error classes): five Effect-Schema tagged
- * errors plus the `isTsDoctorError` guard. See TRANSFORMATION_NOTES.md for the
+ * errors plus the `isTsFixError` guard. See TRANSFORMATION_NOTES.md for the
  * legacy → target mapping and the (deliberate) plain-Error → Schema.TaggedError and
  * shared-base → independent-tagged-errors deviations.
  *
@@ -12,15 +12,15 @@
  */
 
 export {
-  TsDoctorError,
+  TsFixError,
   ProjectNotFoundError,
   NoTypeScriptProjectError,
   TsconfigNotFoundError,
   AmbiguousProjectError,
-  TS_DOCTOR_ERROR_TAGS,
-  isTsDoctorError,
-  type AnyTsDoctorError,
+  TS_FIX_ERROR_TAGS,
+  isTsFixError,
+  type AnyTsFixError,
 } from "./Errors.js";
 
-/** Self-barrel: `import { Errors } from "@ts-doctor/errors-effect"` resolves to this module's namespace. */
+/** Self-barrel: `import { Errors } from "@ts-fix/errors-effect"` resolves to this module's namespace. */
 export * as Errors from "./index.js";

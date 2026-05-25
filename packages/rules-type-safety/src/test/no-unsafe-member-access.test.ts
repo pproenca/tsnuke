@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule, runTypeAwareRule } from "@ts-doctor/rules-core-effect";
+import { runRule, runTypeAwareRule } from "@ts-fix/rules-core-effect";
 import { rule } from "../main/no-unsafe-member-access.js";
 
 // Ported VERBATIM from legacy `.../type-safety/no-unsafe-member-access.test.ts`,

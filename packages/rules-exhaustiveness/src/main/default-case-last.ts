@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { defineRule } from "@ts-doctor/rules-core-effect";
+import { defineRule } from "@ts-fix/rules-core-effect";
 
 /**
  * SYN — when a `switch` has a `default` clause, it should be the last clause.

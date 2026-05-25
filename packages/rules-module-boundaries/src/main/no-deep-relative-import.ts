@@ -1,6 +1,6 @@
 import ts from "typescript";
-import { defineRule } from "@ts-doctor/rules-core-effect";
-import type { RuleContext } from "@ts-doctor/rules-core-effect";
+import { defineRule } from "@ts-fix/rules-core-effect";
+import type { RuleContext } from "@ts-fix/rules-core-effect";
 
 /**
  * A deep chain of `../` segments signals a missing module boundary / path alias.
@@ -21,9 +21,9 @@ const MAX_RELATIVE_DEPTH = 4;
  * mid-path climb (`a/../b`) is not counted. Non-string specifiers are skipped.
  *
  * Ported verbatim from legacy
- * `packages/ts-doctor-rules/src/rules/module-boundaries/no-deep-relative-import.ts`;
+ * `packages/ts-fix-rules/src/rules/module-boundaries/no-deep-relative-import.ts`;
  * the only change is importing `defineRule` / `RuleContext` from the
- * `@ts-doctor/rules-core-effect` substrate rather than the legacy `../../define-rule.js`.
+ * `@ts-fix/rules-core-effect` substrate rather than the legacy `../../define-rule.js`.
  */
 export const rule = defineRule(
   {

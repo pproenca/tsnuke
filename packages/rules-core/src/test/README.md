@@ -9,10 +9,10 @@ written *before* the implementation. The implementation lives at `src/main/`
 convention; `Bundler` moduleResolution resolves `.js` → `.ts`). Until that module
 existed the suite was **RED**, the correct starting state.
 
-This is the first slice to **CONSUME `@ts-doctor/contracts-effect`** rather than
+This is the first slice to **CONSUME `@ts-fix/contracts-effect`** rather than
 vendor `Diagnostic`/`RuleMeta` (the first NEW contracts consumer). `ModuleGraph`
 is OWNED here (single-site GRAPH-tier input; not in contracts). The legacy modules
-are the oracle (`legacy/ts-doctor/packages/ts-doctor-rules/src/{define-rule,identity}.ts`
+are the oracle (`legacy/ts-fix/packages/ts-fix-rules/src/{define-rule,identity}.ts`
 \+ `rules/strictness/*.ts`, read-only).
 
 ## Rules under test
@@ -21,7 +21,7 @@ are the oracle (`legacy/ts-doctor/packages/ts-doctor-rules/src/{define-rule,iden
 |------|------|------|
 | RULE-020 | inverted CFG gating — the 4 `enable-X` strictness rules fire iff their `disabledBy` token is ABSENT; AST-free (`create()` → `{}`) | `strictnessRules.test.ts`, `equivalence.test.ts` |
 | BC-13 | deterministic diagnostic identity `filePath::line:column::plugin/rule` | `identity.test.ts`, `equivalence.test.ts` |
-| BC-18 | `plugin` forced to `"ts-doctor"` on every emitted diagnostic | `createRuleContext.test.ts`, `equivalence.test.ts` |
+| BC-18 | `plugin` forced to `"ts-fix"` on every emitted diagnostic | `createRuleContext.test.ts`, `equivalence.test.ts` |
 | RULE-031 | severity vocabulary (`error`/`warning`, no `info`) carried in meta | `strictnessRules.test.ts` |
 | RULE-032 | fix-kind taxonomy (`manual` for the strictness rules) carried in meta | `strictnessRules.test.ts` |
 | (C20 seam) | the registry contains exactly the 4 strictness rules with unique ids | `registry.test.ts` |
@@ -31,7 +31,7 @@ are the oracle (`legacy/ts-doctor/packages/ts-doctor-rules/src/{define-rule,iden
 `createRuleContext(meta, {sourceFile, filePath, checker?, sink})` returns a context
 whose `report(input)` builds a full `Diagnostic` and hands it to `sink`:
 
-- `plugin` is **forced** to `"ts-doctor"` (cannot be overridden — not in `ReportInput`).
+- `plugin` is **forced** to `"ts-fix"` (cannot be overridden — not in `ReportInput`).
 - `rule`/`tier`/`category`/`severity` **default from `meta`** but each is overridable.
 - `filePath`/`message`/`help`/`line`/`column` come straight from the input (required).
 - `url`/`fix`/`suppressionHint` are **only set when present** — the
@@ -75,16 +75,16 @@ cd modernized/rules-core/effect
 ./node_modules/.bin/tsc --noEmit        # typecheck
 ```
 
-Vitest must transpile the `.ts`-entry `@ts-doctor/contracts-effect` dependency at
+Vitest must transpile the `.ts`-entry `@ts-fix/contracts-effect` dependency at
 test time; `vitest.config.ts` sets `test.server.deps.inline:
-["@ts-doctor/contracts-effect"]` (the `file:` link's `exports` is
+["@ts-fix/contracts-effect"]` (the `file:` link's `exports` is
 `./src/main/index.ts`).
 
 ## Public surface these tests expect (write the impl to match)
 
 ```ts
 import {
-  PLUGIN_NAME,                 // "ts-doctor"
+  PLUGIN_NAME,                 // "ts-fix"
   defineRule,                  // (meta, create) => Rule
   createRuleContext,           // (meta, {sourceFile, filePath, checker?, sink}) => RuleContext
   defineGraphRule,             // (meta, analyze) => GraphRule
@@ -97,7 +97,7 @@ import type {
   GraphRule, GraphRuleContext, ModuleGraph,
 } from "../main/index.js";
 // Diagnostic / RuleMeta / Severity / Tier / FixKind are NOT re-exported here —
-// import them from @ts-doctor/contracts-effect (this slice consumes, not vendors).
+// import them from @ts-fix/contracts-effect (this slice consumes, not vendors).
 ```
 
 The substrate is a PLAIN-TS wrapper of the TS compiler API — NOT `Effect`-wrapped

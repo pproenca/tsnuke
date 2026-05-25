@@ -4,7 +4,7 @@
  * the PRODUCER of {@link ProjectInfo}; `computeCapabilities` is its consumer.
  *
  * Mirrors the legacy `ProjectInfo` interface field-for-field
- * (`legacy/ts-doctor/packages/core/src/types.ts:22-51`). Modeling it as a Schema (not
+ * (`legacy/ts-fix/packages/core/src/types.ts:22-51`). Modeling it as a Schema (not
  * a bare interface) gives callers a single runtime `Schema.decode` gate for an
  * untrusted `ProjectInfo` — but the discovery functions build a typed value directly
  * (no decode on the hot path) and `computeCapabilities` accepts an already-typed
@@ -12,9 +12,9 @@
  *
  * OWNERSHIP NOTE: discovery is the sole producer today, so this contract is OWNED here
  * (not de-vendored from elsewhere — it is not yet duplicated). A future
- * `@ts-doctor/contracts-effect` package may host shared domain types; if it does, this
+ * `@ts-fix/contracts-effect` package may host shared domain types; if it does, this
  * `ProjectInfo` is the canonical source to de-vendor onto (see TRANSFORMATION_NOTES
- * Follow-up). The `Capability` token type (a `string` in legacy `@ts-doctor/rules`)
+ * Follow-up). The `Capability` token type (a `string` in legacy `@ts-fix/rules`)
  * lives in {@link ./capabilities.ts}.
  */
 

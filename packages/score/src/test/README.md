@@ -1,13 +1,13 @@
 # Characterization tests — `score` module (Effect-TS target)
 
-These tests **define "done"** for the Effect-TS rewrite of `ts-doctor`'s local
+These tests **define "done"** for the Effect-TS rewrite of `ts-fix`'s local
 health scoring. They were written *before* the implementation. The
 implementation lives at `src/main/index.ts` (imported as `../main/index.js` —
 `.js` on relative specifiers, per the legacy convention; the `Bundler`
 moduleResolution in `tsconfig.json` resolves `.js` to `.ts`). Until that module
 exists the suite is **RED**, and that is the correct starting state.
 
-The legacy module is the oracle (`legacy/ts-doctor/packages/core/src/score.ts`,
+The legacy module is the oracle (`legacy/ts-fix/packages/core/src/score.ts`,
 read-only). We are proving *equivalence first*; the one intentional behavioral
 change (rounding policy) is pinned explicitly, not silently.
 

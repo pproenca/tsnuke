@@ -1,15 +1,15 @@
-# `@ts-doctor/engine-effect` — Transformation Notes
+# `@ts-fix/engine-effect` — Transformation Notes
 
-THE integrating keystone of the ts-doctor modernization: the two-tier `runEngine`
+THE integrating keystone of the ts-fix modernization: the two-tier `runEngine`
 (RULE-018 + RULE-036 + RULE-013) and the `diagnose()` orchestration that wire ~12
 finished strangler-fig slices into a working end-to-end analysis. This slice owns no rules
 and no contracts — it is the impure execution **shell** + the public **boundary**.
 
 Source of truth (READ-ONLY, never edited):
-- `legacy/ts-doctor/packages/core/src/engine.ts:64-326` — `runEngine`, the two-tier shell.
-- `legacy/ts-doctor/packages/core/src/index.ts:154-249` — `diagnose()` + `readSourceFiles`
+- `legacy/ts-fix/packages/core/src/engine.ts:64-326` — `runEngine`, the two-tier shell.
+- `legacy/ts-fix/packages/core/src/index.ts:154-249` — `diagnose()` + `readSourceFiles`
   + `overridesFromConfig`.
-- `legacy/ts-doctor/packages/core/src/types.ts` — `DiagnoseOptions`/`DiagnoseResult`/`ScoreResult`.
+- `legacy/ts-fix/packages/core/src/types.ts` — `DiagnoseOptions`/`DiagnoseResult`/`ScoreResult`.
 
 ---
 
@@ -24,7 +24,7 @@ Source of truth (READ-ONLY, never edited):
 | `engine.ts` `getPreEmitDiagnostics`→`typecheck:ok` (194-205) | `runEngine.ts` (in `Effect.gen`) | The single Program build's error-filtered `getPreEmitDiagnostics` IS the `typecheck:ok` signal (no separate probe). `effectiveCaps` reconciliation (add iff proven, else delete) verbatim. |
 | `engine.ts` CFG emit / Tier-1 loop / Tier-2 loop / GRAPH pass (227-318) | `runEngine.ts` | Verbatim: CFG → one project-level diagnostic each at `configFilePath` line 1 (`meta.message ?? meta.recommendation ?? \`Enable ${id}.\``); Tier-1 per-file (reuse Program's SourceFile else `createSourceFile`); Tier-2 only when `plan.tier2Enabled`, single shared `getTypeChecker()`; GRAPH once over the set via `buildModuleGraph` + `shouldActivate`-active graph rules. |
 | `engine.ts` re-exports `planEngineRun`/`SKIP_REASON_*` (39-46) | `runEngine.ts` re-exports (from `engine-plan-effect`) | Same public surface; sourced from the engine-plan slice. |
-| `index.ts` `diagnose` (189-249) | `diagnose.ts` `diagnose` | `Effect<DiagnoseResult, TsDoctorError, FileSystem \| Path \| Scope>`. Same wiring order. |
+| `index.ts` `diagnose` (189-249) | `diagnose.ts` `diagnose` | `Effect<DiagnoseResult, TsFixError, FileSystem \| Path \| Scope>`. Same wiring order. |
 | `index.ts` `readSourceFiles` (154-165) | `diagnose.ts` `readSourceFiles` | `node:fs readFileSync` → `@effect/platform FileSystem.readFileString`; per-file `try/catch` → `Effect.orElseSucceed(undefined)` (skip-not-fatal). `.ts`/`.tsx` extension filter preserved (`extnameOf` mirrors `node:path.extname`). |
 | `index.ts` `overridesFromConfig` (168-176) | `diagnose.ts` `overridesFromConfig` (exported) | Pure; the `warn`→`warning` normalization preserved (RULE-040). |
 | `types.ts` `ScoreResult` (53-61) | `types.ts` `ScoreResult` | LEGACY shape kept: `{ score, label, partial }`. See §2 (`band`→`label`). |
@@ -40,7 +40,7 @@ Source of truth (READ-ONLY, never edited):
 `rules-registry/effect` (`ruleRegistry`, `graphRuleRegistry`), `rules-core/effect`
 (`createRuleContext`, `createGraphRuleContext`, `Rule`, `GraphRule`), `module-graph/effect`
 (`buildModuleGraph`), `filter-pipeline/effect` (`runFilterPipeline`, `DiagnosticWithTags`),
-`contracts/effect` (`Diagnostic`, `Capability`, `TsDoctorConfig`, `RuleMeta`),
+`contracts/effect` (`Diagnostic`, `Capability`, `TsFixConfig`, `RuleMeta`),
 `errors/effect` (the tagged discovery errors, as the `diagnose` error channel).
 `build-report/effect`'s `file:`-dep + `server.deps.inline` consumption pattern was the
 template for wiring all of these (`vitest.config.ts` inlines the full transitive closure).

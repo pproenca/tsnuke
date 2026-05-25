@@ -1,10 +1,10 @@
 # Transformation Notes — `rules-registry` → Effect-TS
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-doctor rules-registry effect`.
+Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix rules-registry effect`.
 Source (READ-ONLY, replaced — not line-ported):
-`legacy/ts-doctor/packages/ts-doctor-rules/scripts/generate-rule-registry.mjs`
+`legacy/ts-fix/packages/ts-fix-rules/scripts/generate-rule-registry.mjs`
 \+ its codegen output `rule-registry.generated.ts`.
-Target: `modernized/rules-registry/effect/` (package `@ts-doctor/rules-registry-effect`).
+Target: `modernized/rules-registry/effect/` (package `@ts-fix/rules-registry-effect`).
 
 This is a **pure aggregator** slice: it OWNS no rules. It imports every per-category
 rule slice's exported rule array read-only and concatenates them into the two
@@ -13,7 +13,7 @@ registries the engine consumes — `ruleRegistry` (per-file SYN/TYP/CFG) and
 
 **Result:** 16/16 tests pass · `tsc --noEmit` clean under `strict` +
 `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes`. All 13 rule `file:`
-imports + the transitive `@ts-doctor/contracts-effect` import resolve and run green
+imports + the transitive `@ts-fix/contracts-effect` import resolve and run green
 via `vitest.config.ts → test.server.deps.inline`.
 
 ---
@@ -39,9 +39,9 @@ into the two registries. Same output shape (`ReadonlyArray<Rule>` +
 | `rule-registry.generated.ts` → `graphRuleRegistry` | `graphRuleRegistry: ReadonlyArray<GraphRule>` (the rules-graph slice) |
 | codegen `category` derived from directory | `category` carried on each rule's `RuleMeta` by its owning slice |
 
-The `Rule` / `GraphRule` TYPES are imported from `@ts-doctor/rules-core-effect` (the
+The `Rule` / `GraphRule` TYPES are imported from `@ts-fix/rules-core-effect` (the
 substrate, canonical home for the rule shapes); the embedded data contracts
-(`Diagnostic` / `RuleMeta`) live transitively in `@ts-doctor/contracts-effect`.
+(`Diagnostic` / `RuleMeta`) live transitively in `@ts-fix/contracts-effect`.
 
 ---
 
@@ -52,20 +52,20 @@ barrel for its exported array name):
 
 | Slice (package) | Exported array | Tier(s) | Count |
 |-----------------|----------------|---------|-------|
-| `@ts-doctor/rules-core-effect` | `ruleRegistry` (strictness) | CFG | 4 |
-| `@ts-doctor/rules-type-performance-effect` | `typePerformanceRules` | SYN/TYP | 3 |
-| `@ts-doctor/rules-declaration-api-effect` | `declarationApiRules` | SYN/TYP | 4 |
-| `@ts-doctor/rules-security-effect` | `securityRules` | SYN/TYP | 5 |
-| `@ts-doctor/rules-naming-idioms-effect` | `namingIdiomsRules` | SYN/TYP | 14 |
-| `@ts-doctor/rules-generics-effect` | `genericsRules` | SYN/TYP | 5 |
-| `@ts-doctor/rules-type-assertions-effect` | `typeAssertionsRules` | SYN/TYP | 13 |
-| `@ts-doctor/rules-async-effect` | `asyncRules` | SYN/TYP | 7 |
-| `@ts-doctor/rules-error-handling-effect` | `errorHandlingRules` | SYN/TYP | 8 |
-| `@ts-doctor/rules-type-safety-effect` | `typeSafetyRules` | SYN/TYP | 12 |
-| `@ts-doctor/rules-exhaustiveness-effect` | `exhaustivenessRules` | SYN/TYP | 8 |
-| `@ts-doctor/rules-module-boundaries-effect` | `moduleBoundariesRules` | SYN/TYP | 3 |
+| `@ts-fix/rules-core-effect` | `ruleRegistry` (strictness) | CFG | 4 |
+| `@ts-fix/rules-type-performance-effect` | `typePerformanceRules` | SYN/TYP | 3 |
+| `@ts-fix/rules-declaration-api-effect` | `declarationApiRules` | SYN/TYP | 4 |
+| `@ts-fix/rules-security-effect` | `securityRules` | SYN/TYP | 5 |
+| `@ts-fix/rules-naming-idioms-effect` | `namingIdiomsRules` | SYN/TYP | 14 |
+| `@ts-fix/rules-generics-effect` | `genericsRules` | SYN/TYP | 5 |
+| `@ts-fix/rules-type-assertions-effect` | `typeAssertionsRules` | SYN/TYP | 13 |
+| `@ts-fix/rules-async-effect` | `asyncRules` | SYN/TYP | 7 |
+| `@ts-fix/rules-error-handling-effect` | `errorHandlingRules` | SYN/TYP | 8 |
+| `@ts-fix/rules-type-safety-effect` | `typeSafetyRules` | SYN/TYP | 12 |
+| `@ts-fix/rules-exhaustiveness-effect` | `exhaustivenessRules` | SYN/TYP | 8 |
+| `@ts-fix/rules-module-boundaries-effect` | `moduleBoundariesRules` | SYN/TYP | 3 |
 | **`ruleRegistry` subtotal** | | **CFG/SYN/TYP** | **86** |
-| `@ts-doctor/rules-graph-effect` | `graphRules` | GRAPH | 2 |
+| `@ts-fix/rules-graph-effect` | `graphRules` | GRAPH | 2 |
 | **`graphRuleRegistry` subtotal** | | **GRAPH** | **2** |
 | **Combined catalog** | | | **88** |
 
@@ -89,7 +89,7 @@ zero collisions.**
 
 ## 4. `file:` dependency consumption
 
-Thirteen rule packages + `@ts-doctor/contracts-effect` are consumed as `file:` deps (every
+Thirteen rule packages + `@ts-fix/contracts-effect` are consumed as `file:` deps (every
 entry point is a `.ts` file via `exports: "./src/main/index.ts"`). Each is listed in
 `vitest.config.ts → test.server.deps.inline` so Vitest's esbuild transform compiles their
 TypeScript at test time instead of trying to load them as pre-built deps (which would fail

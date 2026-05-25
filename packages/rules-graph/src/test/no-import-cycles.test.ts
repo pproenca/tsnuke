@@ -5,7 +5,7 @@
  * verbatim (2-module cycle, acyclic → none) and supplemented with the brief's explicit asks
  * (3-module cycle, self-loop, a node in two cycles reported once) plus full-shape assertions.
  *
- * Driven through the REAL `runGraphRule` from `@ts-doctor/rules-core-effect` (the same
+ * Driven through the REAL `runGraphRule` from `@ts-fix/rules-core-effect` (the same
  * `createGraphRuleContext` + `analyze(ctx)` pass the engine uses on the GRAPH path) over
  * hand-built `ModuleGraph` fixtures — so the equivalence holds for the production driver, not
  * a test-only harness. `requires`/activation gating is the engine / `shouldActivate`'s job,
@@ -13,8 +13,8 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { runGraphRule } from "@ts-doctor/rules-core-effect";
-import type { ModuleGraph } from "@ts-doctor/rules-core-effect";
+import { runGraphRule } from "@ts-fix/rules-core-effect";
+import type { ModuleGraph } from "@ts-fix/rules-core-effect";
 import { rule } from "../main/no-import-cycles.js";
 
 /** Build a `ModuleGraph` with just `files` + `imports` (the only fields this rule reads). */
@@ -79,7 +79,7 @@ describe("no-import-cycles (GRAPH) — RULE-015", () => {
     expect(d.tier).toBe("GRAPH");
     expect(d.severity).toBe("error");
     expect(d.category).toBe("Module Boundaries & Architecture");
-    expect(d.plugin).toBe("ts-doctor");
+    expect(d.plugin).toBe("ts-fix");
     expect(d.filePath).toBe("/a.ts");
     expect(d.message).toBe("Import cycle detected involving /a.ts.");
     expect(d.help).toBe(

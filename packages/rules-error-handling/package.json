@@ -1,7 +1,7 @@
 {
-  "name": "@ts-doctor/rules-error-handling-effect",
+  "name": "@ts-fix/rules-error-handling-effect",
   "version": "0.1.0",
-  "description": "Effect-native rewrite of ts-doctor's `error-handling` rule category (RULE-025): 6 SYN AST predicates (no-empty-catch, no-error-message-matching, no-ex-assign, no-throw-in-finally, no-useless-catch, prefer-error-instantiation) + 2 TYP type-aware predicates (only-throw-error, prefer-promise-reject-errors). Strangler-fig slice — consumes @ts-doctor/rules-core-effect for the rule substrate (defineRule/runRule/runTypeAwareRule/Rule/RuleContext) and @ts-doctor/contracts-effect for the Diagnostic/RuleMeta contracts. Plain-TS AST predicates wrapping the TS compiler API — NOT Effect-wrapped (visitors are sync). Preserves the RULE-026 broken auto-fix in prefer-error-instantiation (declares auto-fix, emits no fix).",
+  "description": "Effect-native rewrite of ts-fix's `error-handling` rule category (RULE-025): 6 SYN AST predicates (no-empty-catch, no-error-message-matching, no-ex-assign, no-throw-in-finally, no-useless-catch, prefer-error-instantiation) + 2 TYP type-aware predicates (only-throw-error, prefer-promise-reject-errors). Strangler-fig slice — consumes @ts-fix/rules-core-effect for the rule substrate (defineRule/runRule/runTypeAwareRule/Rule/RuleContext) and @ts-fix/contracts-effect for the Diagnostic/RuleMeta contracts. Plain-TS AST predicates wrapping the TS compiler API — NOT Effect-wrapped (visitors are sync). Preserves the RULE-026 broken auto-fix in prefer-error-instantiation (declares auto-fix, emits no fix).",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -13,8 +13,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ts-doctor/contracts-effect": "workspace:*",
-    "@ts-doctor/rules-core-effect": "workspace:*",
+    "@ts-fix/contracts-effect": "workspace:*",
+    "@ts-fix/rules-core-effect": "workspace:*",
     "typescript": "^5.8.0"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 # Characterization tests — `build-report` module (Effect-TS target)
 
-These tests **define "done"** for the Effect-TS rewrite of `ts-doctor`'s versioned
+These tests **define "done"** for the Effect-TS rewrite of `ts-fix`'s versioned
 JSON report builder. They were written *before* the implementation. The
 implementation lives at `src/main/` (imported as `../main/index.js` — `.js` on
 relative specifiers, per the legacy convention; the `Bundler` moduleResolution in
@@ -8,9 +8,9 @@ relative specifiers, per the legacy convention; the `Bundler` moduleResolution i
 **RED**, and that was the correct starting state.
 
 This is a **true strangler-fig** slice: it CONSUMES the already-completed `score`
-slice (`@ts-doctor/score-effect`) for the monorepo MIN score (RULE-003) and band
+slice (`@ts-fix/score-effect`) for the monorepo MIN score (RULE-003) and band
 label (RULE-002). The legacy module is the oracle
-(`legacy/ts-doctor/packages/core/src/build-report.ts`, read-only).
+(`legacy/ts-fix/packages/core/src/build-report.ts`, read-only).
 
 ## Rules under test
 
@@ -70,8 +70,8 @@ cd modernized/build-report/effect
 ./node_modules/.bin/vitest run src/test/equivalence.test.ts   # just the proof
 ```
 
-Vitest must transpile the `.ts`-entry `@ts-doctor/score-effect` dependency at test
-time; `vitest.config.ts` sets `test.server.deps.inline: ["@ts-doctor/score-effect"]`
+Vitest must transpile the `.ts`-entry `@ts-fix/score-effect` dependency at test
+time; `vitest.config.ts` sets `test.server.deps.inline: ["@ts-fix/score-effect"]`
 to make esbuild compile it (the `file:` link's `exports` is `./src/main/index.ts`).
 
 ## Public surface these tests expect (write the impl to match)

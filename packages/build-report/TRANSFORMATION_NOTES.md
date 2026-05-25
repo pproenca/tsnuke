@@ -1,13 +1,13 @@
 # Transformation Notes — `build-report` → Effect-TS
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-doctor build-report effect`.
-Source (READ-ONLY): `legacy/ts-doctor/packages/core/src/build-report.ts` (124 lines)
+Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix build-report effect`.
+Source (READ-ONLY): `legacy/ts-fix/packages/core/src/build-report.ts` (124 lines)
 \+ the report types from `packages/core/src/types.ts` (`JsonReportV1` family) and
-the `Diagnostic` contract from `packages/ts-doctor-rules/src/types.ts`.
+the `Diagnostic` contract from `packages/ts-fix-rules/src/types.ts`.
 Target: `modernized/build-report/effect/`.
 
 This is a **true strangler-fig**: the slice CONSUMES the already-completed `score`
-slice (`@ts-doctor/score-effect`) for the monorepo MIN score (RULE-003) and the
+slice (`@ts-fix/score-effect`) for the monorepo MIN score (RULE-003) and the
 band label (RULE-002) — it does not re-derive scoring. The `score` slice is DONE
 and was NOT modified.
 
@@ -21,9 +21,9 @@ serializeError cases + 2 pinned out-of-domain divergence cases (D2).
 `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes`.
 
 **`file:` dependency import path:** the `file:../../score/effect` dependency
-imports cleanly via the package name `@ts-doctor/score-effect` (`buildReport.ts`).
+imports cleanly via the package name `@ts-fix/score-effect` (`buildReport.ts`).
 Vitest transpiles the `.ts`-entry dependency at test time via
-`vitest.config.ts → test.server.deps.inline: ["@ts-doctor/score-effect"]`. The
+`vitest.config.ts → test.server.deps.inline: ["@ts-fix/score-effect"]`. The
 relative-import fallback (`../../../score/effect/src/main/index.js`) was NOT needed
 — the `file:` package-name import runs green.
 
@@ -48,9 +48,9 @@ relative-import fallback (`../../../score/effect/src/main/index.js`) was NOT nee
 | └ `diff = input.diff ?? null` (RULE-033) | `:117` | `buildReport.ts` |
 | └ carry mode/version/directory/projects/elapsed | `:94-122` | `buildReport.ts` |
 | `JsonReportV1` + sub-types (wire shape) | `types.ts:63-120` (interfaces) | `src/main/Report.ts` (`effect/Schema`) |
-| `Diagnostic` input contract | `ts-doctor-rules/types.ts:46-66` | `src/main/Diagnostic.ts` (`effect/Schema`) |
-| RULE-003 monorepo MIN | (legacy `score.ts:83-92`) | **consumed** from `@ts-doctor/score-effect` |
-| RULE-002 band label | (legacy `score.ts:72-76`) | **consumed** from `@ts-doctor/score-effect` |
+| `Diagnostic` input contract | `ts-fix-rules/types.ts:46-66` | `src/main/Diagnostic.ts` (`effect/Schema`) |
+| RULE-003 monorepo MIN | (legacy `score.ts:83-92`) | **consumed** from `@ts-fix/score-effect` |
+| RULE-002 band label | (legacy `score.ts:72-76`) | **consumed** from `@ts-fix/score-effect` |
 
 ---
 
@@ -123,16 +123,16 @@ mirroring the score slice. The pure builder functions do NOT decode on the hot p
 ## 4. Follow-ups for the next module(s)
 
 1. **De-vendor the report types.** `JsonReportV1` & family (`Report.ts`) are owned
-   by `@ts-doctor/core`. When the core Effect slice lands, move these schemas there
+   by `@ts-fix/core`. When the core Effect slice lands, move these schemas there
    and import them; delete the local copy.
 2. **De-vendor `Diagnostic` — DONE.** The local `src/main/Diagnostic.ts` was DELETED;
    the slice now imports the canonical `Diagnostic`/`Severity` from
-   `@ts-doctor/contracts-effect` — `Report.ts` imports the `Diagnostic` Schema VALUE
+   `@ts-fix/contracts-effect` — `Report.ts` imports the `Diagnostic` Schema VALUE
    (`Schema.Array(Diagnostic)`), `buildReport.ts` imports the type, and the barrel
    re-exports `Diagnostic` + `Severity` as before. The canonical Schema is field-identical
    (incl. `Schema.Int`) to the deleted copy, so the suite stayed green (67/67) with no
    assertion change. Direct dep
-   `@ts-doctor/contracts-effect": file:../../contracts/effect` added (alongside the
+   `@ts-fix/contracts-effect": file:../../contracts/effect` added (alongside the
    existing `score-effect` dep, which now also imports contracts); `vitest.config.ts`
    inlines both score-effect and contracts-effect.
 3. **Migrate the callers** `core/index.ts` and `commands/inspect.ts:62` onto this
@@ -162,12 +162,12 @@ mirroring the score slice. The pure builder functions do NOT decode on the hot p
 ## 5. Toolchain / housekeeping notes
 
 - **`file:` workspace dependency:** `package.json` declares
-  `"@ts-doctor/score-effect": "file:../../score/effect"`. `pnpm install` links it;
-  the package-name import (`from "@ts-doctor/score-effect"`) resolves to the score
+  `"@ts-fix/score-effect": "file:../../score/effect"`. `pnpm install` links it;
+  the package-name import (`from "@ts-fix/score-effect"`) resolves to the score
   slice's `src/main/index.ts` (its `exports` entry). The relative-import fallback
   was NOT needed.
 - **Vitest `.ts`-dependency transpile:** `vitest.config.ts` sets
-  `test.server.deps.inline: ["@ts-doctor/score-effect"]` so esbuild compiles the
+  `test.server.deps.inline: ["@ts-fix/score-effect"]` so esbuild compiles the
   dependency's TypeScript at test time (otherwise Vitest tries to load the `.ts`
   entry as pre-built and fails to parse it).
 - **`pnpm-workspace.yaml`** approves the `esbuild` build (vitest needs it), matching

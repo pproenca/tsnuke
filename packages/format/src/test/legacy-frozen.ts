@@ -3,10 +3,10 @@
  * equivalence ORACLE. Each function below is a byte-for-byte copy of the legacy
  * implementation as of the port:
  *   - `legacy/.../packages/core/src/format-agent.ts`
- *   - `legacy/.../packages/ts-doctor/src/render.ts`
+ *   - `legacy/.../packages/ts-fix/src/render.ts`
  *   - `legacy/.../packages/core/src/explain.ts`
  *
- * The ONLY change vs the legacy source is dropping the `@ts-doctor/rules` /
+ * The ONLY change vs the legacy source is dropping the `@ts-fix/rules` /
  * `./types.js` imports in favor of local structural type aliases — so this file is
  * self-contained and depends on nothing. The equivalence tests assert that the
  * ported `src/main/*` functions produce output that deep-equals / string-equals
@@ -15,7 +15,7 @@
  * DO NOT "improve" these. They must stay frozen at the legacy behavior.
  */
 
-// ── Local structural type aliases (mirror the legacy @ts-doctor/rules types) ──
+// ── Local structural type aliases (mirror the legacy @ts-fix/rules types) ──
 type Severity = "error" | "warning";
 type Tier = "SYN" | "TYP" | "GRAPH" | "CFG";
 type FixKind = "auto-fix" | "codemod" | "manual";
@@ -299,7 +299,7 @@ export function frozenExplain(
 ): string {
   const meta = registry.get(ruleId);
   if (meta === undefined) {
-    return `Unknown rule "${ruleId}". No such rule in the ts-doctor catalog.`;
+    return `Unknown rule "${ruleId}". No such rule in the ts-fix catalog.`;
   }
 
   const lines: string[] = [];

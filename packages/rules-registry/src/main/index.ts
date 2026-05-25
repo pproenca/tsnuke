@@ -1,5 +1,5 @@
 /**
- * `@ts-doctor/rules-registry-effect` — the GLOBAL rule registry.
+ * `@ts-fix/rules-registry-effect` — the GLOBAL rule registry.
  *
  * Aggregates all 88 transformed rules into the two registries the engine consumes:
  *   - {@link ruleRegistry}      — the 86 per-file rules (SYN/TYP/CFG): SYN 64 + TYP 18 +
@@ -17,8 +17,8 @@
  * Barrel hygiene: this slice exports ONLY the two aggregate registries (plus a small count
  * helper). It deliberately does NOT re-export the individual rules — a consumer that wants
  * one rule imports it from its owning slice (e.g. `enableStrict` from
- * `@ts-doctor/rules-core-effect`). The `Rule` / `GraphRule` types likewise stay owned by
- * `@ts-doctor/rules-core-effect`.
+ * `@ts-fix/rules-core-effect`). The `Rule` / `GraphRule` types likewise stay owned by
+ * `@ts-fix/rules-core-effect`.
  */
 
 export { ruleRegistry, graphRuleRegistry } from "./registry.js";
@@ -34,7 +34,7 @@ import { graphRuleRegistry, ruleRegistry } from "./registry.js";
 export const totalRuleCount: number =
   ruleRegistry.length + graphRuleRegistry.length;
 
-// Self-barrel: `import { RulesRegistry } from "@ts-doctor/rules-registry-effect"` resolves to
+// Self-barrel: `import { RulesRegistry } from "@ts-fix/rules-registry-effect"` resolves to
 // this module's namespace (the self-barrel module shape). Additive — the named exports above
 // (`ruleRegistry` / `graphRuleRegistry` / `totalRuleCount`) remain the canonical surface.
 export * as RulesRegistry from "./index.js";

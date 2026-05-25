@@ -19,7 +19,7 @@ import { NodeFileSystem, NodePath } from "@effect/platform-node";
 import {
   NoTypeScriptProjectError,
   TsconfigNotFoundError,
-} from "@ts-doctor/errors-effect";
+} from "@ts-fix/errors-effect";
 import { Effect, Layer } from "effect";
 import { discoverTsProject } from "./discover.js";
 import { collectSourceFiles, countSourceFiles } from "./enumerate.js";

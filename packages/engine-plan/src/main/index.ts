@@ -1,9 +1,9 @@
 /**
- * `@ts-doctor/engine-plan-effect` — public surface of the Effect-TS two-tier
+ * `@ts-fix/engine-plan-effect` — public surface of the Effect-TS two-tier
  * engine-planner slice (RULE-018, the partial-honesty contract, P0).
  *
  * This is a TRUE strangler-fig: the slice CONSUMES the already-completed
- * `@ts-doctor/capabilities-effect` slice for `shouldActivate` / `resolveSeverity`
+ * `@ts-fix/capabilities-effect` slice for `shouldActivate` / `resolveSeverity`
  * (RULE-019/020) and the `RuleMeta`/`Severity`/`Capability` contract — it does NOT
  * re-vendor them. See TRANSFORMATION_NOTES.md for the legacy → target mapping; this
  * slice has ZERO intentional behavioral deviations (a 0-divergence equivalence proof).
@@ -26,12 +26,12 @@ export {
 
 // Re-export the consumed activation contract so downstream callers (the engine
 // slice) get the planner's vocabulary from one barrel. These types are OWNED by
-// `@ts-doctor/capabilities-effect`; we re-export, never re-declare (no conflicting
+// `@ts-fix/capabilities-effect`; we re-export, never re-declare (no conflicting
 // copy). `shouldActivate` / `resolveSeverity` are deliberately NOT re-exported —
-// import them from `@ts-doctor/capabilities-effect` directly to keep this barrel's
+// import them from `@ts-fix/capabilities-effect` directly to keep this barrel's
 // surface the planner's own.
 export type {
   RuleMeta,
   Severity,
   Capability,
-} from "@ts-doctor/capabilities-effect";
+} from "@ts-fix/capabilities-effect";

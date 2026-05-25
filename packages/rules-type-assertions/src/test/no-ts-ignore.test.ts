@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { runRule } from "@ts-doctor/rules-core-effect";
+import { runRule } from "@ts-fix/rules-core-effect";
 import { rule } from "../main/no-ts-ignore.js";
 
 // Ported VERBATIM from legacy `.../type-assertions/no-ts-ignore.test.ts`,
@@ -11,7 +11,7 @@ describe("SYN rule — no-ts-ignore", () => {
     expect(diags).toHaveLength(1);
     const d = diags[0]!;
     expect(d.rule).toBe("no-ts-ignore");
-    expect(d.plugin).toBe("ts-doctor");
+    expect(d.plugin).toBe("ts-fix");
     expect(d.tier).toBe("SYN");
     expect(d.severity).toBe("warning");
     expect(d.line).toBe(1);

@@ -1,5 +1,5 @@
 /**
- * `@ts-doctor/rules-security-effect` — the `security` rule category (RULE-025):
+ * `@ts-fix/rules-security-effect` — the `security` rule category (RULE-025):
  * 5 SYN AST/regex predicates ported VERBATIM from the legacy catalog.
  *
  *   - `no-eval-or-function-constructor` — `eval(...)` / `new Function(...)` (error)
@@ -13,12 +13,12 @@
  * (vendor-anchored prefixes + fixed token lengths) and kept byte-for-byte.
  *
  * The substrate (`defineRule`/`runRule`/`Rule`/`RuleContext`) is consumed from
- * `@ts-doctor/rules-core-effect`; the data contracts (`Diagnostic`/`RuleMeta`) from
- * `@ts-doctor/contracts-effect`. This barrel does NOT re-export those upstream
+ * `@ts-fix/rules-core-effect`; the data contracts (`Diagnostic`/`RuleMeta`) from
+ * `@ts-fix/contracts-effect`. This barrel does NOT re-export those upstream
  * symbols — import them from their owning packages (barrel hygiene).
  */
 
-import type { Rule } from "@ts-doctor/rules-core-effect";
+import type { Rule } from "@ts-fix/rules-core-effect";
 
 import { rule as noEvalOrFunctionConstructor } from "./no-eval-or-function-constructor.js";
 import { rule as noImpliedEval } from "./no-implied-eval.js";
@@ -48,6 +48,6 @@ export const securityRules: ReadonlyArray<Rule> = [
   noSecretsInSource,
 ];
 
-// Self-barrel: `import { RulesSecurity } from "@ts-doctor/rules-security-effect"`
+// Self-barrel: `import { RulesSecurity } from "@ts-fix/rules-security-effect"`
 // resolves to this module's namespace. Additive — the named exports above stay the surface.
 export * as RulesSecurity from "./index.js";

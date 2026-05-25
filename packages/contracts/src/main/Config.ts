@@ -1,7 +1,7 @@
 /**
- * The CANONICAL user-config contract (`tsdoctor.config.json` / `package.json#tsDoctor`)
+ * The CANONICAL user-config contract (`tsfix.config.json` / `package.json#tsFix`)
  * as `effect/Schema` (Modernization Brief line 94). This is the FULL legacy
- * `TsDoctorConfig` (`legacy/ts-doctor/packages/core/src/types.ts:151-164`), all six
+ * `TsFixConfig` (`legacy/ts-fix/packages/core/src/types.ts:151-164`), all six
  * fields — consolidating the THREE divergent copies that exist today:
  *   - `config` slice:          the full shape (already canonical there; mirrored here).
  *   - `filter-pipeline` slice:  a 3-field SUBSET (`ignore`/`rules`/`categories`).
@@ -73,14 +73,14 @@ export const IgnoreConfig = Schema.Struct({
 export type IgnoreConfig = typeof IgnoreConfig.Type;
 
 /**
- * User config (`tsdoctor.config.json` / `package.json#tsDoctor`), loaded leniently
+ * User config (`tsfix.config.json` / `package.json#tsFix`), loaded leniently
  * (RULE-024). All fields optional — an empty `{}` is a valid, no-op config. Mirrors
- * legacy `TsDoctorConfig` (`types.ts:151-164`) field-for-field.
+ * legacy `TsFixConfig` (`types.ts:151-164`) field-for-field.
  *
  * `plugins` is RETAINED if it is a valid `string[]` so the engine can warn about it
  * (RULE-024) but is NEVER loaded/resolved/imported (RULE-039 — RCE-by-construction).
  */
-export const TsDoctorConfig = Schema.Struct({
+export const TsFixConfig = Schema.Struct({
   ignore: Schema.optional(IgnoreConfig),
   failOn: Schema.optional(FailOn),
   customRulesOnly: Schema.optional(Schema.Boolean),
@@ -95,13 +95,13 @@ export const TsDoctorConfig = Schema.Struct({
   categories: Schema.optional(
     Schema.Record({ key: Schema.String, value: ConfigSeverity }),
   ),
-}).annotations({ identifier: "TsDoctorConfig" });
-export type TsDoctorConfig = typeof TsDoctorConfig.Type;
+}).annotations({ identifier: "TsFixConfig" });
+export type TsFixConfig = typeof TsFixConfig.Type;
 
 /**
- * Decode an untrusted value into a {@link TsDoctorConfig}, returning `Either` (not
+ * Decode an untrusted value into a {@link TsFixConfig}, returning `Either` (not
  * throwing). NOTE: this is a STRICT contract decode, NOT the lenient drop-not-throw
  * loader (RULE-024) — that lives in the config slice's `sanitizeConfig`. Use this only
  * for already-trusted/structured config at a hard boundary.
  */
-export const decodeTsDoctorConfig = Schema.decodeUnknownEither(TsDoctorConfig);
+export const decodeTsFixConfig = Schema.decodeUnknownEither(TsFixConfig);

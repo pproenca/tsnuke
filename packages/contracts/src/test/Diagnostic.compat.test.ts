@@ -5,7 +5,7 @@
  * This package consolidates the `Diagnostic`/`Severity`/`Tier`/`FixKind`/`TextEdit`/`Fix`
  * contracts that score, filter-pipeline, and build-report each vendor today. These tests
  * PIN that the canonical Schemas are a faithful structural SUPERSET of:
- *   - the legacy `import type` interfaces (`packages/ts-doctor-rules/src/types.ts`), and
+ *   - the legacy `import type` interfaces (`packages/ts-fix-rules/src/types.ts`), and
  *   - every vendored copy's accepted shapes
  * so de-vendoring later (delete the local copy, import from here) is provably safe.
  *
@@ -30,7 +30,7 @@ const rejects = <A, I>(s: Schema.Schema<A, I>, v: unknown): boolean =>
   Either.isLeft(decode(s)(v));
 
 describe("Severity — canonical literal union accepts both engine values, rejects out-of-contract", () => {
-  // RULE-031: ts-doctor v1 has NO "info" level. All five vendored copies use the
+  // RULE-031: ts-fix v1 has NO "info" level. All five vendored copies use the
   // identical `Schema.Literal("error", "warning")`. This is the canonical home.
   it("accepts every value the legacy `Severity` type and all vendored copies produce", () => {
     expect(accepts(Severity, "error")).toBe(true);
@@ -74,7 +74,7 @@ describe("Diagnostic — canonical Schema is a SUPERSET of legacy + every vendor
   // The minimal-but-complete required shape (legacy `Diagnostic`, all required fields).
   const requiredFields = {
     filePath: "src/a.ts",
-    plugin: "ts-doctor",
+    plugin: "ts-fix",
     rule: "no-ts-ignore",
     severity: "error" as const,
     message: "Found a @ts-ignore",
@@ -96,7 +96,7 @@ describe("Diagnostic — canonical Schema is a SUPERSET of legacy + every vendor
     expect(
       accepts(Diagnostic, {
         ...requiredFields,
-        plugin: "ts-doctor",
+        plugin: "ts-fix",
         rule: "err-0",
         severity: "warning",
       }),
@@ -107,8 +107,8 @@ describe("Diagnostic — canonical Schema is a SUPERSET of legacy + every vendor
     expect(
       accepts(Diagnostic, {
         ...requiredFields,
-        url: "https://ts-doctor.dev/rules/no-ts-ignore",
-        suppressionHint: "ts-doctor-disable-next-line no-ts-ignore",
+        url: "https://ts-fix.dev/rules/no-ts-ignore",
+        suppressionHint: "ts-fix-disable-next-line no-ts-ignore",
         fix: {
           kind: "auto-fix",
           edits: [{ start: 0, end: 11, replacement: "@ts-expect-error" }],
@@ -181,12 +181,12 @@ describe("Diagnostic — round-trip decode(encode(x)) === x", () => {
   it("round-trips a representative full Diagnostic", () => {
     const value: typeof Diagnostic.Type = {
       filePath: "src/index.ts",
-      plugin: "ts-doctor",
+      plugin: "ts-fix",
       rule: "no-explicit-any",
       severity: "warning",
       message: "Avoid explicit any",
       help: "Use unknown",
-      url: "https://ts-doctor.dev/rules/no-explicit-any",
+      url: "https://ts-fix.dev/rules/no-explicit-any",
       line: 42,
       column: 7,
       category: "types",
@@ -196,7 +196,7 @@ describe("Diagnostic — round-trip decode(encode(x)) === x", () => {
         edits: [{ start: 100, end: 103, replacement: "unknown" }],
         inferredType: "unknown",
       },
-      suppressionHint: "ts-doctor-disable-next-line no-explicit-any",
+      suppressionHint: "ts-fix-disable-next-line no-explicit-any",
     };
     const encoded = Schema.encodeSync(Diagnostic)(value);
     const decoded = Schema.decodeSync(Diagnostic)(encoded);
@@ -206,7 +206,7 @@ describe("Diagnostic — round-trip decode(encode(x)) === x", () => {
   it("round-trips a minimal Diagnostic (no optionals)", () => {
     const value: typeof Diagnostic.Type = {
       filePath: "a.ts",
-      plugin: "ts-doctor",
+      plugin: "ts-fix",
       rule: "r",
       severity: "error",
       message: "m",

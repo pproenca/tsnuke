@@ -1,10 +1,10 @@
 /**
- * `@ts-doctor/rules-error-handling-effect` — the `error-handling` rule category
+ * `@ts-fix/rules-error-handling-effect` — the `error-handling` rule category
  * (RULE-025), the FIRST rule-category slice on the Effect-native substrate to mix
  * SYN and TYP (type-aware) tiers.
  *
  * Eight rules ported verbatim from legacy
- * `packages/ts-doctor-rules/src/rules/error-handling/`:
+ * `packages/ts-fix-rules/src/rules/error-handling/`:
  *
  *   SYN (6) — AST-only, driven by `runRule`:
  *     - `noEmptyCatch` — a `catch {}` that silently swallows the error.
@@ -21,16 +21,16 @@
  *     - `preferPromiseRejectErrors` — `Promise.reject` with a primitive, not an Error.
  *
  * Each rule is a plain-TS `ts.SyntaxKind → visitor` map (NOT Effect-wrapped) built
- * with `defineRule` from `@ts-doctor/rules-core-effect`; the engine drives them via
+ * with `defineRule` from `@ts-fix/rules-core-effect`; the engine drives them via
  * the shared `runRule` (SYN) / `runTypeAwareRule` (TYP) walk/dispatch. The data
- * CONTRACTS (`Diagnostic`, `RuleMeta`) live in `@ts-doctor/contracts-effect` and the
+ * CONTRACTS (`Diagnostic`, `RuleMeta`) live in `@ts-fix/contracts-effect` and the
  * substrate (`defineRule`, `Rule`, `RuleContext`, `runRule`, `runTypeAwareRule`) in
- * `@ts-doctor/rules-core-effect` — this slice consumes both and re-exports NOTHING it
+ * `@ts-fix/rules-core-effect` — this slice consumes both and re-exports NOTHING it
  * does not own (barrel hygiene). See TRANSFORMATION_NOTES.md for the legacy → target
  * mapping.
  */
 
-import type { Rule } from "@ts-doctor/rules-core-effect";
+import type { Rule } from "@ts-fix/rules-core-effect";
 
 import { rule as noEmptyCatch } from "./no-empty-catch.js";
 import { rule as noErrorMessageMatching } from "./no-error-message-matching.js";
@@ -66,6 +66,6 @@ export const errorHandlingRules: ReadonlyArray<Rule> = [
 ];
 
 // Self-barrel: makes `import { RulesErrorHandling } from
-// "@ts-doctor/rules-error-handling-effect"` resolve to this module's namespace
+// "@ts-fix/rules-error-handling-effect"` resolve to this module's namespace
 // (additive — the named exports above stay byte-stable).
 export * as RulesErrorHandling from ".";

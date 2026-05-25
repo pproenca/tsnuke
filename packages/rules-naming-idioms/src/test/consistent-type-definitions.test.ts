@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-doctor/rules-core-effect";
+import { runRule } from "@ts-fix/rules-core-effect";
 import { rule } from "../main/consistent-type-definitions.js";
 
 // Characterization vectors ported VERBATIM from the legacy behavioral spec

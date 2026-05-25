@@ -1,11 +1,11 @@
 # Transformation Notes — `fix-applier` (the `--fix` convergence + source-mutation path) → Effect-TS
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-doctor fix-applier effect`.
-Source (READ-ONLY): `legacy/ts-doctor/packages/ts-doctor/src/fix-applier.ts:36-244` — the
+Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix fix-applier effect`.
+Source (READ-ONLY): `legacy/ts-fix/packages/ts-fix/src/fix-applier.ts:36-244` — the
 PURE splicer (`collectEdits`/`intersects`/`applyEditsOnePass`/`applyFixes`,
 `:36-170`) + the pure grouping (`groupFixesByFile`, `:187-203`) + the effectful file
 shell (`FileIo` seam + `applyFixesToFiles`, `:205-244`). Target:
-`modernized/fix-applier/effect/` (package `@ts-doctor/fix-applier-effect`).
+`modernized/fix-applier/effect/` (package `@ts-fix/fix-applier-effect`).
 
 Implements **RULE-005** (auto-fix convergence, ≤2 passes — **P0**) over the
 **RULE-032** fix-kind taxonomy (only `auto-fix` is mechanically applied), split into:
@@ -17,7 +17,7 @@ Implements **RULE-005** (auto-fix convergence, ≤2 passes — **P0**) over the
   **CWE-59 / non-atomic-write cure** (see §3) — a deliberate SECURITY improvement over
   legacy's direct `io.write`.
 
-`Diagnostic`/`Fix`/`TextEdit` are imported from `@ts-doctor/contracts-effect` (`file:`
+`Diagnostic`/`Fix`/`TextEdit` are imported from `@ts-fix/contracts-effect` (`file:`
 dep) — **NOT re-vendored** — exactly as `build-report/effect` consumes them. The
 effectful shell mirrors `config/effect`'s `loadConfig.ts` Effect-over-FileSystem shape
 (stub-layer test pattern, `NodeContext`, `*Node` runnable).
@@ -118,7 +118,7 @@ write:
    "`lstat` + no-follow" is realised with `readLink`-succeeds, the equivalent no-follow
    test on the available surface. (Swap for `lstat(...).type === "SymbolicLink"` if added.)
 3. **Atomic write** — write to an **unpredictable** same-dir temp
-   (`.<base>.<seq>.tsdoctor-fix.tmp`) opened **O_EXCL (`flag: "wx"`, SEC-002 hardening)** —
+   (`.<base>.<seq>.tsfix-fix.tmp`) opened **O_EXCL (`flag: "wx"`, SEC-002 hardening)** —
    which refuses to FOLLOW or overwrite a symlink pre-planted at the temp path (the audit
    PoC'd a predictable-temp-symlink write-through that the default `"w"` flag allowed) —
    then `FileSystem.rename` it over the canonical target (atomic same-FS replace, not an
@@ -233,9 +233,9 @@ the first cut of the CWE-59 cure** — both now CLOSED and regression-tested:
   realPath-resolved root. Regression test: a dir-symlink victim is rejected `out-of-root`
   and left untouched.
 - **SEC-002 (MEDIUM) — the cure's own predictable temp file was a new symlink-write sink.**
-  The temp was a fixed `.<base>.tsdoctor-fix.tmp` written with the default `"w"` flag (which
+  The temp was a fixed `.<base>.tsfix-fix.tmp` written with the default `"w"` flag (which
   follows symlinks), so a pre-planted symlink there could be clobbered. **Fixed:** the temp
-  is now unpredictable (`.<base>.<seq>.tsdoctor-fix.tmp`) and opened **O_EXCL (`flag: "wx"`)**,
+  is now unpredictable (`.<base>.<seq>.tsfix-fix.tmp`) and opened **O_EXCL (`flag: "wx"`)**,
   which refuses to follow/overwrite. Regression test: a pre-planted temp-symlink → write
   fails → file skipped (`write-error`), the pointee untouched.
 

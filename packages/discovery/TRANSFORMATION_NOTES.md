@@ -1,13 +1,13 @@
 # Transformation Notes — `discovery` (project discovery + capability earning) → Effect-TS
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-doctor discovery effect`.
-Source (READ-ONLY): `legacy/ts-doctor/packages/core/src/discover-ts-project.ts:1-442`
+Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix discovery effect`.
+Source (READ-ONLY): `legacy/ts-fix/packages/core/src/discover-ts-project.ts:1-442`
 (the **largest** core module) — the strict-flag family, the lenient-JSON / `extends`
 helpers, the source-file walkers, the version/module/build/kind detectors,
 `discoverTsProject`, and `computeCapabilities` — plus the `ProjectInfo` type
 (`packages/core/src/types.ts:22-51`) and the `Capability` alias
-(`packages/ts-doctor-rules/src/types.ts:72`). Target:
-`modernized/discovery/effect/` (package `@ts-doctor/discovery-effect`).
+(`packages/ts-fix-rules/src/types.ts:72`). Target:
+`modernized/discovery/effect/` (package `@ts-fix/discovery-effect`).
 
 Implements three rules **end-to-end**:
 - **RULE-012** (source-file discovery caps): `countSourceFiles` (cap 5000) /
@@ -16,7 +16,7 @@ Implements three rules **end-to-end**:
 - **RULE-022** (project discovery validity): `discoverTsProject` — **EFFECTFUL** over
   `FileSystem` + `Path`; the legacy `throw`s become the Effect **error channel**
   (`TsconfigNotFoundError` / `NoTypeScriptProjectError`, imported from
-  `@ts-doctor/errors-effect` via a `file:` dep); a broken `package.json` stays a success
+  `@ts-fix/errors-effect` via a `file:` dep); a broken `package.json` stays a success
   with defaults.
 - **RULE-021** (capability token earning): `computeCapabilities` — a **PURE** synchronous
   derivation over `ProjectInfo` (NOT Effect-wrapped).
@@ -30,7 +30,7 @@ equivalence + 4 production-Layer smoke), almost all on a stub in-memory FileSyst
 (NO real disk), plus the 4 smoke tests against an OS temp dir.
 
 **Result:** 104/104 tests pass · `tsc --noEmit` clean under `strict` +
-`noUncheckedIndexedAccess` + `exactOptionalPropertyTypes`. The `@ts-doctor/errors-effect`
+`noUncheckedIndexedAccess` + `exactOptionalPropertyTypes`. The `@ts-fix/errors-effect`
 `file:` dep resolved and its `Data.TaggedError`s feed the Effect error channel; the prod
 `NodeContext` Layer reads real disk.
 
@@ -41,7 +41,7 @@ equivalence + 4 production-Layer smoke), almost all on a stub in-memory FileSyst
 | Behavior | Legacy `discover-ts-project.ts` | Target |
 |----------|----------------------------------|--------|
 | `ProjectInfo` contract | `types.ts:22-51` (`interface`) | `src/main/ProjectInfo.ts` (`effect/Schema`: `ProjectInfo`, `ProjectKind`, `ModuleSystem`, `BuildTool`) |
-| `Capability` alias | `ts-doctor-rules/src/types.ts:72` (`type = string`) | `src/main/capabilities.ts` `Capability` (`= string`, parity) |
+| `Capability` alias | `ts-fix-rules/src/types.ts:72` (`type = string`) | `src/main/capabilities.ts` `Capability` (`= string`, parity) |
 | `STRICT_FLAGS` (15-member family, RULE-021) | `:24-40` | `src/main/discover.ts` `STRICT_FLAGS` (verbatim, order preserved) |
 | `readJsonFile` (lenient parse: strip comments + trailing commas) | `:47-56` | `src/main/discover.ts` `readJsonFile` — `fs.readFileString` + same regex strip + `Either.try(JSON.parse)`; read-fail OR parse-fail → `undefined` (error channel `never`) |
 | `isObject` guard | `:58-60` | `src/main/discover.ts` `isObject` (kept hand-rolled — see D2) |
@@ -88,7 +88,7 @@ Legacy `discoverTsProject` `throw`s `TsconfigNotFoundError` / `NoTypeScriptProje
 The target returns `Effect<ProjectInfo, TsconfigNotFoundError | NoTypeScriptProjectError,
 FileSystem | Path>` and `Effect.fail`s those typed errors on the **error channel** — the
 idiomatic Effect replacement for `throw`. The errors are the `effect/Data` tagged errors
-from `@ts-doctor/errors-effect` (a `file:../../errors/effect` dep), so they carry the same
+from `@ts-fix/errors-effect` (a `file:../../errors/effect` dep), so they carry the same
 `_tag` / `name` / verbatim message the CLI + `serializeError` consume (RULE-037). The
 error MESSAGES (`No tsconfig.json found in ${root}. …`, `No resolvable 'typescript'
 dependency and no .ts/.tsx sources found in ${root}.`) are reproduced verbatim, with the
@@ -195,11 +195,11 @@ computeCapabilities(info): Set<Capability>   // PURE, sync — no Effect
 
 4. **`ProjectInfo` ownership (de-vendor target).** This slice OWNS `ProjectInfo` (it is the
    sole producer and not yet duplicated). The architecture review's cross-cutting note
-   (config TRANSFORMATION_NOTES §7a) recommends a shared `@ts-doctor/contracts-effect`
+   (config TRANSFORMATION_NOTES §7a) recommends a shared `@ts-fix/contracts-effect`
    package; if it lands, this `ProjectInfo` Schema is the canonical source to de-vendor
    onto. `Capability` de-vendor: **DONE** — the local bare `type Capability = string`
    alias in `src/main/capabilities.ts` was DELETED and replaced with a type-only import
-   of the canonical `Capability` from `@ts-doctor/contracts-effect` (`Schema.String`,
+   of the canonical `Capability` from `@ts-fix/contracts-effect` (`Schema.String`,
    `.Type === string` — structurally identical). Suite stayed green (109/109). `ProjectInfo`
    remains slice-owned (out of scope this pass).
 
@@ -222,7 +222,7 @@ computeCapabilities(info): Set<Capability>   // PURE, sync — no Effect
   `NodeContext`), and `@effect/vitest@^0.29.0` (devDep). Versions resolved via `npm view`
   against `effect@^3.21.2` (peer `effect: ^3.21.x`), matching the `config` slice exactly so
   they resolve to the same store entries.
-- **`file:` dependency on the errors slice:** `"@ts-doctor/errors-effect":
+- **`file:` dependency on the errors slice:** `"@ts-fix/errors-effect":
   "file:../../errors/effect"`. `pnpm install` symlinks it; `tsc` resolves its `.ts`
   types and `vitest` runs against them across the symlink. The five `Data.TaggedError`s
   feed the Effect error channel directly (D1) — **the `file:` dep + the error-channel
@@ -295,5 +295,5 @@ did it from the start).
 - **L7 — `collectSourceFiles` is exported with no in-slice consumer** (ready for the diagnose
   slice); borderline speculative surface until that lands.
 - **C1 — `Capability` de-vendor: DONE.** The local bare alias was deleted; this slice now
-  imports the canonical `Capability` (type-only) from `@ts-doctor/contracts-effect`. One
+  imports the canonical `Capability` (type-only) from `@ts-fix/contracts-effect`. One
   definition gates which rules fire → the score. (Suite green 109/109; `tsc --noEmit` clean.)

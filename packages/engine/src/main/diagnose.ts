@@ -1,7 +1,7 @@
 /**
  * `diagnose()` — the public boundary that wires the whole pipeline end-to-end, as an
  * `Effect` (RULE-018 partial-honesty carried through). Faithful Effect port of legacy
- * `legacy/ts-doctor/packages/core/src/index.ts:189-249` (`diagnose`) plus its helpers
+ * `legacy/ts-fix/packages/core/src/index.ts:189-249` (`diagnose`) plus its helpers
  * `overridesFromConfig` (:168-176) and `readSourceFiles` (:154-165).
  *
  * Wires (the same order as legacy):
@@ -9,7 +9,7 @@
  *   → filter pipeline → local score → DiagnoseResult.
  *
  * WHAT THE EFFECT PORT CHANGES vs legacy (see TRANSFORMATION_NOTES.md §2):
- *   - `diagnose` is now an `Effect<DiagnoseResult, TsDoctorError, FileSystem | Path |
+ *   - `diagnose` is now an `Effect<DiagnoseResult, TsFixError, FileSystem | Path |
  *     Scope>` — NOT an `async` function. Discovery's typed errors
  *     (`TsconfigNotFoundError` / `NoTypeScriptProjectError`) flow on the ERROR CHANNEL
  *     (legacy `throw`); the file reads go through `@effect/platform` `FileSystem`/`Path`
@@ -32,17 +32,17 @@ import {
   computeCapabilities,
   discoverTsProject,
   type ProjectInfo,
-} from "@ts-doctor/discovery-effect";
-import { loadConfig } from "@ts-doctor/config-effect";
-import { computeScore } from "@ts-doctor/score-effect";
-import { runFilterPipeline, type DiagnosticWithTags } from "@ts-doctor/filter-pipeline-effect";
-import type { TsDoctorConfig } from "@ts-doctor/contracts-effect";
-import type { Severity } from "@ts-doctor/engine-plan-effect";
-import type { SeverityOverrides } from "@ts-doctor/engine-plan-effect";
+} from "@ts-fix/discovery-effect";
+import { loadConfig } from "@ts-fix/config-effect";
+import { computeScore } from "@ts-fix/score-effect";
+import { runFilterPipeline, type DiagnosticWithTags } from "@ts-fix/filter-pipeline-effect";
+import type { TsFixConfig } from "@ts-fix/contracts-effect";
+import type { Severity } from "@ts-fix/engine-plan-effect";
+import type { SeverityOverrides } from "@ts-fix/engine-plan-effect";
 import type {
   NoTypeScriptProjectError,
   TsconfigNotFoundError,
-} from "@ts-doctor/errors-effect";
+} from "@ts-fix/errors-effect";
 import { runEngine, type RunEngineOptions, type SourceFileInput } from "./runEngine.js";
 import type { DiagnoseOptions, DiagnoseResult, ScoreResult } from "./types.js";
 
@@ -129,7 +129,7 @@ export const diagnose: (
 
     const project: ProjectInfo = yield* discoverTsProject(directory);
     const caps = computeCapabilities(project);
-    const config: TsDoctorConfig = yield* loadConfig(directory);
+    const config: TsFixConfig = yield* loadConfig(directory);
 
     const ignoredTags = new Set(config.ignore?.tags ?? []);
     const overrides = overridesFromConfig(config.rules);

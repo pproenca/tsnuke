@@ -10,13 +10,13 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { applyFixesToFilesNode } from "@ts-doctor/fix-applier-effect";
-import type { Diagnostic } from "@ts-doctor/contracts-effect";
+import { applyFixesToFilesNode } from "@ts-fix/fix-applier-effect";
+import type { Diagnostic } from "@ts-fix/contracts-effect";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "tsdoctor-fix-"));
+  dir = mkdtempSync(join(tmpdir(), "tsfix-fix-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -32,7 +32,7 @@ describe("--fix wiring against real files (applyFixesToFilesNode)", () => {
     const start = source.indexOf("any");
     const fixable: Diagnostic = {
       filePath: file,
-      plugin: "ts-doctor",
+      plugin: "ts-fix",
       rule: "no-any",
       severity: "warning",
       message: "Avoid `any`.",
@@ -58,7 +58,7 @@ describe("--fix wiring against real files (applyFixesToFilesNode)", () => {
     writeFileSync(file, "const y: any = 2;\n", "utf8");
     const manual: Diagnostic = {
       filePath: file,
-      plugin: "ts-doctor",
+      plugin: "ts-fix",
       rule: "no-any",
       severity: "warning",
       message: "Avoid `any`.",

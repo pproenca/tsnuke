@@ -22,7 +22,7 @@ function diag(
   over: Partial<Diagnostic> & Pick<Diagnostic, "rule" | "severity" | "filePath">,
 ): Diagnostic {
   return {
-    plugin: "ts-doctor",
+    plugin: "ts-fix",
     message: "m",
     help: "h",
     line: 1,

@@ -1,5 +1,5 @@
 /**
- * `@ts-doctor/capabilities-effect` — public surface of the Effect-TS rule-activation
+ * `@ts-fix/capabilities-effect` — public surface of the Effect-TS rule-activation
  * predicate slice.
  *
  * Implements RULE-019 (universal rule-activation predicate) and RULE-020 (inverted
@@ -8,7 +8,7 @@
  *
  * The vendored contract (`RuleMeta`/`Severity`/`Capability`, modeled as `effect/Schema`)
  * is the activation-relevant subset only; ownership migrates to the future
- * `@ts-doctor/rules` Effect slice (TRANSFORMATION_NOTES Follow-up #1). `Tier` is
+ * `@ts-fix/rules` Effect slice (TRANSFORMATION_NOTES Follow-up #1). `Tier` is
  * defined in RuleMeta.ts for a faithful contract but is NOT re-exported here — the
  * predicate doesn't gate on it, and publishing a symbol pre-committed to de-vendoring
  * would create a breaking removal later (barrel hygiene).
@@ -23,7 +23,7 @@ export {
 
 export { resolveSeverity, shouldActivate } from "./Capabilities.js";
 
-// Self-barrel: lets consumers `import { Capabilities } from "@ts-doctor/capabilities-effect"`
+// Self-barrel: lets consumers `import { Capabilities } from "@ts-fix/capabilities-effect"`
 // and reach the whole slice as a namespace, alongside the named re-exports above. Note
 // `Tier` stays out of this namespace because index.ts deliberately does not re-export it
 // (barrel hygiene — see the module doc above).

@@ -10,7 +10,7 @@
  * Strategy:
  *   1. VENDORED, FROZEN, ATTRIBUTED copy of the legacy algorithm as an oracle
  *      (below) — copied verbatim from
- *      legacy/ts-doctor/packages/core/src/filter-pipeline.ts (218 lines), with the
+ *      legacy/ts-fix/packages/core/src/filter-pipeline.ts (218 lines), with the
  *      legacy two-place `warn`→`warning` normalization preserved AS-IS. Do NOT
  *      "fix" or refactor it — its job is to be the ground truth we diverge from
  *      structurally (single vocab) but match behaviorally.
@@ -24,12 +24,12 @@
 
 import { describe, expect, it } from "vitest";
 import { runFilterPipeline as modernRun } from "../main/index.js";
-import type { DiagnosticWithTags, TsDoctorConfig } from "../main/index.js";
+import type { DiagnosticWithTags, TsFixConfig } from "../main/index.js";
 
 // ===========================================================================
 // ORACLE — frozen verbatim copy of
-// legacy/ts-doctor/packages/core/src/filter-pipeline.ts (READ-ONLY source).
-// Attribution: ts-doctor @ts-doctor/core, src/filter-pipeline.ts. The legacy
+// legacy/ts-fix/packages/core/src/filter-pipeline.ts (READ-ONLY source).
+// Attribution: ts-fix @ts-fix/core, src/filter-pipeline.ts. The legacy
 // `warn`↔`warning` normalization (normalizeSeverity) is preserved here exactly;
 // the modern slice consolidates it (D1) but must produce identical output.
 // For differential testing ONLY — do not refactor.
@@ -57,7 +57,7 @@ interface LegacyDiagnosticWithTags extends LegacyDiagnostic {
   tags?: readonly string[];
 }
 
-interface LegacyTsDoctorConfig {
+interface LegacyTsFixConfig {
   ignore?: {
     rules?: string[];
     files?: string[];
@@ -95,7 +95,7 @@ function legacyStageAutoSuppress(
   return d;
 }
 
-function legacyMakeSeverityStage(config: LegacyTsDoctorConfig): LegacyStage {
+function legacyMakeSeverityStage(config: LegacyTsFixConfig): LegacyStage {
   const ruleOverrides = config.rules ?? {};
   const categoryOverrides = config.categories ?? {};
   return (d) => {
@@ -122,7 +122,7 @@ function legacyFileMatches(filePath: string, pattern: string): boolean {
   return false;
 }
 
-function legacyMakeIgnoreStage(config: LegacyTsDoctorConfig): LegacyStage {
+function legacyMakeIgnoreStage(config: LegacyTsFixConfig): LegacyStage {
   const ignore = config.ignore ?? {};
   const ignoredRules = new Set(ignore.rules ?? []);
   const ignoredFiles = ignore.files ?? [];
@@ -146,7 +146,7 @@ function legacyMakeIgnoreStage(config: LegacyTsDoctorConfig): LegacyStage {
   };
 }
 
-const LEGACY_DISABLE_NEXT_LINE_RE = /\/\/\s*ts-doctor-disable-next-line\s*(.*)$/;
+const LEGACY_DISABLE_NEXT_LINE_RE = /\/\/\s*ts-fix-disable-next-line\s*(.*)$/;
 
 function legacyParseInlineDisables(
   text: string,
@@ -195,7 +195,7 @@ function legacyMakeInlineDisableStage(
 
 function legacyRunFilterPipeline(
   diagnostics: readonly LegacyDiagnosticWithTags[],
-  config: LegacyTsDoctorConfig,
+  config: LegacyTsFixConfig,
   options: LegacyFilterPipelineOptions = {},
 ): LegacyDiagnostic[] {
   const respectInline = options.respectInlineDisables !== false;
@@ -233,7 +233,7 @@ function diag(
 ): DiagnosticWithTags {
   return {
     filePath: over.filePath ?? "/x/a.ts",
-    plugin: "ts-doctor",
+    plugin: "ts-fix",
     severity: "error",
     message: "m",
     help: "h",
@@ -248,27 +248,27 @@ function diag(
 interface Fixture {
   name: string;
   diagnostics: DiagnosticWithTags[];
-  config: TsDoctorConfig;
+  config: TsFixConfig;
   options?: { respectInlineDisables?: boolean; sources?: Map<string, string> };
 }
 
 const SRC_DISABLE_RULE = new Map([
   [
     "/x/a.ts",
-    ["const a = 1;", "// ts-doctor-disable-next-line no-magic", "const b: any = 2;"].join("\n"),
+    ["const a = 1;", "// ts-fix-disable-next-line no-magic", "const b: any = 2;"].join("\n"),
   ],
 ]);
 const SRC_DISABLE_ALL = new Map([
-  ["/x/a.ts", ["// ts-doctor-disable-next-line", "const b: any = 2;"].join("\n")],
+  ["/x/a.ts", ["// ts-fix-disable-next-line", "const b: any = 2;"].join("\n")],
 ]);
 const SRC_DISABLE_NS = new Map([
-  ["/x/a.ts", ["// ts-doctor-disable-next-line ts-doctor/no-magic", "const b = 2;"].join("\n")],
+  ["/x/a.ts", ["// ts-fix-disable-next-line ts-fix/no-magic", "const b = 2;"].join("\n")],
 ]);
 const SRC_DISABLE_LIST = new Map([
-  ["/x/a.ts", ["// ts-doctor-disable-next-line  a, b ,c", "const b = 2;"].join("\n")],
+  ["/x/a.ts", ["// ts-fix-disable-next-line  a, b ,c", "const b = 2;"].join("\n")],
 ]);
 const SRC_CRLF = new Map([
-  ["/x/a.ts", "// ts-doctor-disable-next-line r\r\nconst b = 2;\rconst c = 3;"],
+  ["/x/a.ts", "// ts-fix-disable-next-line r\r\nconst b = 2;\rconst c = 3;"],
 ]);
 
 const fixtures: Fixture[] = [
@@ -282,15 +282,15 @@ const fixtures: Fixture[] = [
 
   // Stage 2 — rules
   { name: "rules off bare", diagnostics: [diag({ rule: "off-me" })], config: { rules: { "off-me": "off" } } },
-  { name: "rules off ns", diagnostics: [diag({ rule: "off-me" })], config: { rules: { "ts-doctor/off-me": "off" } } },
+  { name: "rules off ns", diagnostics: [diag({ rule: "off-me" })], config: { rules: { "ts-fix/off-me": "off" } } },
   { name: "rules warn->warning", diagnostics: [diag({ rule: "r", severity: "error" })], config: { rules: { r: "warn" } } },
   { name: "rules error upgrade", diagnostics: [diag({ rule: "r", severity: "warning" })], config: { rules: { r: "error" } } },
   // Stage 2 — bare-vs-namespaced key COLLISION (pins the `??` precedence at
   // stages.ts:68 — bare `rule` wins over `plugin/rule`). If those `??` operands
   // were ever swapped, BOTH fixtures diverge from the oracle: a score-moving
   // regression (filter-pipeline is the last gate before scoring). Architecture review.
-  { name: "rules collision: bare warn beats ns off", diagnostics: [diag({ plugin: "ts-doctor", rule: "r", severity: "error" })], config: { rules: { r: "warn", "ts-doctor/r": "off" } } },
-  { name: "rules collision: bare off beats ns warn", diagnostics: [diag({ plugin: "ts-doctor", rule: "r", severity: "error" })], config: { rules: { r: "off", "ts-doctor/r": "warn" } } },
+  { name: "rules collision: bare warn beats ns off", diagnostics: [diag({ plugin: "ts-fix", rule: "r", severity: "error" })], config: { rules: { r: "warn", "ts-fix/r": "off" } } },
+  { name: "rules collision: bare off beats ns warn", diagnostics: [diag({ plugin: "ts-fix", rule: "r", severity: "error" })], config: { rules: { r: "off", "ts-fix/r": "warn" } } },
   // Stage 2 — categories + precedence
   { name: "categories off", diagnostics: [diag({ rule: "r", category: "Type Safety" })], config: { categories: { "Type Safety": "off" } } },
   { name: "categories warn", diagnostics: [diag({ rule: "r", category: "Type Safety", severity: "error" })], config: { categories: { "Type Safety": "warn" } } },
@@ -299,8 +299,8 @@ const fixtures: Fixture[] = [
 
   // Stage 3 — ignore.rules
   { name: "ignore rule bare", diagnostics: [diag({ rule: "ig" })], config: { ignore: { rules: ["ig"] } } },
-  { name: "ignore rule ns", diagnostics: [diag({ rule: "ig" })], config: { ignore: { rules: ["ts-doctor/ig"] } } },
-  { name: "ignore rules collision: both forms present still drops", diagnostics: [diag({ plugin: "ts-doctor", rule: "ig" })], config: { ignore: { rules: ["ig", "ts-doctor/ig"] } } },
+  { name: "ignore rule ns", diagnostics: [diag({ rule: "ig" })], config: { ignore: { rules: ["ts-fix/ig"] } } },
+  { name: "ignore rules collision: both forms present still drops", diagnostics: [diag({ plugin: "ts-fix", rule: "ig" })], config: { ignore: { rules: ["ig", "ts-fix/ig"] } } },
   // Stage 3 — ignore.files (exact / suffix / substring)
   { name: "ignore file exact", diagnostics: [diag({ rule: "r", filePath: "/x/a.ts" })], config: { ignore: { files: ["/x/a.ts"] } } },
   { name: "ignore file suffix", diagnostics: [diag({ rule: "r", filePath: "/deep/a.ts" })], config: { ignore: { files: ["a.ts"] } } },
@@ -309,14 +309,14 @@ const fixtures: Fixture[] = [
   // Stage 3 — overrides
   { name: "override no rules drops all", diagnostics: [diag({ rule: "x", filePath: "/x/c.ts" }), diag({ rule: "y", filePath: "/x/c.ts" })], config: { ignore: { overrides: [{ files: ["c.ts"] }] } } },
   { name: "override with rules scoped", diagnostics: [diag({ rule: "scoped", filePath: "/x/c.ts" }), diag({ rule: "other", filePath: "/x/c.ts" })], config: { ignore: { overrides: [{ files: ["c.ts"], rules: ["scoped"] }] } } },
-  { name: "override with rules ns", diagnostics: [diag({ rule: "scoped", filePath: "/x/c.ts" })], config: { ignore: { overrides: [{ files: ["c.ts"], rules: ["ts-doctor/scoped"] }] } } },
-  { name: "override rules collision: both forms present still drops", diagnostics: [diag({ plugin: "ts-doctor", rule: "scoped", filePath: "/x/c.ts" })], config: { ignore: { overrides: [{ files: ["c.ts"], rules: ["scoped", "ts-doctor/scoped"] }] } } },
+  { name: "override with rules ns", diagnostics: [diag({ rule: "scoped", filePath: "/x/c.ts" })], config: { ignore: { overrides: [{ files: ["c.ts"], rules: ["ts-fix/scoped"] }] } } },
+  { name: "override rules collision: both forms present still drops", diagnostics: [diag({ plugin: "ts-fix", rule: "scoped", filePath: "/x/c.ts" })], config: { ignore: { overrides: [{ files: ["c.ts"], rules: ["scoped", "ts-fix/scoped"] }] } } },
   { name: "override non-matching file survives", diagnostics: [diag({ rule: "scoped", filePath: "/x/d.ts" })], config: { ignore: { overrides: [{ files: ["c.ts"], rules: ["scoped"] }] } } },
 
   // Stage 4 — inline-disable
   { name: "inline disable rule", diagnostics: [diag({ rule: "no-magic", filePath: "/x/a.ts", line: 3 }), diag({ rule: "other", filePath: "/x/a.ts", line: 3 })], config: {}, options: { sources: SRC_DISABLE_RULE } },
   { name: "inline disable all", diagnostics: [diag({ rule: "whatever", filePath: "/x/a.ts", line: 2 })], config: {}, options: { sources: SRC_DISABLE_ALL } },
-  { name: "inline disable ns", diagnostics: [diag({ plugin: "ts-doctor", rule: "no-magic", filePath: "/x/a.ts", line: 2 })], config: {}, options: { sources: SRC_DISABLE_NS } },
+  { name: "inline disable ns", diagnostics: [diag({ plugin: "ts-fix", rule: "no-magic", filePath: "/x/a.ts", line: 2 })], config: {}, options: { sources: SRC_DISABLE_NS } },
   { name: "inline disable list", diagnostics: [diag({ rule: "b", filePath: "/x/a.ts", line: 2 }), diag({ rule: "z", filePath: "/x/a.ts", line: 2 })], config: {}, options: { sources: SRC_DISABLE_LIST } },
   { name: "inline disable crlf", diagnostics: [diag({ rule: "r", filePath: "/x/a.ts", line: 2 })], config: {}, options: { sources: SRC_CRLF } },
   { name: "inline disable line<=0 exempt", diagnostics: [diag({ rule: "x", filePath: "/x/a.ts", line: 0 }), diag({ rule: "x", filePath: "/x/a.ts", line: -3 })], config: {}, options: { sources: SRC_DISABLE_ALL } },
@@ -350,7 +350,7 @@ const fixtures: Fixture[] = [
             "l2",
             "l3",
             "l4",
-            "// ts-doctor-disable-next-line no-magic",
+            "// ts-fix-disable-next-line no-magic",
             "const x: any = 1;",
             "l7",
             "const kept = 1;",
@@ -390,7 +390,7 @@ describe("equivalence — RULE-023 differential (modern === legacy, structural)"
       );
       const legacy = legacyRunFilterPipeline(
         fx.diagnostics as unknown as LegacyDiagnosticWithTags[],
-        fx.config as unknown as LegacyTsDoctorConfig,
+        fx.config as unknown as LegacyTsFixConfig,
         (fx.options ?? {}) as LegacyFilterPipelineOptions,
       );
       // Structural deep equality — same survivors, same field values, same order,
@@ -416,11 +416,11 @@ describe("equivalence — RULE-040 out-of-vocab config severity falls through to
   // (architecture review). The cast is deliberate — we are probing contract-violating input.
   it('a config value of "warning" maps to error in both pipelines', () => {
     const d = diag({ rule: "r", severity: "warning" });
-    const cfg = { rules: { r: "warning" } } as unknown as TsDoctorConfig;
+    const cfg = { rules: { r: "warning" } } as unknown as TsFixConfig;
     const modern = modernRun([d], cfg, {});
     const legacy = legacyRunFilterPipeline(
       [d as unknown as LegacyDiagnosticWithTags],
-      cfg as unknown as LegacyTsDoctorConfig,
+      cfg as unknown as LegacyTsFixConfig,
       {},
     );
     expect(modern).toEqual(legacy);

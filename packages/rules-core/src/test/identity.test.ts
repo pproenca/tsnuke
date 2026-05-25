@@ -4,13 +4,13 @@
  */
 
 import { describe, expect, it } from "vitest";
-import type { Diagnostic } from "@ts-doctor/contracts-effect";
+import type { Diagnostic } from "@ts-fix/contracts-effect";
 import { diagnosticIdentity } from "../main/index.js";
 
 function diag(overrides: Partial<Diagnostic> = {}): Diagnostic {
   return {
     filePath: "src/foo.ts",
-    plugin: "ts-doctor",
+    plugin: "ts-fix",
     rule: "no-explicit-any",
     severity: "warning",
     message: "m",
@@ -26,7 +26,7 @@ function diag(overrides: Partial<Diagnostic> = {}): Diagnostic {
 describe("BC-13 — deterministic diagnostic identity", () => {
   it("has the exact format filePath::line:column::plugin/rule", () => {
     expect(diagnosticIdentity(diag())).toBe(
-      "src/foo.ts::12:4::ts-doctor/no-explicit-any",
+      "src/foo.ts::12:4::ts-fix/no-explicit-any",
     );
   });
 

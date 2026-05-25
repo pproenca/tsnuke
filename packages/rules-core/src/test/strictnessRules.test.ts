@@ -14,7 +14,7 @@
 
 import { describe, expect, it } from "vitest";
 import type ts from "typescript";
-import type { RuleMeta } from "@ts-doctor/contracts-effect";
+import type { RuleMeta } from "@ts-fix/contracts-effect";
 import {
   enableStrict,
   enableNoUncheckedIndexedAccess,

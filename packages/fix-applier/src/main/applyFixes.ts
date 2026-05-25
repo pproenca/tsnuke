@@ -1,7 +1,7 @@
 /**
  * The PURE `--fix` splicer (RULE-005, P0 — the load-bearing auto-fix convergence
  * algorithm). Source of truth (READ-ONLY):
- * `legacy/ts-doctor/packages/ts-doctor/src/fix-applier.ts:36-203`
+ * `legacy/ts-fix/packages/ts-fix/src/fix-applier.ts:36-203`
  * (`collectEdits` `:36-44`, `intersects` `:72-74`, `applyEditsOnePass` `:89-137`,
  * `applyFixes` `:149-170`, `groupFixesByFile` `:187-203`).
  *
@@ -10,7 +10,7 @@
  * stays pure; only the file IO is effectful"). The effectful shell that reads/writes
  * disk lives in `./applyFixesToFiles.ts`; this is the testable, deterministic kernel
  * it calls. `Diagnostic`/`Fix`/`TextEdit` are imported (NOT re-vendored) from the
- * canonical `@ts-doctor/contracts-effect` Schema home.
+ * canonical `@ts-fix/contracts-effect` Schema home.
  *
  * ──────────────────────────────────────────────────────────────────────────────
  * RULE-005 SME QUESTION — PRESERVED, NOT "FIXED" (data-integrity flag).
@@ -27,7 +27,7 @@
  * brief: "do NOT 'fix' the ≤2-pass completeness gap — preserve + document it"); it is
  * pinned by a characterization test of a 3+-adjacent chain. See TRANSFORMATION_NOTES.md.
  */
-import type { Diagnostic, Fix, TextEdit } from "@ts-doctor/contracts-effect";
+import type { Diagnostic, Fix, TextEdit } from "@ts-fix/contracts-effect";
 
 /** Result of applying a fix set to one source string. */
 export interface ApplyResult {

@@ -1,7 +1,7 @@
 /**
- * `@ts-doctor/rules-graph-effect` — the GRAPH-tier rules.
+ * `@ts-fix/rules-graph-effect` — the GRAPH-tier rules.
  *
- * Two pure plain-TS graph predicates that plug into the `@ts-doctor/rules-core-effect`
+ * Two pure plain-TS graph predicates that plug into the `@ts-fix/rules-core-effect`
  * substrate (`defineGraphRule` + the whole-graph `analyze(ctx)` shape); the engine drives
  * them via the SAME `analyze` pass as `runGraphRule`:
  *   - {@link noImportCycles} (RULE-015) — circular import dependencies, found with an
@@ -16,12 +16,12 @@
  * the distinct `GraphRule` shape (`analyze` over a graph, not a `SyntaxKind → visitor` map).
  *
  * The substrate (`defineGraphRule` / `GraphRule` / `runGraphRule`) is imported from
- * `@ts-doctor/rules-core-effect`; the data contracts (`Diagnostic` / `RuleMeta`) live in
- * `@ts-doctor/contracts-effect`. This slice does NOT re-export either's symbols (barrel
+ * `@ts-fix/rules-core-effect`; the data contracts (`Diagnostic` / `RuleMeta`) live in
+ * `@ts-fix/contracts-effect`. This slice does NOT re-export either's symbols (barrel
  * hygiene — it publishes only what it owns: the two rules + the graph registry).
  */
 
-import type { GraphRule } from "@ts-doctor/rules-core-effect";
+import type { GraphRule } from "@ts-fix/rules-core-effect";
 
 import { rule as noImportCycles } from "./no-import-cycles.js";
 import { rule as noUnusedExports } from "./no-unused-exports.js";
@@ -38,6 +38,6 @@ export { noImportCycles, noUnusedExports };
  */
 export const graphRules: ReadonlyArray<GraphRule> = [noImportCycles, noUnusedExports];
 
-// Self-barrel: `import { RulesGraph } from "@ts-doctor/rules-graph-effect"`
+// Self-barrel: `import { RulesGraph } from "@ts-fix/rules-graph-effect"`
 // resolves to this module's namespace. Additive — the named exports above stay the surface.
 export * as RulesGraph from "./index.js";

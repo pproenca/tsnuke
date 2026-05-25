@@ -11,12 +11,12 @@
  *   - `message`             (identical)
  *   - `instanceof Error`    (identical — true for both)
  *   - native `.cause`       (identical — same value, instanceof Error walkable)
- *   - `isTsDoctorError`     (identical discrimination: all 5 true, others false)
+ *   - `isTsFixError`     (identical discrimination: all 5 true, others false)
  *
  * WHERE THE REPRESENTATIONS LEGITIMATELY DIFFER (asserted, not papered over):
  *
- *   1. Class identity / shared base. Legacy had ONE base class `TsDoctorError`
- *      and every subclass was `instanceof TsDoctorError`. The modern slice uses
+ *   1. Class identity / shared base. Legacy had ONE base class `TsFixError`
+ *      and every subclass was `instanceof TsFixError`. The modern slice uses
  *      five INDEPENDENT `Data.TaggedError`s (no shared instance base) so that each
  *      keeps its own correct `name` (subclassing one tagged base would freeze
  *      `name` to the base tag). Cross-implementation `instanceof` is therefore
@@ -37,54 +37,54 @@ import {
   NoTypeScriptProjectError,
   ProjectNotFoundError,
   TsconfigNotFoundError,
-  TsDoctorError,
-  isTsDoctorError,
+  TsFixError,
+  isTsFixError,
 } from "../main/index.js";
 
 // ===========================================================================
 // ORACLE: Frozen, verbatim copy of
-//   legacy/ts-doctor/packages/core/src/errors.ts:10-61
+//   legacy/ts-fix/packages/core/src/errors.ts:10-61
 // (plain Error subclasses, `_tag` discriminant, instanceof-based guard).
 // For differential testing ONLY — do not "fix", refactor, or import from it.
 // ===========================================================================
-class LegacyTsDoctorError extends Error {
-  readonly _tag: string = "TsDoctorError";
+class LegacyTsFixError extends Error {
+  readonly _tag: string = "TsFixError";
   constructor(message: string, options?: { cause?: unknown }) {
     super(message, options as ErrorOptions | undefined);
-    this.name = "TsDoctorError";
+    this.name = "TsFixError";
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }
-class LegacyProjectNotFoundError extends LegacyTsDoctorError {
+class LegacyProjectNotFoundError extends LegacyTsFixError {
   override readonly _tag = "ProjectNotFoundError";
   constructor(message: string, options?: { cause?: unknown }) {
     super(message, options);
     this.name = "ProjectNotFoundError";
   }
 }
-class LegacyNoTypeScriptProjectError extends LegacyTsDoctorError {
+class LegacyNoTypeScriptProjectError extends LegacyTsFixError {
   override readonly _tag = "NoTypeScriptProjectError";
   constructor(message: string, options?: { cause?: unknown }) {
     super(message, options);
     this.name = "NoTypeScriptProjectError";
   }
 }
-class LegacyTsconfigNotFoundError extends LegacyTsDoctorError {
+class LegacyTsconfigNotFoundError extends LegacyTsFixError {
   override readonly _tag = "TsconfigNotFoundError";
   constructor(message: string, options?: { cause?: unknown }) {
     super(message, options);
     this.name = "TsconfigNotFoundError";
   }
 }
-class LegacyAmbiguousProjectError extends LegacyTsDoctorError {
+class LegacyAmbiguousProjectError extends LegacyTsFixError {
   override readonly _tag = "AmbiguousProjectError";
   constructor(message: string, options?: { cause?: unknown }) {
     super(message, options);
     this.name = "AmbiguousProjectError";
   }
 }
-function legacyIsTsDoctorError(value: unknown): value is LegacyTsDoctorError {
-  return value instanceof LegacyTsDoctorError;
+function legacyIsTsFixError(value: unknown): value is LegacyTsFixError {
+  return value instanceof LegacyTsFixError;
 }
 
 // ---------------------------------------------------------------------------
@@ -95,9 +95,9 @@ type Make = (m: string, o?: { cause?: unknown }) => Error & { readonly _tag: str
 
 const pairs: ReadonlyArray<readonly [string, Make, Make]> = [
   [
-    "TsDoctorError",
-    (m, o) => new LegacyTsDoctorError(m, o),
-    (m, o) => new TsDoctorError(m, o),
+    "TsFixError",
+    (m, o) => new LegacyTsFixError(m, o),
+    (m, o) => new TsFixError(m, o),
   ],
   [
     "ProjectNotFoundError",
@@ -190,8 +190,8 @@ describe("equivalence — RULE-037 guard discriminates identically to legacy", (
   it.each(pairs)(
     "%s: both guards return true for their own family",
     (_label, makeLegacy, makeModern) => {
-      expect(isTsDoctorError(makeModern("x"))).toBe(true);
-      expect(legacyIsTsDoctorError(makeLegacy("x"))).toBe(true);
+      expect(isTsFixError(makeModern("x"))).toBe(true);
+      expect(legacyIsTsFixError(makeLegacy("x"))).toBe(true);
     },
   );
 
@@ -207,8 +207,8 @@ describe("equivalence — RULE-037 guard discriminates identically to legacy", (
       [],
     ];
     for (const v of negatives) {
-      expect(isTsDoctorError(v)).toBe(legacyIsTsDoctorError(v));
-      expect(isTsDoctorError(v)).toBe(false);
+      expect(isTsFixError(v)).toBe(legacyIsTsFixError(v));
+      expect(isTsFixError(v)).toBe(false);
     }
   });
 
@@ -219,9 +219,9 @@ describe("equivalence — RULE-037 guard discriminates identically to legacy", (
     // guard is contract-based (`_tag` membership), not instanceof-based. We
     // assert the divergence explicitly so it is a known, intentional fact.
     const modern = new ProjectNotFoundError("x");
-    expect(modern instanceof LegacyTsDoctorError).toBe(false);
+    expect(modern instanceof LegacyTsFixError).toBe(false);
     // ...yet the contract guard still classifies it correctly:
-    expect(isTsDoctorError(modern)).toBe(true);
+    expect(isTsFixError(modern)).toBe(true);
     // ...and it remains a real Error (the contract that actually matters):
     expect(modern instanceof Error).toBe(true);
   });

@@ -1,5 +1,5 @@
 /**
- * `@ts-doctor/format-effect` — public surface of the Effect-TS output-formatter slice.
+ * `@ts-fix/format-effect` — public surface of the Effect-TS output-formatter slice.
  *
  * Three PURE formatters over structural inputs (NOT Effect-wrapped — pure string
  * formatting, no IO):
@@ -12,7 +12,7 @@
  *   - `asRuleLookup` / `explain` / `explainDiagnostic`: the offline `--explain` text
  *     (no model call), generic over the rule-registry `Record<string, RuleMeta>` shape.
  *
- * Consumes `@ts-doctor/contracts-effect` for the `Diagnostic`/`RuleMeta` contract.
+ * Consumes `@ts-fix/contracts-effect` for the `Diagnostic`/`RuleMeta` contract.
  * It does NOT re-export any contracts symbols — those stay owned by contracts-effect.
  * See TRANSFORMATION_NOTES.md for the legacy → target mapping and deviations.
  */

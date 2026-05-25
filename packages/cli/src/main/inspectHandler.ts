@@ -24,21 +24,21 @@
  */
 
 import { Effect } from "effect";
-import type { Diagnostic, RuleMeta } from "@ts-doctor/contracts-effect";
+import type { Diagnostic, RuleMeta } from "@ts-fix/contracts-effect";
 import type {
   DiagnoseOptions,
   DiagnoseResult,
-} from "@ts-doctor/engine-effect";
-import type { ApplyFilesResult } from "@ts-doctor/fix-applier-effect";
+} from "@ts-fix/engine-effect";
+import type { ApplyFilesResult } from "@ts-fix/fix-applier-effect";
 import {
   asRuleLookup,
   explain,
   formatAgentReport,
   renderPretty,
   renderScoreLine,
-} from "@ts-doctor/format-effect";
-import { buildReport } from "@ts-doctor/build-report-effect";
-import { resolveExitCode } from "@ts-doctor/exit-code-effect";
+} from "@ts-fix/format-effect";
+import { buildReport } from "@ts-fix/build-report-effect";
+import { resolveExitCode } from "@ts-fix/exit-code-effect";
 import type { InspectFlags } from "./flags.js";
 
 /**

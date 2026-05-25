@@ -3,7 +3,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     include: ["src/test/**/*.test.ts"],
-    // Both `@ts-doctor/rules-core-effect` and `@ts-doctor/contracts-effect` are
+    // Both `@ts-fix/rules-core-effect` and `@ts-fix/contracts-effect` are
     // `.ts`-entry `file:` deps (`exports: "./src/main/index.ts"`). Inline both so
     // Vitest's esbuild transform compiles their TypeScript at test time instead of
     // trying to load them as pre-built deps (which would fail to parse the `.ts`).
@@ -12,7 +12,7 @@ export default defineConfig({
     // it must be inlined too.
     server: {
       deps: {
-        inline: ["@ts-doctor/rules-core-effect", "@ts-doctor/contracts-effect"],
+        inline: ["@ts-fix/rules-core-effect", "@ts-fix/contracts-effect"],
       },
     },
   },

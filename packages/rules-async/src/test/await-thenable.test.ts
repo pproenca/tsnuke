@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule, runTypeAwareRule } from "@ts-doctor/rules-core-effect";
+import { runRule, runTypeAwareRule } from "@ts-fix/rules-core-effect";
 import { rule } from "../main/await-thenable.js";
 
 describe("await-thenable (TYP / BC-10) — RULE-025 async", () => {
@@ -32,7 +32,7 @@ describe("await-thenable (TYP / BC-10) — RULE-025 async", () => {
     expect(diags).toHaveLength(1);
     const d = diags[0]!;
     expect(d.category).toBe("Async / Promises");
-    expect(d.plugin).toBe("ts-doctor");
+    expect(d.plugin).toBe("ts-fix");
     expect(d.message).toBe("Awaiting a non-Promise is a no-op, likely a bug.");
     expect(d.help).toBe(
       "Remove the redundant `await`, or fix the operand to be a Promise.",

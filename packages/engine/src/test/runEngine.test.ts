@@ -17,9 +17,9 @@ import { it } from "@effect/vitest";
 import { resolve } from "node:path";
 import { Effect } from "effect";
 import { describe, expect } from "vitest";
-import type { Capability } from "@ts-doctor/contracts-effect";
-import { shouldActivate } from "@ts-doctor/capabilities-effect";
-import { ruleRegistry } from "@ts-doctor/rules-registry-effect";
+import type { Capability } from "@ts-fix/contracts-effect";
+import { shouldActivate } from "@ts-fix/capabilities-effect";
+import { ruleRegistry } from "@ts-fix/rules-registry-effect";
 import {
   planEngineRun,
   runEngine,

@@ -1,8 +1,8 @@
 /**
- * `@ts-doctor/rules-type-safety-effect` — the `type-safety` rule category
+ * `@ts-fix/rules-type-safety-effect` — the `type-safety` rule category
  * (RULE-006 + the RULE-025 type-safety row, "Type Safety"): 12 plain-TS predicates
  * ported verbatim from the legacy
- * `packages/ts-doctor-rules/src/rules/type-safety/**`.
+ * `packages/ts-fix-rules/src/rules/type-safety/**`.
  *
  *   - 6 SYN (syntactic, AST-only — the engine drives them via `runRule`):
  *     `any-density-budget` (RULE-006, fires once per file when the `AnyKeyword`
@@ -17,8 +17,8 @@
  *
  * Each rule is a pure `SyntaxKind → visitor` map plugging into the rule substrate
  * (`defineRule` / `RuleContext` / `runRule` / `runTypeAwareRule`) from
- * `@ts-doctor/rules-core-effect`. The data CONTRACTS (`Diagnostic`, `RuleMeta`,
- * `Rule`) live in `@ts-doctor/contracts-effect` / `@ts-doctor/rules-core-effect`
+ * `@ts-fix/rules-core-effect`. The data CONTRACTS (`Diagnostic`, `RuleMeta`,
+ * `Rule`) live in `@ts-fix/contracts-effect` / `@ts-fix/rules-core-effect`
  * and are NOT re-exported here (barrel hygiene — this slice does not re-publish
  * symbols it does not own).
  *
@@ -31,7 +31,7 @@
  * negatives, and each TYP rule proven inert under `runRule`).
  */
 
-import type { Rule } from "@ts-doctor/rules-core-effect";
+import type { Rule } from "@ts-fix/rules-core-effect";
 
 import { rule as anyDensityBudget } from "./any-density-budget.js";
 import { rule as noExplicitAny } from "./no-explicit-any.js";
@@ -82,6 +82,6 @@ export const typeSafetyRules: ReadonlyArray<Rule> = [
   preferTypeGuardPredicate,
 ];
 
-// Self-barrel: `import { RulesTypeSafety } from "@ts-doctor/rules-type-safety-effect"`
+// Self-barrel: `import { RulesTypeSafety } from "@ts-fix/rules-type-safety-effect"`
 // resolves to this module's namespace. Additive — the named exports above stay stable.
 export * as RulesTypeSafety from "./index.js";

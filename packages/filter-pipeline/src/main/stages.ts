@@ -11,7 +11,7 @@
  *   1. auto-suppress       — drop diagnostics tagged as known test-noise
  *   2. severity override   — remap per config.rules / config.categories; "off" drops
  *   3. ignore              — drop by ignore.rules / ignore.files / ignore.overrides
- *   4. inline-disable      — honor `// ts-doctor-disable-next-line <rule>` directives
+ *   4. inline-disable      — honor `// ts-fix-disable-next-line <rule>` directives
  *
  * D1 — SINGLE CANONICAL SEVERITY VOCABULARY (RULE-040): legacy normalized config's
  * `"warn"` → engine `"warning"` in two places (`load-config.ts` +
@@ -23,7 +23,7 @@
  * Source of truth: legacy `packages/core/src/filter-pipeline.ts` (READ-ONLY).
  */
 
-import type { ConfigSeverity, TsDoctorConfig } from "./Config.js";
+import type { ConfigSeverity, TsFixConfig } from "./Config.js";
 import type { DiagnosticWithTags, Severity } from "./Diagnostic.js";
 
 /** Source text for files, keyed by absolute path — needed by the inline-disable stage. */
@@ -60,7 +60,7 @@ export function stageAutoSuppress(d: DiagnosticWithTags): DiagnosticWithTags | n
  * Stage 2, RULE-040). Per-rule overrides take PRECEDENCE over per-category; rule
  * ids match bare `rule` or namespaced `plugin/rule`; `"off"` drops, else remaps.
  */
-export function makeSeverityStage(config: TsDoctorConfig): Stage {
+export function makeSeverityStage(config: TsFixConfig): Stage {
   const ruleOverrides = config.rules ?? {};
   const categoryOverrides = config.categories ?? {};
   return (d) => {
@@ -90,7 +90,7 @@ export function fileMatches(filePath: string, pattern: string): boolean {
 }
 
 /** Stage 3 — drop by ignore.rules / ignore.files / ignore.overrides (RULE-023 Stage 3). */
-export function makeIgnoreStage(config: TsDoctorConfig): Stage {
+export function makeIgnoreStage(config: TsFixConfig): Stage {
   const ignore = config.ignore ?? {};
   const ignoredRules = new Set(ignore.rules ?? []);
   const ignoredFiles = ignore.files ?? [];
@@ -116,7 +116,7 @@ export function makeIgnoreStage(config: TsDoctorConfig): Stage {
   };
 }
 
-const DISABLE_NEXT_LINE_RE = /\/\/\s*ts-doctor-disable-next-line\s*(.*)$/;
+const DISABLE_NEXT_LINE_RE = /\/\/\s*ts-fix-disable-next-line\s*(.*)$/;
 
 /** A parsed inline-disable directive: `all` rules, or a specific `rules` set. */
 export interface InlineDirective {
@@ -126,7 +126,7 @@ export interface InlineDirective {
 
 /**
  * Build the map of (1-based line → directive) for a file (RULE-023 Stage 4).
- * `// ts-doctor-disable-next-line <rule>` disables `<rule>` on the *following* line
+ * `// ts-fix-disable-next-line <rule>` disables `<rule>` on the *following* line
  * (target = directive line + 2, 1-based); with no rule listed it disables all rules
  * on the next line. The rule list is split on `[\s,]+`.
  */

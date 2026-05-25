@@ -26,10 +26,10 @@ import { Args, Command, Options, ValidationError } from "@effect/cli";
 import { HelpDoc } from "@effect/cli";
 import { Terminal } from "@effect/platform";
 import { Effect, Either, Option } from "effect";
-import type { RuleMeta } from "@ts-doctor/contracts-effect";
-import { diagnoseNode } from "@ts-doctor/engine-effect";
-import { applyFixesToFilesNode } from "@ts-doctor/fix-applier-effect";
-import { ruleRegistry } from "@ts-doctor/rules-registry-effect";
+import type { RuleMeta } from "@ts-fix/contracts-effect";
+import { diagnoseNode } from "@ts-fix/engine-effect";
+import { applyFixesToFilesNode } from "@ts-fix/fix-applier-effect";
+import { ruleRegistry } from "@ts-fix/rules-registry-effect";
 import {
   FlagError,
   parseFileLine,
@@ -356,13 +356,13 @@ export const inspectCommand = Command.make(
       // RULE-028 / malformed-`--explain` rejections (resolveInspectFlags → ValidationError)
       // are HANDLER-phase: `@effect/cli` only auto-renders PARSE-phase errors, so a raw
       // failure here would reach `bin.ts` and dump the cause as JSON. Catch it and emit the
-      // SAME terse `ts-doctor: <message>` line the process edge uses for every other error
+      // SAME terse `ts-fix: <message>` line the process edge uses for every other error
       // (the ValidationError carries its message as a `HelpDoc`). Parser-phase errors
       // (unknown flag, --deep/--no-deep, bad --format) are still rendered by the library.
       const resolved = yield* Effect.either(resolveInspectFlags(options));
       if (Either.isLeft(resolved)) {
         yield* terminal
-          .display(`ts-doctor: ${HelpDoc.toAnsiText(resolved.left.error).trim()}\n`)
+          .display(`ts-fix: ${HelpDoc.toAnsiText(resolved.left.error).trim()}\n`)
           .pipe(Effect.orDie);
         process.exitCode = 1;
         return;

@@ -12,7 +12,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { ruleRegistry, graphRuleRegistry } from "@ts-doctor/rules-registry-effect";
+import { ruleRegistry, graphRuleRegistry } from "@ts-fix/rules-registry-effect";
 import { diagnoseTool, explainTool, listRulesTool } from "../main/tools.js";
 
 const FULLY_STRICT_TSCONFIG = JSON.stringify({

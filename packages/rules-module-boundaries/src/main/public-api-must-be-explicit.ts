@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { defineRule } from "@ts-doctor/rules-core-effect";
+import { defineRule } from "@ts-fix/rules-core-effect";
 
 /**
  * SYN — flag wildcard re-exports `export * from "..."`.
@@ -10,8 +10,8 @@ import { defineRule } from "@ts-doctor/rules-core-effect";
  * present `moduleSpecifier` is exactly `export * from "..."`.
  *
  * Ported verbatim from legacy
- * `packages/ts-doctor-rules/src/rules/module-boundaries/public-api-must-be-explicit.ts`;
- * the only change is importing `defineRule` from the `@ts-doctor/rules-core-effect`
+ * `packages/ts-fix-rules/src/rules/module-boundaries/public-api-must-be-explicit.ts`;
+ * the only change is importing `defineRule` from the `@ts-fix/rules-core-effect`
  * substrate rather than the legacy `../../define-rule.js`.
  */
 export const rule = defineRule(

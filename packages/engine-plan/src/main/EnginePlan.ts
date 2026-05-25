@@ -7,7 +7,7 @@
  * deliberately FREE of any runtime import that would build a `ts.Program`; it only
  * plans. The activation predicate is INJECTED ({@link ActivatePredicate}) so the
  * planner is unit-testable in isolation — production wires the REAL `shouldActivate`
- * consumed from `@ts-doctor/capabilities-effect` (RULE-019/020).
+ * consumed from `@ts-fix/capabilities-effect` (RULE-019/020).
  *
  * Per the Modernization Brief (lines 25/91) this stays a **plain synchronous pure
  * function — NOT `Effect`-wrapped**: it is pure CPU planning over in-memory token
@@ -36,12 +36,12 @@
  * TRANSFORMATION_NOTES.md.
  */
 
-import { resolveSeverity } from "@ts-doctor/capabilities-effect";
+import { resolveSeverity } from "@ts-fix/capabilities-effect";
 import type {
   Capability,
   RuleMeta,
   Severity,
-} from "@ts-doctor/capabilities-effect";
+} from "@ts-fix/capabilities-effect";
 
 /**
  * Analysis tier. Derived from the consumed {@link RuleMeta} contract
@@ -103,7 +103,7 @@ export type SeverityOverrides = ReadonlyMap<string, Severity | "off">;
 
 /**
  * The activation predicate shape. Structurally matches
- * `@ts-doctor/capabilities-effect#shouldActivate` (RULE-019); injected so the
+ * `@ts-fix/capabilities-effect#shouldActivate` (RULE-019); injected so the
  * planner is testable with a trivial predicate and free of a runtime dependency on
  * the predicate's internals.
  */

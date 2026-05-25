@@ -1,6 +1,6 @@
 # Characterization tests — `security` module (Effect-TS target)
 
-These tests **define "done"** for the Effect-TS rewrite of `ts-doctor`'s five pure
+These tests **define "done"** for the Effect-TS rewrite of `ts-fix`'s five pure
 security guards. They were written *before* the implementation. The implementation
 lives at `src/main/*.ts` (imported as `../main/index.js` — `.js` on relative
 specifiers, per the legacy convention; the `Bundler` moduleResolution in
@@ -8,7 +8,7 @@ specifiers, per the legacy convention; the `Bundler` moduleResolution in
 **RED**, and that is the correct starting state.
 
 The legacy modules are the oracle
-(`legacy/ts-doctor/packages/core/src/security/*.ts`, read-only). We are proving
+(`legacy/ts-fix/packages/core/src/security/*.ts`, read-only). We are proving
 *behavioral equivalence first*. Unlike the `score` slice there is **no deliberate
 behavioral deviation** — the only change is structural (the glob error is now an
 `effect/Data` tagged error, with its observable surface preserved).
@@ -82,10 +82,10 @@ import {
   isSafeGitRevision,         // (ref: string) => boolean
   sanitizeEnv,               // (env: NodeJS.ProcessEnv) => NodeJS.ProcessEnv  (pure copy)
   isInsideTempDir,           // (tempDir: string, relPath: string) => boolean
-  loadConfigPlugins,         // (config: TsDoctorConfig) => LoadConfigPluginsResult  ALWAYS plugins: []
+  loadConfigPlugins,         // (config: TsFixConfig) => LoadConfigPluginsResult  ALWAYS plugins: []
 } from "../main/index.js";
 import type {
-  TsDoctorConfig,
+  TsFixConfig,
   LoadConfigPluginsResult,
   LoadedPlugin,           // = never (v1 produces no loaded plugins)
 } from "../main/index.js";

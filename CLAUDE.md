@@ -1,14 +1,14 @@
-# ts-doctor — agent & engineer context (knowledge-graph handoff)
+# ts-fix — agent & engineer context (knowledge-graph handoff)
 
-> **What this is.** `ts-doctor` is an AI-native code-health linter and 0–100 scorer for **general TypeScript projects** — conceived as the `react-doctor` of TypeScript (lints + scores a codebase), rebuilt from extracted intent rather than ported. This file is the persistent context an agent or engineer loads first.
+> **What this is.** `ts-fix` is an AI-native code-health linter and 0–100 scorer for **general TypeScript projects** — conceived as the `react-doctor` of TypeScript (lints + scores a codebase), rebuilt from extracted intent rather than ported. This file is the persistent context an agent or engineer loads first.
 >
-> **Implementation note.** The codebase is an **Effect-TS v3 strangler-fig rewrite**: **32 workspace packages** under `packages/*`, each named `@ts-doctor/<dir>-effect`, each with a `src/main` + `src/test` layout. Behaviour was pinned to the original (pre-Effect) design via 14 `*equivalence.test.ts` oracles. The design history in [`docs/`](docs/) records the original *target* design (which described a 5-package, "no Effect" plain-TS scaffold); the **conceptual** content there (the two-tier engine, capabilities, the BC-01…BC-24 behaviour contract, scoring, security mechanisms) is still authoritative — the **implementation** is now Effect-TS.
+> **Implementation note.** The codebase is an **Effect-TS v3 strangler-fig rewrite**: **32 workspace packages** under `packages/*`, each named `@ts-fix/<dir>-effect`, each with a `src/main` + `src/test` layout. Behaviour was pinned to the original (pre-Effect) design via 14 `*equivalence.test.ts` oracles. The design history in [`docs/`](docs/) records the original *target* design (which described a 5-package, "no Effect" plain-TS scaffold); the **conceptual** content there (the two-tier engine, capabilities, the BC-01…BC-24 behaviour contract, scoring, security mechanisms) is still authoritative — the **implementation** is now Effect-TS.
 
 ---
 
 ## 1. The one thing to understand
 
-react-doctor's engine (oxlint) is **type-unaware**. A TypeScript doctor's most valuable rules (floating promises, `any`-flow, exhaustiveness) need the **TypeChecker**. So ts-doctor is built on a **two-tier engine over the in-process TypeScript compiler API**:
+react-doctor's engine (oxlint) is **type-unaware**. A TypeScript doctor's most valuable rules (floating promises, `any`-flow, exhaustiveness) need the **TypeChecker**. So ts-fix is built on a **two-tier engine over the in-process TypeScript compiler API**:
 
 - **Tier-1 (SYN/GRAPH/CFG)** — AST-only, always runs. On a healthy project it reuses the Program's parsed sources; on a broken project it falls back to per-file `ts.createSourceFile`.
 - **Tier-2 (TYP)** — type-aware, gated on `typecheck:ok`. The engine builds one shared `ts.Program`, derives `typecheck:ok` from `getPreEmitDiagnostics()` (the single build *is* the probe — ARCHITECTURE §4.1), and runs TYP rules with `program.getTypeChecker()`. **All four tiers are live and the full 88-rule catalog runs end-to-end** (18 TYP rules read the checker).
@@ -20,9 +20,9 @@ The score is **local, deterministic, offline** — no network round-trip (react-
 ## 2. Architecture (32 packages, Effect-TS strangler-fig)
 
 ```
-ts-doctor/ (pnpm workspace, strict ESM, Node >=22, Effect-TS v3.21)
-├── packages/                # 32 packages, each @ts-doctor/<dir>-effect, src/main + src/test
-│   ├── contracts/ config/ errors/ exit-code/ scale/          # foundations (no @ts-doctor deps)
+ts-fix/ (pnpm workspace, strict ESM, Node >=22, Effect-TS v3.21)
+├── packages/                # 32 packages, each @ts-fix/<dir>-effect, src/main + src/test
+│   ├── contracts/ config/ errors/ exit-code/ scale/          # foundations (no @ts-fix deps)
 │   ├── capabilities/ rules-core/ score/ format/ fix-applier/  # tier 1
 │   │   filter-pipeline/ security/
 │   ├── discovery/ build-report/ engine-plan/ module-graph/    # tier 2
@@ -36,21 +36,21 @@ ts-doctor/ (pnpm workspace, strict ESM, Node >=22, Effect-TS v3.21)
     └── slop-demo/         — runnable demo of the AI-slop / `ts-idiom` family
 ```
 
-Every package is `@ts-doctor/<dir>-effect` (the directory name is the package name minus the `@ts-doctor/` prefix and the `-effect` suffix). The two shells keep the legacy product bin names: the CLI package `@ts-doctor/cli-effect` ships `bin: ts-doctor`; the MCP package `@ts-doctor/mcp-effect` ships `bin: ts-doctor-mcp`.
+Every package is `@ts-fix/<dir>-effect` (the directory name is the package name minus the `@ts-fix/` prefix and the `-effect` suffix). The two shells keep the legacy product bin names: the CLI package `ts-fix` ships `bin: ts-fix`; the MCP package `@ts-fix/mcp-effect` ships `bin: ts-fix-mcp`.
 
-### Foundations / leaves (no `@ts-doctor` deps)
+### Foundations / leaves (no `@ts-fix` deps)
 
-| Package (`@ts-doctor/…`) | Responsibility | `src/main` modules |
+| Package (`@ts-fix/…`) | Responsibility | `src/main` modules |
 |---|---|---|
-| **`contracts-effect`** | Canonical `effect/Schema` home for cross-cutting domain contracts (`Diagnostic`/`Severity`/`Tier`/`FixKind`/`Fix`/`TextEdit`, `RuleMeta`/`Capability`, the `TsDoctorConfig` family). Pure contracts (no Effect monad) — the consolidation slice that the rules + engine import instead of vendoring. | `Diagnostic.ts`, `RuleMeta.ts`, `Config.ts`, `index.ts` |
+| **`contracts-effect`** | Canonical `effect/Schema` home for cross-cutting domain contracts (`Diagnostic`/`Severity`/`Tier`/`FixKind`/`Fix`/`TextEdit`, `RuleMeta`/`Capability`, the `TsFixConfig` family). Pure contracts (no Effect monad) — the consolidation slice that the rules + engine import instead of vendoring. | `Diagnostic.ts`, `RuleMeta.ts`, `Config.ts`, `index.ts` |
 | **`config-effect`** | Config loading: RULE-024 lenient drop-not-throw + RULE-040 severity vocabulary. Pure decode-with-fallback (`effect/Schema`) plus the effectful loader over `@effect/platform` FileSystem + Path. | `Config.ts`, `loadConfig.ts`, `sanitize.ts`, `index.ts` |
-| **`errors-effect`** | Tagged discovery error classes (RULE-037): `TsDoctorError`, `ProjectNotFoundError`, `NoTypeScriptProjectError`, `TsconfigNotFoundError`, `AmbiguousProjectError`. Preserves the `_tag`/`name`/`instanceof Error`/`cause` contract `build-report`'s `serializeError` depends on. | `Errors.ts`, `index.ts` |
+| **`errors-effect`** | Tagged discovery error classes (RULE-037): `TsFixError`, `ProjectNotFoundError`, `NoTypeScriptProjectError`, `TsconfigNotFoundError`, `AmbiguousProjectError`. Preserves the `_tag`/`name`/`instanceof Error`/`cause` contract `build-report`'s `serializeError` depends on. | `Errors.ts`, `index.ts` |
 | **`exit-code-effect`** | Exit-code gate (RULE-030/031): the `--fail-on` resolver + severity vocabulary (no `info`). Pure synchronous functions over Schema branded types. | `ExitCode.ts`, `FailOn.ts`, `resolve.ts`, `index.ts` |
 | **`scale-effect`** | Scale guard: the pure Tier-2 memory-ceiling check (RULE-013) + the resource-disposal seam (RULE-036) re-expressed as idiomatic Effect `Scope` (`Effect.acquireRelease` / `acquireUseRelease`). | `memory.ts`, `scope.ts`, `index.ts` |
 
 ### Tier 1 (depend on contracts and/or rules-core)
 
-| Package (`@ts-doctor/…`) | Responsibility | `src/main` modules |
+| Package (`@ts-fix/…`) | Responsibility | `src/main` modules |
 |---|---|---|
 | **`capabilities-effect`** | Capability-gated rule-activation predicate (RULE-019/020): pure synchronous `shouldActivate`/`resolveSeverity` over a token `Set<string>`. | `Capabilities.ts`, `RuleMeta.ts`, `index.ts` |
 | **`rules-core-effect`** | The rule **substrate**: `defineRule` + rule context/visitor shape + diagnostic identity (BC-13) + a hand-written rule registry, the AST-free `strictness` (CFG) category, and the `ModuleGraph` type (single GRAPH-tier input site). Plain-TS over the TS compiler API (visitors are sync — not Effect-wrapped). | `defineRule.ts`, `runRule.ts`, `identity.ts`, `registry.ts`, `ModuleGraph.ts`, `rules/strictness/*.ts`, `index.ts` |
@@ -62,7 +62,7 @@ Every package is `@ts-doctor/<dir>-effect` (the directory name is the package na
 
 ### Tier 2 (discovery, graph, reports, the rule categories)
 
-| Package (`@ts-doctor/…`) | Responsibility | `src/main` modules |
+| Package (`@ts-fix/…`) | Responsibility | `src/main` modules |
 |---|---|---|
 | **`discovery-effect`** | Project discovery + capability earning (RULE-012 file caps, RULE-021/022): effectful FS discovery over `@effect/platform` FileSystem + Path with typed errors on the Effect error channel, plus the pure `computeCapabilities` derivation. | `discover.ts`, `enumerate.ts`, `capabilities.ts`, `ProjectInfo.ts`, `node.ts`, `index.ts` |
 | **`build-report-effect`** | Versioned JSON report builder (RULE-004 summary rollup, RULE-034 schema-version + `ok`). Consumes `score-effect` for the monorepo MIN score (RULE-003). | `buildReport.ts`, `Report.ts`, `serializeError.ts`, `index.ts` |
@@ -73,11 +73,11 @@ Every package is `@ts-doctor/<dir>-effect` (the directory name is the package na
 
 ### Orchestrator + shells
 
-| Package (`@ts-doctor/…`) | Responsibility | `src/main` modules |
+| Package (`@ts-fix/…`) | Responsibility | `src/main` modules |
 |---|---|---|
-| **`engine-effect`** | THE integrating keystone (depends on ~12 slices): the two-tier `runEngine` (RULE-018 partial-honesty gate + RULE-036 Program disposal via `Scope` + RULE-013 memory guard, wired) and the `diagnose()` orchestration (discover → capabilities → config → engine → filter → score → `DiagnoseResult`). The one genuinely-effectful part is the `ts.Program` lifecycle (`scale.scopedProgram`); rule execution stays pure synchronous. `diagnose` is `Effect<…, TsDoctorError, FileSystem \| Path \| Scope>`; `diagnoseNode` is the prod runnable over `NodeContext`. | `runEngine.ts`, `diagnose.ts`, `node.ts`, `types.ts`, `index.ts` |
-| **`cli-effect`** (bin `ts-doctor`) | The user-facing CLI on `@effect/cli`: POSIX flag parsing, auto-help, RULE-028 flag-exclusivity as `Options` constraints. Default `inspect` command + `install` subcommand; wires engine + format + fix-applier + build-report + exit-code. Built with **esbuild** (`node build.mjs`) into a self-contained `dist/cli.js` (`typescript` stays external). | `cli.ts`, `bin.ts`, `flags.ts`, `inspectCommand.ts`, `inspectHandler.ts`, `installCommand.ts`, `installHandler.ts`, `index.ts` |
-| **`mcp-effect`** (bin `ts-doctor-mcp`) | MCP server (stdio) exposing ts-doctor to coding agents — tools `ts_doctor_diagnose` / `ts_doctor_explain` / `ts_doctor_list_rules`. Pure handlers in `tools.ts` (unit-tested); SDK wiring in `server.ts` validates tool args with `effect/Schema` (zod is gone — RULE-029). Built with esbuild (`node build.mjs`) → `dist/server.js`. | `tools.ts`, `server.ts`, `schemas.ts`, `index.ts` |
+| **`engine-effect`** | THE integrating keystone (depends on ~12 slices): the two-tier `runEngine` (RULE-018 partial-honesty gate + RULE-036 Program disposal via `Scope` + RULE-013 memory guard, wired) and the `diagnose()` orchestration (discover → capabilities → config → engine → filter → score → `DiagnoseResult`). The one genuinely-effectful part is the `ts.Program` lifecycle (`scale.scopedProgram`); rule execution stays pure synchronous. `diagnose` is `Effect<…, TsFixError, FileSystem \| Path \| Scope>`; `diagnoseNode` is the prod runnable over `NodeContext`. | `runEngine.ts`, `diagnose.ts`, `node.ts`, `types.ts`, `index.ts` |
+| **`cli-effect`** (bin `ts-fix`) | The user-facing CLI on `@effect/cli`: POSIX flag parsing, auto-help, RULE-028 flag-exclusivity as `Options` constraints. Default `inspect` command + `install` subcommand; wires engine + format + fix-applier + build-report + exit-code. Built with **esbuild** (`node build.mjs`) into a self-contained `dist/cli.js` (`typescript` stays external). | `cli.ts`, `bin.ts`, `flags.ts`, `inspectCommand.ts`, `inspectHandler.ts`, `installCommand.ts`, `installHandler.ts`, `index.ts` |
+| **`mcp-effect`** (bin `ts-fix-mcp`) | MCP server (stdio) exposing ts-fix to coding agents — tools `ts_fix_diagnose` / `ts_fix_explain` / `ts_fix_list_rules`. Pure handlers in `tools.ts` (unit-tested); SDK wiring in `server.ts` validates tool args with `effect/Schema` (zod is gone — RULE-029). Built with esbuild (`node build.mjs`) → `dist/server.js`. | `tools.ts`, `server.ts`, `schemas.ts`, `index.ts` |
 
 Engine = `ts.Program`/`SourceFile` (in-process, no subprocess). git is the only subprocess (guarded by `security-effect`).
 
@@ -101,7 +101,7 @@ The codebase follows a consistent, signature-preserving idiom set across the sli
 - **Tagged errors via `effect/Data` `TaggedError`** (`errors-effect`, `security-effect`), signature-preserving — the legacy `_tag`/`name`/`message`/`cause` contract is held by the equivalence tests; the broader move to `Schema.TaggedError` (where it stays signature-compatible) is the in-flight target.
 - **Style:** no `else` (early returns), no `let`-reassignment (ternaries), functional array methods over `for`-loops where avoidable, single-word locals, inference over explicit annotations.
 
-Note: ts-doctor does **not** use a full `Context.Service` service-module pattern — its DI is platform service Layers + `*Node` runners (see §2). Most rule slices are plain-TS sync visitors (NOT Effect-wrapped); only the `ts.Program` lifecycle + filesystem reads are effectful.
+Note: ts-fix does **not** use a full `Context.Service` service-module pattern — its DI is platform service Layers + `*Node` runners (see §2). Most rule slices are plain-TS sync visitors (NOT Effect-wrapped); only the `ts.Program` lifecycle + filesystem reads are effectful.
 
 ---
 
@@ -128,15 +128,15 @@ pnpm -r run typecheck        # tsc --noEmit per package                 → all 
 pnpm -r run test             # full suite (vitest run per package)      → ~1769 pass
 
 # Build + RUN the CLI (self-contained esbuild bundle; `typescript` stays external):
-pnpm --filter @ts-doctor/cli-effect run build              # → packages/cli/dist/cli.js
+pnpm --filter ts-fix run build              # → packages/cli/dist/cli.js
 node packages/cli/dist/cli.js examples/sample-app          # pretty report + score
 node packages/cli/dist/cli.js examples/sample-app --score  # just the score (e.g. "Score: 84/100 — Great")
 node packages/cli/dist/cli.js examples/sample-app --format agent   # agent JSON
 
 # Build + RUN the MCP server (stdio; for coding agents):
-pnpm --filter @ts-doctor/mcp-effect run build             # → packages/mcp/dist/server.js
+pnpm --filter @ts-fix/mcp-effect run build             # → packages/mcp/dist/server.js
 echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | node packages/mcp/dist/server.js
-#   tools: ts_doctor_diagnose(directory, deep?) · ts_doctor_explain(rule) · ts_doctor_list_rules()
+#   tools: ts_fix_diagnose(directory, deep?) · ts_fix_explain(rule) · ts_fix_list_rules()
 ```
 
 Notes:
@@ -152,7 +152,7 @@ Drop `packages/rules-<category>/src/main/<rule-id>.ts` exporting `defineRule({..
 
 ## 6. Catalog & acceptance-test status
 
-**32 packages · ~170 test files · ~1769 tests passing · all packages typecheck clean** under `strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `verbatimModuleSyntax` + `isolatedModules` (ts-doctor eats its own dogfood). **All four emission tiers are live, and all 13 categories are populated.**
+**32 packages · ~170 test files · ~1769 tests passing · all packages typecheck clean** under `strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `verbatimModuleSyntax` + `isolatedModules` (ts-fix eats its own dogfood). **All four emission tiers are live, and all 13 categories are populated.**
 
 **Catalog: 88 rules across 13 categories** (the authoritative aggregation is `rules-registry`'s `registry.ts`; each rule has a colocated `src/test/*.test.ts`). Tier breakdown:
 - **SYN (64):** type-safety 6, type-assertions 12, generics 4, async 4, exhaustiveness 3, error-handling 6, naming-idioms 14, security 5, module-boundaries 3, declaration-api 4, type-performance 3. AST-only, always run. (The 4 CFG strictness rules are counted under CFG below.)
@@ -162,7 +162,7 @@ Drop `packages/rules-<category>/src/main/<rule-id>.ts` exporting `defineRule({..
 - **Anti-slop / responsibility-delegation family** (cross-cutting, tagged `ts-idiom`): `no-unnecessary-typeof`, `no-unnecessary-instanceof`, `prefer-type-guard-predicate`, `prefer-discriminated-union`, `prefer-generic-over-any-passthrough`, `no-record-string-unknown`, `no-unsafe-object-assertion`, `no-cast-after-guard`, `no-unknown-return`, `no-error-message-matching`, `prefer-array-methods`, `no-json-parse-stringify-clone`, `no-assertion-on-json-parse`, `prefer-satisfies-over-as`, `no-cast-in-return` — the rules that catch LLM-generated TS delegating to runtime/boilerplate what types, generics, native methods, and modern idioms should carry. `examples/sample-app/src/{cli-slop,store-slop}.ts` are real-world distillations.
 - **Convention family** (tagged `convention`): `no-var`, `pascal-case-types`, `explicit-member-accessibility`. **Google TS Style Guide family** (slop-focused): `triple-equals`, `no-array-constructor`, `no-wrapper-object-types`, `no-const-enum`, `no-inferrable-type-annotation`, `consistent-type-definitions`, `prefer-error-instantiation`, `no-for-in-array` (TYP). Demo: `examples/slop-demo/src/`.
 
-| BC | Behavior | Status | Home (`@ts-doctor/…`) |
+| BC | Behavior | Status | Home (`@ts-fix/…`) |
 |---|---|---|---|
 | BC-01/02 | Local distinct-rule scoring (breadth-not-depth) | ✅ | `score-effect` (`Scoring.ts`) |
 | BC-03 | Partial-score honesty (Tier-2 skipped) | ✅ | `engine-plan-effect` (`EnginePlan.ts`) |
@@ -190,9 +190,9 @@ Drop `packages/rules-<category>/src/main/<rule-id>.ts` exporting `defineRule({..
 
 ## 7. Legacy → modern traceability
 
-ts-doctor is itself a two-stage modernization. **Stage 1** reimagined react-doctor into a TypeScript doctor (the design in `docs/`, originally scaffolded as plain TS). **Stage 2** rewrote that scaffold as the current 32-package **Effect-TS** strangler-fig, pinned by equivalence oracles.
+ts-fix is itself a two-stage modernization. **Stage 1** reimagined react-doctor into a TypeScript doctor (the design in `docs/`, originally scaffolded as plain TS). **Stage 2** rewrote that scaffold as the current 32-package **Effect-TS** strangler-fig, pinned by equivalence oracles.
 
-| react-doctor (legacy) | ts-doctor (current Effect-TS) | Change |
+| react-doctor (legacy) | ts-fix (current Effect-TS) | Change |
 |---|---|---|
 | oxlint plugin (286 React rules, type-unaware) | 12 `rules-*-effect` category packages + `rules-core` substrate (88 TS rules) | domain swap React→TS; **type-aware Tier-2** real |
 | `@react-doctor/core` (Effect, oxlint subprocess) | split across `engine-effect` + ~12 slices (Effect-TS v3, in-process `ts.Program`) | in-process substrate; `Scope`-based Program disposal |

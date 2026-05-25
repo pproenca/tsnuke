@@ -1,7 +1,7 @@
 {
-  "name": "@ts-doctor/security-effect",
+  "name": "@ts-fix/security-effect",
   "version": "0.1.0",
-  "description": "Effect-native rewrite of ts-doctor's pure security guards (RULE-014 glob ReDoS caps, RULE-027 dormant guards, RULE-039 plugins-never-loaded). Strangler-fig slice — synchronous pure guards on the Effect ecosystem (Data tagged error).",
+  "description": "Effect-native rewrite of ts-fix's pure security guards (RULE-014 glob ReDoS caps, RULE-027 dormant guards, RULE-039 plugins-never-loaded). Strangler-fig slice — synchronous pure guards on the Effect ecosystem (Data tagged error).",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ts-doctor/contracts-effect": "workspace:*",
+    "@ts-fix/contracts-effect": "workspace:*",
     "effect": "^3.21.2"
   },
   "devDependencies": {

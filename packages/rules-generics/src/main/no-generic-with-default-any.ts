@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { defineRule } from "@ts-doctor/rules-core-effect";
+import { defineRule } from "@ts-fix/rules-core-effect";
 
 /**
  * SYN — flag a type-parameter whose default is `any`, e.g. `<T = any>`.
@@ -8,8 +8,8 @@ import { defineRule } from "@ts-doctor/rules-core-effect";
  * default is a syntactic `AnyKeyword` type node on the `TypeParameter`.
  *
  * Ported VERBATIM from legacy
- * `packages/ts-doctor-rules/src/rules/generics/no-generic-with-default-any.ts`;
- * the only change is importing `defineRule` from the `@ts-doctor/rules-core-effect`
+ * `packages/ts-fix-rules/src/rules/generics/no-generic-with-default-any.ts`;
+ * the only change is importing `defineRule` from the `@ts-fix/rules-core-effect`
  * substrate rather than the legacy `../../define-rule.js`.
  */
 export const rule = defineRule(

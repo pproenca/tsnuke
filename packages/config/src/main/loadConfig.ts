@@ -1,13 +1,13 @@
 /**
  * The EFFECTFUL filesystem config loader — `loadConfigWithWarnings` (RULE-024:
  * lenient config loading, drop-not-throw). Source of truth (READ-ONLY):
- * `legacy/ts-doctor/packages/core/src/load-config.ts:156-196`
+ * `legacy/ts-fix/packages/core/src/load-config.ts:156-196`
  * (`tryParseJson` + `loadConfig` + `loadConfigWithWarnings`).
  *
  * THIS IS THE FIRST GENUINELY-EFFECTFUL SLICE in the modernization. Where the pure
  * core ({@link sanitizeConfig}, `sanitize.ts`) is a plain synchronous function, the
- * loader does real I/O (read a directory's `tsdoctor.config.json`, else
- * `package.json#tsDoctor`), so it is modeled as an `Effect<...>` over the
+ * loader does real I/O (read a directory's `tsfix.config.json`, else
+ * `package.json#tsFix`), so it is modeled as an `Effect<...>` over the
  * `@effect/platform` `FileSystem` + `Path` services — NOT `node:fs`/`node:path`
  * directly. The dependencies are declared in the Effect's REQUIREMENTS channel and
  * satisfied by a Layer at the edge: `NodeFileSystem.layer` + `NodePath.layer` in
@@ -20,7 +20,7 @@
  * fallback legacy produced from `existsSync` returning `false` / `tryParseJson`
  * returning `undefined`. JSON that fails to parse yields the EXACT legacy warning
  * `Ignoring ${configPath}: could not parse as JSON.` and an empty config. The file
- * SELECTION order (`tsdoctor.config.json` first, then `package.json#tsDoctor`), the
+ * SELECTION order (`tsfix.config.json` first, then `package.json#tsFix`), the
  * fallback values, the warning text, and the `${configPath}` format are all part of
  * the contract and are reproduced verbatim — proven by the differential in
  * `src/test/loadConfig.test.ts` against a frozen vendored legacy oracle.
@@ -69,12 +69,12 @@ const isObject = (v: unknown): v is Record<string, unknown> =>
  * Load + sanitize config from a directory, surfacing warnings (RULE-024).
  *
  * Port of legacy `loadConfigWithWarnings` (`load-config.ts:174-196`):
- *   1. If `${dir}/tsdoctor.config.json` EXISTS → parse it; unparseable →
+ *   1. If `${dir}/tsfix.config.json` EXISTS → parse it; unparseable →
  *      `{ config: {}, warnings: ["Ignoring <path>: could not parse as JSON."] }`;
  *      else → `sanitizeConfig(parsed)`.
  *   2. Else if `${dir}/package.json` EXISTS → parse it; if it is an object with a
- *      `tsDoctor` key → `sanitizeConfig(pkg.tsDoctor)`. (A non-object pkg, or one
- *      without `tsDoctor`, falls through.)
+ *      `tsFix` key → `sanitizeConfig(pkg.tsFix)`. (A non-object pkg, or one
+ *      without `tsFix`, falls through.)
  *   3. Else → `{ config: {}, warnings: [] }`.
  *
  * Error channel `never`: a `PlatformError` from `exists`/`readFileString` is treated
@@ -91,7 +91,7 @@ export const loadConfigWithWarnings = Effect.fn("Config.loadWithWarnings")(
     const exists = (p: string): Effect.Effect<boolean> =>
       fs.exists(p).pipe(Effect.orElseSucceed(() => false));
 
-    const configPath = path.join(dir, "tsdoctor.config.json");
+    const configPath = path.join(dir, "tsfix.config.json");
     if (yield* exists(configPath)) {
       const raw = yield* tryParseJson(configPath);
       if (raw === undefined) {
@@ -106,8 +106,8 @@ export const loadConfigWithWarnings = Effect.fn("Config.loadWithWarnings")(
     const pkgPath = path.join(dir, "package.json");
     if (yield* exists(pkgPath)) {
       const pkg = yield* tryParseJson(pkgPath);
-      if (isObject(pkg) && pkg["tsDoctor"] !== undefined) {
-        return sanitizeConfig(pkg["tsDoctor"]);
+      if (isObject(pkg) && pkg["tsFix"] !== undefined) {
+        return sanitizeConfig(pkg["tsFix"]);
       }
     }
 

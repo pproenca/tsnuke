@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { defineRule } from "@ts-doctor/rules-core-effect";
+import { defineRule } from "@ts-fix/rules-core-effect";
 
 /**
  * SYN — flag a no-op generic constraint: `<T extends any>` or `<T extends unknown>`.
@@ -8,8 +8,8 @@ import { defineRule } from "@ts-doctor/rules-core-effect";
  * constraint is a syntactic `KeywordTypeNode` (`AnyKeyword` / `UnknownKeyword`).
  *
  * Ported VERBATIM from legacy
- * `packages/ts-doctor-rules/src/rules/generics/no-unnecessary-type-constraint.ts`;
- * the only change is importing `defineRule` from the `@ts-doctor/rules-core-effect`
+ * `packages/ts-fix-rules/src/rules/generics/no-unnecessary-type-constraint.ts`;
+ * the only change is importing `defineRule` from the `@ts-fix/rules-core-effect`
  * substrate rather than the legacy `../../define-rule.js`.
  */
 export const rule = defineRule(

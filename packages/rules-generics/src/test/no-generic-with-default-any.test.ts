@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-doctor/rules-core-effect";
+import { runRule } from "@ts-fix/rules-core-effect";
 import { rule } from "../main/no-generic-with-default-any.js";
 
 describe("SYN rule — no-generic-with-default-any", () => {
@@ -30,7 +30,7 @@ describe("SYN rule — no-generic-with-default-any", () => {
     expect(d.tier).toBe("SYN");
     expect(d.severity).toBe("warning");
     expect(d.category).toBe("Generics & Type-Level Complexity");
-    expect(d.plugin).toBe("ts-doctor");
+    expect(d.plugin).toBe("ts-fix");
     expect(d.message).toBe("Type-parameter `T` defaults to `any`.");
     expect(d.help).toBe(
       "A type-parameter default of `any` silently disables checking when callers omit the type argument; default to `unknown` or a real type.",

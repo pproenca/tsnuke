@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-doctor/rules-core-effect";
+import { runRule } from "@ts-fix/rules-core-effect";
 import { rule } from "../main/no-large-intersection-type.js";
 
 describe("SYN rule — no-large-intersection-type — RULE-009", () => {
@@ -31,7 +31,7 @@ describe("SYN rule — no-large-intersection-type — RULE-009", () => {
     expect(diags).toHaveLength(1);
     const d = diags[0]!;
     expect(d.category).toBe("Type Performance");
-    expect(d.plugin).toBe("ts-doctor");
+    expect(d.plugin).toBe("ts-fix");
     expect(d.message).toBe(
       "Large intersection type (6 members) is expensive to instantiate.",
     );

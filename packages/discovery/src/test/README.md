@@ -1,7 +1,7 @@
 # Characterization tests — `discovery` module (Effect-TS target)
 
-These tests **define "done"** for the Effect-TS rewrite of `ts-doctor`'s **discovery**
-module — the biggest core module (`legacy/ts-doctor/packages/core/src/discover-ts-project.ts`,
+These tests **define "done"** for the Effect-TS rewrite of `ts-fix`'s **discovery**
+module — the biggest core module (`legacy/ts-fix/packages/core/src/discover-ts-project.ts`,
 442 lines), read-only as the oracle. This is an **EFFECTFUL** slice (real I/O), so the
 suite reuses the **stub-FileSystem-Layer** pattern the `config` slice established
 (`modernized/config/effect/src/test/loadConfig.test.ts`), extended for the discovery

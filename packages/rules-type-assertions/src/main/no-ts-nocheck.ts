@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { defineRule } from "@ts-doctor/rules-core-effect";
+import { defineRule } from "@ts-fix/rules-core-effect";
 
 // A `@ts-nocheck` directive in a line- or block-comment at the start of a line.
 // Anchoring to line start avoids matching the token inside a string literal.

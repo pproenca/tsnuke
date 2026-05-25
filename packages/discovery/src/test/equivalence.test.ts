@@ -26,7 +26,7 @@ import { posix as nodePath } from "node:path";
 import {
   NoTypeScriptProjectError,
   TsconfigNotFoundError,
-} from "@ts-doctor/errors-effect";
+} from "@ts-fix/errors-effect";
 import { Effect, Either } from "effect";
 import { describe, expect, it } from "vitest";
 import { computeCapabilities } from "../main/capabilities.js";
@@ -311,7 +311,7 @@ const legacy = (fs: FS) => {
     const tsconfigPath = join(root, "tsconfig.json");
     if (!fs.existsSync(tsconfigPath)) {
       throw new TsconfigNotFoundError(
-        `No tsconfig.json found in ${root}. ts-doctor analyzes TypeScript projects only.`,
+        `No tsconfig.json found in ${root}. ts-fix analyzes TypeScript projects only.`,
       );
     }
     let tsconfig: RawTsconfig;

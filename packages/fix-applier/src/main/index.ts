@@ -1,5 +1,5 @@
 /**
- * `@ts-doctor/fix-applier-effect` — public surface of the Effect-TS `--fix` slice.
+ * `@ts-fix/fix-applier-effect` — public surface of the Effect-TS `--fix` slice.
  *
  * RULE-005 (auto-fix convergence, ≤2 passes — P0) + RULE-032 (only `auto-fix` kind is
  * mechanically applied), split into:
@@ -15,7 +15,7 @@
  *     (production) or an in-memory stub (tests). The `*Node` helpers run it on disk.
  *
  * The `Diagnostic`/`Fix`/`TextEdit` contracts are re-exported from the canonical
- * `@ts-doctor/contracts-effect` (NOT re-vendored here).
+ * `@ts-fix/contracts-effect` (NOT re-vendored here).
  */
 
 export {
@@ -40,7 +40,7 @@ export {
 } from "./applyFixesToFiles.js";
 
 // Canonical domain contracts (re-exported, not re-vendored).
-export { Diagnostic, Fix, TextEdit, FixKind } from "@ts-doctor/contracts-effect";
+export { Diagnostic, Fix, TextEdit, FixKind } from "@ts-fix/contracts-effect";
 
 // Self-barrel: opt-in namespace import (`import { FixApplier } from "..."`). ADDITIVE —
 // the named re-exports above remain the byte-stable surface every consumer imports from.

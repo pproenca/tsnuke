@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-doctor/rules-core-effect";
+import { runRule } from "@ts-fix/rules-core-effect";
 import { rule } from "../main/prefer-interface-for-large-object-type.js";
 
 // 13 members — over LARGE_OBJECT_TYPE_MEMBERS = 12. (Legacy vector.)
@@ -33,7 +33,7 @@ describe("prefer-interface-for-large-object-type (SYN) — RULE-010", () => {
     expect(d.tier).toBe("SYN");
     expect(d.severity).toBe("warning");
     expect(d.category).toBe("Type Performance");
-    expect(d.plugin).toBe("ts-doctor");
+    expect(d.plugin).toBe("ts-fix");
     expect(d.message).toBe(
       "Large object type alias `T` (13 members); prefer an `interface`.",
     );

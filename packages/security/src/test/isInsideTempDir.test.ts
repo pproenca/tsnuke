@@ -17,7 +17,7 @@
 import { describe, expect, it } from "vitest";
 import { isInsideTempDir } from "../main/index.js";
 
-const tmp = "/tmp/ts-doctor-XYZ";
+const tmp = "/tmp/ts-fix-XYZ";
 
 describe("isInsideTempDir — BC-16 (allows same-dir and nested paths)", () => {
   it("allows a direct child file", () => {

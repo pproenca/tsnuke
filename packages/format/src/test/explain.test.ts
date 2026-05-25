@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Diagnostic, RuleMeta } from "@ts-doctor/contracts-effect";
+import type { Diagnostic, RuleMeta } from "@ts-fix/contracts-effect";
 import { asRuleLookup, explain, explainDiagnostic } from "../main/index.js";
 import {
   frozenAsRuleLookup,
@@ -51,7 +51,7 @@ describe("explain — offline, deterministic (ported legacy vectors)", () => {
   it("surfaces help + inferredType from a concrete diagnostic", () => {
     const d: Diagnostic = {
       filePath: "/repo/src/x.ts",
-      plugin: "ts-doctor",
+      plugin: "ts-fix",
       rule: "no-floating-promises",
       severity: "error",
       message: "Floating promise.",
@@ -84,7 +84,7 @@ describe("explain — exact output strings (added)", () => {
 
   it("renders the unknown-rule message VERBATIM", () => {
     expect(explain("does-not-exist", lookup)).toBe(
-      'Unknown rule "does-not-exist". No such rule in the ts-doctor catalog.',
+      'Unknown rule "does-not-exist". No such rule in the ts-fix catalog.',
     );
   });
 
@@ -98,7 +98,7 @@ describe("explain — exact output strings (added)", () => {
   it("explainDiagnostic full block VERBATIM (header + help + recommendation + inferredType + fix kind)", () => {
     const d: Diagnostic = {
       filePath: "/repo/src/x.ts",
-      plugin: "ts-doctor",
+      plugin: "ts-fix",
       rule: "no-floating-promises",
       severity: "error",
       message: "Floating promise.",
@@ -150,7 +150,7 @@ describe("equivalence vs frozen legacy explain", () => {
   it("explainDiagnostic matches the frozen oracle", () => {
     const d: FrozenDiagnostic = {
       filePath: "/repo/src/x.ts",
-      plugin: "ts-doctor",
+      plugin: "ts-fix",
       rule: "no-floating-promises",
       severity: "error",
       message: "Floating promise.",

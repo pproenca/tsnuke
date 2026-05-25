@@ -1,10 +1,10 @@
 # Transformation Notes — `filter-pipeline` → Effect-TS
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-doctor filter-pipeline effect`.
-Source (READ-ONLY): `legacy/ts-doctor/packages/core/src/filter-pipeline.ts` (218 lines)
-(+ the `Diagnostic`/`Severity` contract from `packages/ts-doctor-rules/src/types.ts`
-and the `TsDoctorConfig` subset from `packages/core/src/types.ts`). Target:
-`modernized/filter-pipeline/effect/` (package `@ts-doctor/filter-pipeline-effect`).
+Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix filter-pipeline effect`.
+Source (READ-ONLY): `legacy/ts-fix/packages/core/src/filter-pipeline.ts` (218 lines)
+(+ the `Diagnostic`/`Severity` contract from `packages/ts-fix-rules/src/types.ts`
+and the `TsFixConfig` subset from `packages/core/src/types.ts`). Target:
+`modernized/filter-pipeline/effect/` (package `@ts-fix/filter-pipeline-effect`).
 
 Implements **RULE-023** (four-stage diagnostic filter), **RULE-040** (config
 severity vocabulary & precedence), and the `warn`→`warning` vocab of **RULE-024**.
@@ -36,8 +36,8 @@ the `warn`↔`warning` vocabulary (D1), which must not (and does not) change out
 | Inline-disable directive regex + parse (RULE-023 S4) | `:124-150` `DISABLE_NEXT_LINE_RE`/`parseInlineDisables` | `src/main/stages.ts` same names (+ `InlineDirective` type) |
 | Stage 4 inline-disable (RULE-023 S4, BC-12) | `:152-185` `makeInlineDisableStage` | `src/main/stages.ts` `makeInlineDisableStage` |
 | `runFilterPipeline` orchestration + tags strip (RULE-023, BC-11) | `:189-218` | `src/main/runFilterPipeline.ts` `runFilterPipeline` |
-| `Diagnostic`/`Severity` contract | `@ts-doctor/rules types.ts:13,46-66` (`import type`) | `src/main/Diagnostic.ts` (`effect/Schema`) |
-| `TsDoctorConfig` (rules/categories/ignore subset) | `core types.ts:151-164` (`import type`) | `src/main/Config.ts` (re-exports the canonical Config family from `@ts-doctor/contracts-effect`; local subset DELETED) |
+| `Diagnostic`/`Severity` contract | `@ts-fix/rules types.ts:13,46-66` (`import type`) | `src/main/Diagnostic.ts` (`effect/Schema`) |
+| `TsFixConfig` (rules/categories/ignore subset) | `core types.ts:151-164` (`import type`) | `src/main/Config.ts` (re-exports the canonical Config family from `@ts-fix/contracts-effect`; local subset DELETED) |
 
 The public entry `runFilterPipeline(diagnostics, config, options?)` returns
 `Diagnostic[]` — same signature as legacy.
@@ -72,8 +72,8 @@ two-place normalization preserved verbatim in the oracle.
 > completing the consolidation (Follow-up #3).
 
 ### D2 — `import type` contracts → `effect/Schema` (D-style, no behavior change)
-`Diagnostic`/`Severity` (legacy `@ts-doctor/rules`) and the `TsDoctorConfig` subset
-(legacy `@ts-doctor/core`) are modeled as `effect/Schema` (`Diagnostic.ts`,
+`Diagnostic`/`Severity` (legacy `@ts-fix/rules`) and the `TsFixConfig` subset
+(legacy `@ts-fix/core`) are modeled as `effect/Schema` (`Diagnostic.ts`,
 `Config.ts`) per Brief line 94 — callers *can* `Schema.decode` untrusted input, but
 `runFilterPipeline` does NOT decode on the hot path (kept pure & fast, per the
 architecture-critic caveat, Brief line 25). `DiagnosticWithTags` (legacy's local
@@ -93,12 +93,12 @@ the filtering logic.
   CPU filtering in fibers buys nothing and costs the "performant" goal. Effect
   appears only in the contract/types layer (`Diagnostic.ts`, `Config.ts` — Schema).
 - **Config loading / sanitizing (RULE-024) was NOT migrated.** This slice consumes
-  an already-loaded `TsDoctorConfig`; the lenient drop-not-throw loader
+  an already-loaded `TsFixConfig`; the lenient drop-not-throw loader
   (`load-config.ts`) is a separate module/slice.
-- **`TsDoctorConfig` is now DE-VENDORED.** The local 3-field subset (`rules`/
+- **`TsFixConfig` is now DE-VENDORED.** The local 3-field subset (`rules`/
   `categories`/`ignore`) plus `ConfigSeverity`/`IgnoreConfig`/`IgnoreOverride` were
   DELETED; `Config.ts` re-exports the canonical Config family from
-  `@ts-doctor/contracts-effect`. The canonical `TsDoctorConfig` is a structural
+  `@ts-fix/contracts-effect`. The canonical `TsFixConfig` is a structural
   SUPERSET of the old subset (adds `failOn`/`customRulesOnly`/`plugins`, and the
   canonical `IgnoreConfig` adds an optional `ignore.tags`), so every existing read
   (`config.rules`/`config.categories`/`config.ignore`) still typechecks unchanged.
@@ -121,7 +121,7 @@ the filtering logic.
 
 1. **De-vendor `Diagnostic` — DONE.** The local `Severity`/`Tier`/`FixKind`/`TextEdit`/
    `Fix`/`Diagnostic` Schema definitions in `Diagnostic.ts` were DELETED and replaced
-   with re-exports of the canonical Schemas from `@ts-doctor/contracts-effect` (the
+   with re-exports of the canonical Schemas from `@ts-fix/contracts-effect` (the
    canonical `Diagnostic` is field-identical to the deleted copy — a proven superset).
    `DiagnosticWithTags` stays LOCAL as decided: it is now a thin type-only
    `interface DiagnosticWithTags extends Diagnostic { readonly tags?: readonly string[] }`
@@ -129,14 +129,14 @@ the filtering logic.
    `Diagnostic`); the pipeline only ever uses it as a type, so no Schema value is needed.
    The barrel re-exports `Diagnostic`/`Severity` (values) + `DiagnosticWithTags` (type) as
    before. Suite stayed green (120/120) with no assertion change. Dep
-   `@ts-doctor/contracts-effect": file:../../contracts/effect` added; `vitest.config.ts`
+   `@ts-fix/contracts-effect": file:../../contracts/effect` added; `vitest.config.ts`
    inlines it. (The Config family — `Config.ts`, `normalizeConfigSeverity` — is OUT of
    scope this pass and untouched; see Follow-ups #2/#3.)
-2. **De-vendor `TsDoctorConfig` — DONE.** The local 3-field subset Schema/types
-   (`ConfigSeverity`/`IgnoreOverride`/`IgnoreConfig`/`TsDoctorConfig`) in `Config.ts`
+2. **De-vendor `TsFixConfig` — DONE.** The local 3-field subset Schema/types
+   (`ConfigSeverity`/`IgnoreOverride`/`IgnoreConfig`/`TsFixConfig`) in `Config.ts`
    were DELETED; the file now re-exports the canonical Config family from
-   `@ts-doctor/contracts-effect` (a proven structural superset of the old subset).
-   The barrel keeps exporting `ConfigSeverity`/`TsDoctorConfig` as before (public
+   `@ts-fix/contracts-effect` (a proven structural superset of the old subset).
+   The barrel keeps exporting `ConfigSeverity`/`TsFixConfig` as before (public
    surface preserved). `normalizeConfigSeverity` (D1 behavior) stays local in
    `stages.ts`. Suite stayed green (120/120) with no assertion change; the dep +
    `vitest.config.ts` inline already existed from the Diagnostic de-vendor.
@@ -198,7 +198,7 @@ had two adversarial gaps — now closed.
   `ruleOverrides[d.rule] ?? ruleOverrides[plugin/rule]` precedence (`stages.ts:68`) is the
   single most refactor-fragile, score-moving line in the slice, and no fixture pinned it
   (every test supplied one id form at a time). Added `equivalence.test.ts` fixtures with
-  BOTH `r` and `ts-doctor/r` present (bare-warn-beats-ns-off, bare-off-beats-ns-warn) plus
+  BOTH `r` and `ts-fix/r` present (bare-warn-beats-ns-off, bare-off-beats-ns-warn) plus
   both-forms-present collision fixtures for `ignore.rules` and `ignore.overrides.rules`. If
   the `??` operands are ever swapped, these now diverge from the oracle and fail.
 - **Out-of-vocab config-severity fallthrough (MEDIUM).** Pinned that a stray engine token

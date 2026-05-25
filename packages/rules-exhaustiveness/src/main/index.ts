@@ -1,10 +1,10 @@
 /**
- * `@ts-doctor/rules-exhaustiveness-effect` — the `exhaustiveness` rule category
+ * `@ts-fix/rules-exhaustiveness-effect` — the `exhaustiveness` rule category
  * ("Exhaustiveness & Narrowing", RULE-025), a SYN/TYP-mixed rule-category slice on
  * the Effect-native substrate.
  *
  * Eight rules ported verbatim from legacy
- * `packages/ts-doctor-rules/src/rules/exhaustiveness/`:
+ * `packages/ts-fix-rules/src/rules/exhaustiveness/`:
  *
  *   SYN (3) — AST-only, driven by `runRule`:
  *     - `defaultCaseLast` — a `switch` whose `default` clause isn't last.
@@ -24,16 +24,16 @@
  *       non-literal OR a `default` clause exists — preserved verbatim.)
  *
  * Each rule is a plain-TS `ts.SyntaxKind → visitor` map (NOT Effect-wrapped) built
- * with `defineRule` from `@ts-doctor/rules-core-effect`; the engine drives them via
+ * with `defineRule` from `@ts-fix/rules-core-effect`; the engine drives them via
  * the shared `runRule` (SYN) / `runTypeAwareRule` (TYP) walk/dispatch. The data
- * CONTRACTS (`Diagnostic`, `RuleMeta`) live in `@ts-doctor/contracts-effect` and the
+ * CONTRACTS (`Diagnostic`, `RuleMeta`) live in `@ts-fix/contracts-effect` and the
  * substrate (`defineRule`, `Rule`, `RuleContext`, `runRule`, `runTypeAwareRule`) in
- * `@ts-doctor/rules-core-effect` — this slice consumes both and re-exports NOTHING it
+ * `@ts-fix/rules-core-effect` — this slice consumes both and re-exports NOTHING it
  * does not own (barrel hygiene). See TRANSFORMATION_NOTES.md for the legacy → target
  * mapping.
  */
 
-import type { Rule } from "@ts-doctor/rules-core-effect";
+import type { Rule } from "@ts-fix/rules-core-effect";
 
 import { rule as defaultCaseLast } from "./default-case-last.js";
 import { rule as noConstantCondition } from "./no-constant-condition.js";
@@ -68,6 +68,6 @@ export const exhaustivenessRules: ReadonlyArray<Rule> = [
   switchExhaustivenessCheck,
 ];
 
-// Self-barrel: `import { RulesExhaustiveness } from "@ts-doctor/rules-exhaustiveness-effect"`
+// Self-barrel: `import { RulesExhaustiveness } from "@ts-fix/rules-exhaustiveness-effect"`
 // resolves to this module's namespace (additive — the named exports above stay stable).
 export * as RulesExhaustiveness from ".";

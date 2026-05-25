@@ -14,7 +14,7 @@
 import { describe, expect, it } from "vitest";
 import { buildModuleGraph } from "../main/buildModuleGraph.js";
 import type { GraphFileInput } from "../main/buildModuleGraph.js";
-import type { ModuleGraph } from "@ts-doctor/rules-core-effect";
+import type { ModuleGraph } from "@ts-fix/rules-core-effect";
 
 // --- helpers -------------------------------------------------------------------
 

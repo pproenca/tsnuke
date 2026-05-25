@@ -1,6 +1,6 @@
 import ts from "typescript";
-import { defineRule } from "@ts-doctor/rules-core-effect";
-import type { RuleContext } from "@ts-doctor/rules-core-effect";
+import { defineRule } from "@ts-fix/rules-core-effect";
+import type { RuleContext } from "@ts-fix/rules-core-effect";
 
 /**
  * SYN — budget on the number of type parameters on a single declaration. A
@@ -15,9 +15,9 @@ import type { RuleContext } from "@ts-doctor/rules-core-effect";
  * NOT (per RULE-007 edge cases).
  *
  * Ported VERBATIM from legacy
- * `packages/ts-doctor-rules/src/rules/generics/generic-param-count-budget.ts`;
+ * `packages/ts-fix-rules/src/rules/generics/generic-param-count-budget.ts`;
  * the only change is importing `defineRule` / `RuleContext` from the
- * `@ts-doctor/rules-core-effect` substrate rather than the legacy `../../define-rule.js`.
+ * `@ts-fix/rules-core-effect` substrate rather than the legacy `../../define-rule.js`.
  */
 const GENERIC_PARAM_THRESHOLD = 4;
 

@@ -27,7 +27,7 @@ import { resolveSeverity, shouldActivate } from "../main/index.js";
 import type { RuleMeta, Severity } from "../main/index.js";
 
 // ---------------------------------------------------------------------------
-// ORACLE: frozen copy of legacy/ts-doctor/packages/ts-doctor-rules/src/capabilities.ts:23-71.
+// ORACLE: frozen copy of legacy/ts-fix/packages/ts-fix-rules/src/capabilities.ts:23-71.
 // For differential testing ONLY — do not refactor or "improve" it.
 // ---------------------------------------------------------------------------
 function legacyShouldActivate(

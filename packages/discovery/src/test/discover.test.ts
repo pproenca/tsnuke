@@ -14,7 +14,7 @@
 import {
   NoTypeScriptProjectError,
   TsconfigNotFoundError,
-} from "@ts-doctor/errors-effect";
+} from "@ts-fix/errors-effect";
 import { Effect, Either } from "effect";
 import { describe, expect, it } from "vitest";
 import { discoverTsProject } from "../main/discover.js";
@@ -46,7 +46,7 @@ describe("discoverTsProject — RULE-022 validity", () => {
       expect(res.left).toBeInstanceOf(TsconfigNotFoundError);
       expect(res.left._tag).toBe("TsconfigNotFoundError");
       expect(res.left.message).toBe(
-        "No tsconfig.json found in /p. ts-doctor analyzes TypeScript projects only.",
+        "No tsconfig.json found in /p. ts-fix analyzes TypeScript projects only.",
       );
     }
   });

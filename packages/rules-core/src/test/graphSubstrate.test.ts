@@ -9,7 +9,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import type { Diagnostic, RuleMeta } from "@ts-doctor/contracts-effect";
+import type { Diagnostic, RuleMeta } from "@ts-fix/contracts-effect";
 import {
   defineGraphRule,
   createGraphRuleContext,
@@ -52,7 +52,7 @@ describe("createGraphRuleContext.report — auto-fill (mirrors createRuleContext
 
   it("forces plugin and defaults the meta-derived fields", () => {
     const d = capture();
-    expect(d.plugin).toBe("ts-doctor");
+    expect(d.plugin).toBe("ts-fix");
     expect(d.rule).toBe("no-cycle");
     expect(d.tier).toBe("GRAPH");
     expect(d.category).toBe("Module Graph");

@@ -1,7 +1,7 @@
 /**
- * `@ts-doctor/rules-type-assertions-effect` — the `type-assertions` rule category
+ * `@ts-fix/rules-type-assertions-effect` — the `type-assertions` rule category
  * (RULE-025, "Type Assertions & Escapes"): 13 plain-TS predicates ported verbatim
- * from the legacy `packages/ts-doctor-rules/src/rules/type-assertions/**`.
+ * from the legacy `packages/ts-fix-rules/src/rules/type-assertions/**`.
  *
  *   - 12 SYN (syntactic, AST/comment-only — the engine drives them via `runRule`).
  *   - 1 TYP (type-aware: `no-unnecessary-non-null-assertion`, which early-returns
@@ -10,8 +10,8 @@
  *
  * Each rule is a pure `SyntaxKind → visitor` map plugging into the rule substrate
  * (`defineRule` / `RuleContext` / `runRule` / `runTypeAwareRule`) from
- * `@ts-doctor/rules-core-effect`. The data CONTRACTS (`Diagnostic`, `RuleMeta`,
- * `Rule`) live in `@ts-doctor/contracts-effect` / `@ts-doctor/rules-core-effect`
+ * `@ts-fix/rules-core-effect`. The data CONTRACTS (`Diagnostic`, `RuleMeta`,
+ * `Rule`) live in `@ts-fix/contracts-effect` / `@ts-fix/rules-core-effect`
  * and are NOT re-exported here (barrel hygiene — this slice does not re-publish
  * symbols it does not own).
  *
@@ -24,7 +24,7 @@
  * legacy case carried over, plus negatives and comment-rule edges).
  */
 
-import type { Rule } from "@ts-doctor/rules-core-effect";
+import type { Rule } from "@ts-fix/rules-core-effect";
 
 import { rule as noAngleBracketAssertion } from "./no-angle-bracket-assertion.js";
 import { rule as noAssertionOnJsonParse } from "./no-assertion-on-json-parse.js";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-doctor/rules-core-effect";
+import { runRule } from "@ts-fix/rules-core-effect";
 import { rule } from "../main/require-await.js";
 
 describe("require-await (SYN) — RULE-025 async", () => {
@@ -36,7 +36,7 @@ describe("require-await (SYN) — RULE-025 async", () => {
     expect(d.tier).toBe("SYN");
     expect(d.severity).toBe("warning");
     expect(d.category).toBe("Async / Promises");
-    expect(d.plugin).toBe("ts-doctor");
+    expect(d.plugin).toBe("ts-fix");
     expect(d.message).toBe("`async` function has no `await` expression.");
     expect(d.help).toBe(
       "Remove `async`, or add the `await` this function was meant to use.",

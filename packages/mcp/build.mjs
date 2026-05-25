@@ -1,10 +1,10 @@
 /**
- * Build the runnable `ts-doctor-mcp` stdio server.
+ * Build the runnable `ts-fix-mcp` stdio server.
  *
  * Like the CLI, this package exports `src/main/*.ts` directly (typecheck + vitest resolve
  * from source). That is NOT runnable as a real process: relative imports carry `.js`
  * extensions that resolve to on-disk `.ts` files, and Node's native type-stripping does
- * not rewrite `.js`→`.ts`. We BUNDLE the server (entry + every `@ts-doctor/*` slice +
+ * not rewrite `.js`→`.ts`. We BUNDLE the server (entry + every `@ts-fix/*` slice +
  * effect/@effect + the MCP SDK, resolved from source) into one self-contained ESM file.
  *
  * `typescript` stays EXTERNAL — the engine's analysis backend (~9 MB), a runtime dependency

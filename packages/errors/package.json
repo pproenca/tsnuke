@@ -1,7 +1,7 @@
 {
-  "name": "@ts-doctor/errors-effect",
+  "name": "@ts-fix/errors-effect",
   "version": "0.1.0",
-  "description": "Effect-native rewrite of ts-doctor's tagged discovery error classes (RULE-037). Strangler-fig slice — idiomatic effect/Data tagged errors preserving the legacy _tag/name/instanceof-Error/cause contract that build-report's serializeError depends on.",
+  "description": "Effect-native rewrite of ts-fix's tagged discovery error classes (RULE-037). Strangler-fig slice — idiomatic effect/Data tagged errors preserving the legacy _tag/name/instanceof-Error/cause contract that build-report's serializeError depends on.",
   "license": "MIT",
   "type": "module",
   "exports": {
