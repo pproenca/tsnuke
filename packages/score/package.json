@@ -1,5 +1,6 @@
 {
   "name": "@ts-fix/score-effect",
+  "private": true,
   "version": "0.1.0",
   "description": "Effect-native rewrite of ts-fix's local health scoring (RULE-001/002/003/041). Strangler-fig slice — pure functions on the Effect ecosystem (Schema/Option/branded types).",
   "license": "MIT",

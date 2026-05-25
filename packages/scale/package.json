@@ -1,5 +1,6 @@
 {
   "name": "@ts-fix/scale-effect",
+  "private": true,
   "version": "0.1.0",
   "description": "Effect-native rewrite of ts-fix's scale guard: a PURE Tier-2 memory-ceiling check (RULE-013) plus the resource-disposal seam (RULE-036) re-expressed as idiomatic Effect Scope (Effect.acquireRelease / acquireUseRelease). Strangler-fig slice.",
   "license": "MIT",

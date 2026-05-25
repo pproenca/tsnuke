@@ -1,5 +1,6 @@
 {
   "name": "@ts-fix/build-report-effect",
+  "private": true,
   "version": "0.1.0",
   "description": "Effect-native rewrite of ts-fix's versioned JSON report builder (RULE-004 summary rollup, RULE-034 schema version & ok). Strangler-fig slice — consumes @ts-fix/score-effect for the monorepo MIN score (RULE-003). Pure functions + effect/Schema wire contract.",
   "license": "MIT",

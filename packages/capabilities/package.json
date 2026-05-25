@@ -1,5 +1,6 @@
 {
   "name": "@ts-fix/capabilities-effect",
+  "private": true,
   "version": "0.1.0",
   "description": "Effect-native rewrite of ts-fix's capability-gated rule-activation predicate (RULE-019/020). Strangler-fig slice — pure synchronous predicate on the Effect ecosystem (Schema contract).",
   "license": "MIT",

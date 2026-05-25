@@ -1,5 +1,6 @@
 {
   "name": "@ts-fix/rules-type-performance-effect",
+  "private": true,
   "version": "0.1.0",
   "description": "Effect-native rewrite of ts-fix's `type-performance` SYN rule category (RULE-008 large union >12, RULE-009 large intersection >5, RULE-010 large object alias >12 → prefer interface). Three pure AST predicates on the @ts-fix/rules-core-effect substrate (defineRule/runRule), consuming the canonical Diagnostic/RuleMeta from @ts-fix/contracts-effect. Plain-TS visitors over the TS compiler API — NOT Effect-wrapped (sync AST walk).",
   "license": "MIT",

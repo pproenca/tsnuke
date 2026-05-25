@@ -1,5 +1,6 @@
 {
   "name": "@ts-fix/contracts-effect",
+  "private": true,
   "version": "0.1.0",
   "description": "Canonical effect/Schema home for ts-fix's cross-cutting domain contracts (Diagnostic/Severity/Tier/FixKind/Fix/TextEdit, RuleMeta/Capability, the TsFixConfig family). Consolidation slice — pure contracts (no Effect monad) that existing slices currently vendor; the engine slice is the first consumer that imports from here instead of duplicating.",
   "license": "MIT",

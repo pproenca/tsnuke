@@ -1,5 +1,6 @@
 {
   "name": "@ts-fix/rules-async-effect",
+  "private": true,
   "version": "0.1.0",
   "description": "Effect-native rewrite of ts-fix's `async` rule category (7 rules: 4 SYN — no-async-promise-executor, no-await-in-loop, no-return-await, require-await; 3 TYP — await-thenable, no-floating-promises, no-misused-promises). Pure AST/type-aware predicates on the @ts-fix/rules-core-effect substrate (defineRule/runRule/runTypeAwareRule), consuming the canonical Diagnostic/RuleMeta/Fix/TextEdit from @ts-fix/contracts-effect. no-floating-promises is the ONLY catalog rule that emits a real `fix` (RULE-025). Plain-TS visitors over the TS compiler API — NOT Effect-wrapped (sync AST walk).",
   "license": "MIT",

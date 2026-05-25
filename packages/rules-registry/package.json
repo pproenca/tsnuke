@@ -1,5 +1,6 @@
 {
   "name": "@ts-fix/rules-registry-effect",
+  "private": true,
   "version": "0.1.0",
   "description": "The GLOBAL rule registry: aggregates all 88 transformed rules (86 per-file SYN/TYP/CFG + 2 GRAPH) into the two registries the engine consumes (`ruleRegistry` + `graphRuleRegistry`). Effect-native replacement for the legacy codegen `rule-registry.generated.ts` — a hand-assembled aggregator over the per-category rule slices (import read-only; owns no rules itself).",
   "license": "MIT",

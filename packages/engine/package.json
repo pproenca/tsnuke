@@ -1,5 +1,6 @@
 {
   "name": "@ts-fix/engine-effect",
+  "private": true,
   "version": "0.1.0",
   "description": "THE integrating keystone of the ts-fix modernization: the two-tier `runEngine` (RULE-018 partial-honesty gate + RULE-036 Program disposal via Scope + RULE-013 memory guard, now WIRED) and the `diagnose()` orchestration that wires ~12 finished strangler-fig slices into a working end-to-end analysis. The ONE genuinely-effectful part is the `ts.Program` lifecycle (scale.scopedProgram); rule execution stays pure synchronous. `diagnose` is an Effect over FileSystem|Path|Scope; `diagnoseNode` is the prod runnable over NodeContext.",
   "license": "MIT",

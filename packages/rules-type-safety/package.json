@@ -1,5 +1,6 @@
 {
   "name": "@ts-fix/rules-type-safety-effect",
+  "private": true,
   "version": "0.1.0",
   "description": "Effect-native rewrite of ts-fix's `type-safety` rule category (RULE-006 + RULE-025 type-safety row): 6 SYN AST predicates (any-density-budget, no-explicit-any, no-record-string-unknown, no-unknown-return, no-wrapper-object-types, prefer-type-guard-predicate) + 6 TYP type-aware predicates (no-unnecessary-instanceof, no-unnecessary-typeof, no-unsafe-argument, no-unsafe-call, no-unsafe-member-access, no-unsafe-return — the `no-unsafe-*` family, all early-return without ctx.checker). Strangler-fig slice — consumes @ts-fix/rules-core-effect for the rule substrate (defineRule/runRule/runTypeAwareRule/Rule/RuleContext) and @ts-fix/contracts-effect for the Diagnostic/RuleMeta contracts. Plain-TS AST predicates wrapping the TS compiler API — NOT Effect-wrapped (visitors are sync). any-density-budget fires ONCE per file via a SourceFile-keyed visitor when the AnyKeyword count exceeds the threshold (5, exclusive). The 6 TYP rules read ctx.checker (getTypeAtLocation / TypeFlags masks / typeToString) and emit nothing on the Tier-1 / broken-project path; the engine supplies the checker under typecheck:ok.",
   "license": "MIT",

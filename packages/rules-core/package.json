@@ -1,5 +1,6 @@
 {
   "name": "@ts-fix/rules-core-effect",
+  "private": true,
   "version": "0.1.0",
   "description": "The rule SUBSTRATE for ts-fix: defineRule + rule context/visitor shape + diagnostic identity (BC-13) + a hand-written rule registry, plus the AST-free `strictness` rule category (RULE-020) as the first proof-of-pattern. Consumes @ts-fix/contracts-effect for the Diagnostic/RuleMeta contracts (first NEW contracts consumer); owns ModuleGraph (single-site GRAPH-tier input). Plain-TS substrate wrapping the TS compiler API — NOT Effect-wrapped (visitors are sync).",
   "license": "MIT",
