@@ -44,12 +44,11 @@ export const rule = defineRule(
       if (moduleSpecifier === undefined) return;
       if (!ts.isStringLiteral(moduleSpecifier)) return;
 
+      // Count LEADING `..` segments: the index of the first non-`..` segment is
+      // exactly that count; -1 (no non-`..` found) means every segment is `..`.
       const segments = moduleSpecifier.text.split("/");
-      let depth = 0;
-      for (const segment of segments) {
-        if (segment === "..") depth += 1;
-        else break;
-      }
+      const firstNonDotDot = segments.findIndex((s) => s !== "..");
+      const depth = firstNonDotDot === -1 ? segments.length : firstNonDotDot;
       if (depth < MAX_RELATIVE_DEPTH) return;
 
       const start = moduleSpecifier.getStart(ctx.sourceFile);

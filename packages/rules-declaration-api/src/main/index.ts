@@ -40,3 +40,7 @@ export const declarationApiRules: ReadonlyArray<Rule> = [
   noExportAssignment,
   noMutableExports,
 ];
+
+// Self-barrel: `import { RulesDeclarationApi } from "@ts-doctor/rules-declaration-api-effect"`
+// resolves to this module's namespace. Additive — the named exports above stay the surface.
+export * as RulesDeclarationApi from "./index.js";

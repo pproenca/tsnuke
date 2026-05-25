@@ -22,6 +22,7 @@
  * decode `Left` we return an MCP `InvalidParams` error (the zod-gate equivalent). The
  * `content` (text) shape returned on success is byte-identical to legacy.
  */
+import { Either, ParseResult } from "effect";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -31,9 +32,7 @@ import {
   McpError,
   type CallToolResult,
 } from "@modelcontextprotocol/sdk/types.js";
-import { Either, ParseResult } from "effect";
 
-import { diagnoseTool, explainTool, listRulesTool } from "./tools.js";
 import {
   decodeDiagnoseArgs,
   decodeExplainArgs,
@@ -42,6 +41,7 @@ import {
   ExplainJsonSchema,
   ListRulesJsonSchema,
 } from "./schemas.js";
+import { diagnoseTool, explainTool, listRulesTool } from "./tools.js";
 
 /** Tool descriptions — preserved VERBATIM from legacy `server.ts`. */
 const DIAGNOSE_DESCRIPTION =
@@ -86,11 +86,7 @@ export function createServer(): McpServer {
 
   // tools/list — advertise the three tools with their derived JSON Schemas.
   server.server.setRequestHandler(ListToolsRequestSchema, () => ({
-    tools: TOOL_DEFINITIONS.map((t) => ({
-      name: t.name,
-      description: t.description,
-      inputSchema: t.inputSchema,
-    })),
+    tools: TOOL_DEFINITIONS.map((t) => ({ ...t })),
   }));
 
   // tools/call — the AUTHORITATIVE effect/Schema validation gate (RULE-029), then

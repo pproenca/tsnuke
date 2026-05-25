@@ -39,3 +39,7 @@ export {
 
 // The orchestrator — the public entry point (RULE-023, BC-11).
 export { runFilterPipeline, type FilterPipelineOptions } from "./runFilterPipeline.js";
+
+// Self-barrel: opt-in namespace import (`import { FilterPipeline } from "..."`). ADDITIVE —
+// the named re-exports above remain the byte-stable surface every consumer imports from.
+export * as FilterPipeline from "./index.js";

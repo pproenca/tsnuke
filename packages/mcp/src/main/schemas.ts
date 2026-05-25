@@ -21,6 +21,13 @@
  *   - `ts_doctor_explain`    : { rule: string }
  *   - `ts_doctor_list_rules` : {}
  *
+ * Field-level `.annotations({ description })` flow into the generated JSON Schema as
+ * `description` metadata an agent reads in `tools/list` — additive only. A TOP-LEVEL
+ * `identifier` is DELIBERATELY OMITTED: `JSONSchema.make` would then emit a `$ref`/`$defs`
+ * wrapper instead of the inline `{ type: "object", required, properties }` shape the MCP
+ * `inputSchema` contract requires, breaking agent integrations. So the wire contract stays
+ * byte-stable (`required`/`type` unchanged; only `description` keys are added).
+ *
  * zod is GONE: it is not imported here, anywhere in this slice, nor a dependency.
  */
 import { JSONSchema, Schema } from "effect";
@@ -30,8 +37,14 @@ import { JSONSchema, Schema } from "effect";
 // ---------------------------------------------------------------------------
 
 export const DiagnoseArgs = Schema.Struct({
-  directory: Schema.String,
-  deep: Schema.optional(Schema.Boolean),
+  directory: Schema.String.annotations({
+    description: "Path to the TypeScript project (or monorepo root) to lint and score.",
+  }),
+  deep: Schema.optional(
+    Schema.Boolean.annotations({
+      description: "Run the type-aware tier (Tier-2). Slower; needs a clean typecheck.",
+    }),
+  ),
 });
 export type DiagnoseArgs = typeof DiagnoseArgs.Type;
 
@@ -43,7 +56,9 @@ export const decodeDiagnoseArgs = Schema.decodeUnknownEither(DiagnoseArgs);
 // ---------------------------------------------------------------------------
 
 export const ExplainArgs = Schema.Struct({
-  rule: Schema.String,
+  rule: Schema.String.annotations({
+    description: "The rule id to explain, e.g. `no-explicit-any` or `no-import-cycles`.",
+  }),
 });
 export type ExplainArgs = typeof ExplainArgs.Type;
 

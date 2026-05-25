@@ -2,6 +2,8 @@
 
 *Phase A output of `/modernize-reimagine react-doctor "equivalent tool but for TypeScript, like react-doctor is for React projects"`. Generated 2026-05-24.*
 
+> **Implementation note (added after the rewrite).** This is the **specification**; it remains the authority for *what* the tool must do — the 20 capabilities, the domain model, and the **BC-01…BC-24 behavior contract are current and binding**. The shipped implementation is an **Effect-TS v3.21 strangler-fig rewrite** across **32 `@ts-doctor/<dir>-effect` packages** (see root `CLAUDE.md` §2; build/wire details in `ARCHITECTURE.md`). Two concrete claims in this file have been overtaken by the implementation: (1) §2.3's "~45–62 initial rules" estimate is now **88 rules** across 13 categories; (2) §6's Phase-B "build the seam, stub Tier-2" decision is **superseded** — all four tiers are live, including the 18 type-aware TYP rules. Where this file says "zod or hand-rolled validator", the implementation uses `effect/Schema`.
+
 > **This is a rebuild from extracted intent, not a port.** `react-doctor` is the **specification source** — the proven *mechanisms* (scoring, the diagnostic filter pipeline, capability-gated rule activation, the security trust boundaries, the distribution surfaces). The React **domain** (286 React/JSX/RN rules, framework+version gating, a mandatory remote score round-trip) is replaced by a **TypeScript** domain designed AI-native for 2026.
 >
 > Spec mined from: `BUSINESS_RULES.md` (73 Given/When/Then rules), `DATA_OBJECTS.md` (entity model), `ASSESSMENT.md` (8 domains), plus three parallel reimagine passes (interface catalog · engine-mechanism classification · TS rule-catalog design).
@@ -182,7 +184,7 @@ erDiagram
 | 12 | Naming & Idioms (`interface` vs `type`, enum vs union) | naming conventions / design | SYN |
 | 13 | Security (secrets, `eval`, `any`→sink flow) | security | Mixed |
 
-Buckets that vanish (React-only): Design, A11y, JSX, React-Native, framework-builtins, Tailwind. Categories that grow: the type-semantic ones (1, 4, 5, 6, 11) — exactly where Tier-2 earns its keep. Initial catalog: **~45–62 rules** (~22 TYP / ~24 SYN / ~6 GRAPH / ~8 CFG). The full rule list with ids/intent/severity/tier is in the reimagine TS-catalog pass output; representative P0 rules are pinned in §5.
+Buckets that vanish (React-only): Design, A11y, JSX, React-Native, framework-builtins, Tailwind. Categories that grow: the type-semantic ones (1, 4, 5, 6, 11) — exactly where Tier-2 earns its keep. Initial estimate was **~45–62 rules**; the **shipped catalog is 88 rules** (64 SYN / 18 TYP / 2 GRAPH / 4 CFG), aggregated in `rules-registry-effect`'s `registry.ts`; representative P0 rules are pinned in §5.
 
 ---
 
@@ -382,9 +384,9 @@ The human approved the following at HITL checkpoint #1. These are binding for Ph
    - **DEFER C15** (ESLint flat-config adapter) and **C17** (GitHub composite Action) to a later phase — the scaffold focuses on CLI + API + engine + core.
    - All React-only domains dropped entirely (already inherent to the reimagine).
    - C11 (config), C12 (API), C18 (skill), C20 (codegen registry) stay at P1.
-3. **Type-aware tier: build the seam, stub Tier-2.** Scaffold the **Tier-1 syntactic engine fully** + the `typecheck:ok` **gating seam** + **partial-score honesty (BC-03)**, with Tier-2 (TYP) rules *defined and registered but marked pending/skip* (expected-failure with their BC/rule IDs). The whole pipeline runs end-to-end now; real `ts.Program` integration lands after the skeleton is proven.
-4. **Scoring: keep the model; weights frozen (refined by the architecture-critic).** Retain breadth-not-depth (penalize **distinct** rules fired, not occurrences; BC-01/BC-02) and the 75/50 bands. The initial "tier-weighted matrix" idea was **reversed** in Phase C (critic M1): tier-weighted *config-tunable* weights break the cross-machine comparability the score exists for, and a 5-bucket matrix is uncalibratable without a corpus. v1 uses **two frozen weights in code** (error 1.5 / warning 0.75 — react-doctor's proven pair); the catalog's tier mix does the de-facto weighting; tier-weighting is revisited post-v1 with a corpus. See `REIMAGINED_ARCHITECTURE.md §5`.
+3. **Type-aware tier: build the seam, stub Tier-2.** *(Superseded by the rewrite — see below.)* The Phase-B plan was to scaffold the **Tier-1 syntactic engine fully** + the `typecheck:ok` **gating seam** + **partial-score honesty (BC-03)**, with Tier-2 (TYP) rules *defined and registered but marked pending/skip*, deferring real `ts.Program` integration. **In the shipped Effect-TS rewrite this is done:** the seam is filled — `engine-effect` builds one shared `ts.Program` (lifecycle via Effect `Scope`), derives `typecheck:ok` from `getPreEmitDiagnostics()`, and runs all 18 TYP rules with `program.getTypeChecker()` under `typecheck:ok` (they emit nothing on the Tier-1 / broken-project path). All four tiers run end-to-end.
+4. **Scoring: keep the model; weights frozen (refined by the architecture-critic).** Retain breadth-not-depth (penalize **distinct** rules fired, not occurrences; BC-01/BC-02) and the 75/50 bands. The initial "tier-weighted matrix" idea was **reversed** in Phase C (critic M1): tier-weighted *config-tunable* weights break the cross-machine comparability the score exists for, and a 5-bucket matrix is uncalibratable without a corpus. v1 uses **two frozen weights in code** (error 1.5 / warning 0.75 — react-doctor's proven pair); the catalog's tier mix does the de-facto weighting; tier-weighting is revisited post-v1 with a corpus. See `ARCHITECTURE.md §5`.
 
 ---
 
-*Artifacts: this file · `REIMAGINED_ARCHITECTURE.md` (Phase C) · `BUSINESS_RULES.md` / `DATA_OBJECTS.md` / `ASSESSMENT.md` (legacy spec source).*
+*Artifacts: this file · `ARCHITECTURE.md` (Phase C) · `BUSINESS_RULES.md` / `DATA_OBJECTS.md` / `ASSESSMENT.md` (legacy spec source).*

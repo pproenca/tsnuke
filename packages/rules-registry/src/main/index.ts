@@ -33,3 +33,8 @@ import { graphRuleRegistry, ruleRegistry } from "./registry.js";
  */
 export const totalRuleCount: number =
   ruleRegistry.length + graphRuleRegistry.length;
+
+// Self-barrel: `import { RulesRegistry } from "@ts-doctor/rules-registry-effect"` resolves to
+// this module's namespace (the self-barrel module shape). Additive — the named exports above
+// (`ruleRegistry` / `graphRuleRegistry` / `totalRuleCount`) remain the canonical surface.
+export * as RulesRegistry from "./index.js";

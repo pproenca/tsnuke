@@ -119,16 +119,15 @@ function applyEditsOnePass(source: string, edits: readonly TextEdit[]): PassResu
     if (edit.end > lastAppliedStart) {
       // Is it a TRUE conflict (intersects a winner's original range) or just an
       // adjacency skip we can retry next pass?
-      const isTrueConflict = appliedRanges.some((r) => intersects(r, edit));
-      if (isTrueConflict) {
+      if (appliedRanges.some((r) => intersects(r, edit))) {
         conflicts++;
-      } else {
-        carried.push({
-          start: edit.start + cumulativeDelta,
-          end: edit.end + cumulativeDelta,
-          replacement: edit.replacement,
-        });
+        continue;
       }
+      carried.push({
+        start: edit.start + cumulativeDelta,
+        end: edit.end + cumulativeDelta,
+        replacement: edit.replacement,
+      });
       continue;
     }
     output = output.slice(0, edit.start) + edit.replacement + output.slice(edit.end);
@@ -207,9 +206,9 @@ export function groupFixesByFile(diagnostics: readonly Diagnostic[]): FileFixGro
 
   for (const d of diagnostics) {
     if (d.fix === undefined) continue;
-    let bucket = byFile.get(d.filePath);
-    if (bucket === undefined) {
-      bucket = [];
+    const existing = byFile.get(d.filePath);
+    const bucket = existing ?? [];
+    if (existing === undefined) {
       byFile.set(d.filePath, bucket);
       order.push(d.filePath);
     }

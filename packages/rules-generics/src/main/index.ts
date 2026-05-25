@@ -54,3 +54,7 @@ export const genericsRules: ReadonlyArray<Rule> = [
   noUnnecessaryTypeConstraint,
   preferGenericOverAnyPassthrough,
 ];
+
+// Self-barrel: `import { RulesGenerics } from "@ts-doctor/rules-generics-effect"`
+// resolves to this module's namespace (additive — the named exports above stay stable).
+export * as RulesGenerics from ".";

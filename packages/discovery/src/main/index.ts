@@ -40,3 +40,11 @@ export {
   countSourceFilesNode,
   discoverTsProjectNode,
 } from "./node.js";
+
+/**
+ * Self-barrel: re-export this module's flat surface as a `Discovery` namespace, so
+ * consumers can `import { Discovery } from "@ts-doctor/discovery-effect"` and reach
+ * `Discovery.discoverTsProject` / `Discovery.computeCapabilities` / etc. (self-barrel
+ * module shape). The named re-exports above stay byte-stable — this is purely additive.
+ */
+export * as Discovery from "./index.js";

@@ -41,3 +41,7 @@ export {
   TsDoctorConfig,
   decodeTsDoctorConfig,
 } from "./Config.js";
+
+// --- Self-barrel: opt-in namespace import (`import { Contracts } from "..."`). ADDITIVE —
+// the named re-exports above remain the byte-stable surface every consumer imports from. ---
+export * as Contracts from "./index.js";

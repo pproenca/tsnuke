@@ -30,7 +30,9 @@ import { Schema } from "effect";
  * the config-file vocabulary `ConfigSeverity` (`Config.ts`, `error`/`warn`/`off`) and
  * from `FailOn` — the `warn` vs `warning` split is preserved deliberately (RULE-040).
  */
-export const Severity = Schema.Literal("error", "warning");
+export const Severity = Schema.Literal("error", "warning").annotations({
+  identifier: "Severity",
+});
 export type Severity = typeof Severity.Type;
 
 /**
@@ -40,22 +42,32 @@ export type Severity = typeof Severity.Type;
  * - `GRAPH`: module-graph rules (cycles, unused exports)
  * - `CFG`: project-level config rules (tsconfig strictness gaps)
  */
-export const Tier = Schema.Literal("SYN", "TYP", "GRAPH", "CFG");
+export const Tier = Schema.Literal("SYN", "TYP", "GRAPH", "CFG").annotations({
+  identifier: "Tier",
+});
 export type Tier = typeof Tier.Type;
 
 /** How a diagnostic can be remediated (RULE-032). */
-export const FixKind = Schema.Literal("auto-fix", "codemod", "manual");
+export const FixKind = Schema.Literal("auto-fix", "codemod", "manual").annotations({
+  identifier: "FixKind",
+});
 export type FixKind = typeof FixKind.Type;
 
 /** A single text replacement over a source file, by half-open `[start, end)` char offsets. */
 export const TextEdit = Schema.Struct({
   /** Inclusive start char offset into the source file. */
-  start: Schema.Int,
+  start: Schema.Int.annotations({
+    description: "Inclusive start char offset into the source file.",
+  }),
   /** Exclusive end char offset into the source file. */
-  end: Schema.Int,
+  end: Schema.Int.annotations({
+    description: "Exclusive end char offset into the source file.",
+  }),
   /** Text to splice in over `[start, end)`. */
-  replacement: Schema.String,
-});
+  replacement: Schema.String.annotations({
+    description: "Text to splice in over `[start, end)`.",
+  }),
+}).annotations({ identifier: "TextEdit" });
 export type TextEdit = typeof TextEdit.Type;
 
 /** A structured, machine-applicable remediation (BC-14). */
@@ -63,8 +75,12 @@ export const Fix = Schema.Struct({
   kind: FixKind,
   edits: Schema.Array(TextEdit),
   /** TYP rules only: the type the checker inferred at the fix site. */
-  inferredType: Schema.optional(Schema.String),
-});
+  inferredType: Schema.optional(
+    Schema.String.annotations({
+      description: "TYP rules only: the type the checker inferred at the fix site.",
+    }),
+  ),
+}).annotations({ identifier: "Fix" });
 export type Fix = typeof Fix.Type;
 
 /**
@@ -78,24 +94,37 @@ export type Fix = typeof Fix.Type;
 export const Diagnostic = Schema.Struct({
   filePath: Schema.String,
   /** Always `"ts-doctor"` in v1 (first-party catalog only). */
-  plugin: Schema.String,
+  plugin: Schema.String.annotations({
+    description: 'Always `"ts-doctor"` in v1 (first-party catalog only).',
+  }),
   /** The rule id that produced this diagnostic. */
-  rule: Schema.String,
+  rule: Schema.String.annotations({
+    description: "The rule id that produced this diagnostic.",
+  }),
   severity: Severity,
   message: Schema.String,
   help: Schema.String,
   /** Optional docs link for this rule. */
-  url: Schema.optional(Schema.String),
+  url: Schema.optional(
+    Schema.String.annotations({ description: "Optional docs link for this rule." }),
+  ),
   /** 1-based line. `<= 0` is exempt from inline-disable matching (RULE-023 Stage 4). */
-  line: Schema.Int,
+  line: Schema.Int.annotations({
+    description:
+      "1-based line. `<= 0` is exempt from inline-disable matching (RULE-023 Stage 4).",
+  }),
   /** 1-based column. */
-  column: Schema.Int,
+  column: Schema.Int.annotations({ description: "1-based column." }),
   category: Schema.String,
   tier: Tier,
   fix: Schema.optional(Fix),
   /** Set when a near-miss inline-disable directive was found (BC-12). */
-  suppressionHint: Schema.optional(Schema.String),
-});
+  suppressionHint: Schema.optional(
+    Schema.String.annotations({
+      description: "Set when a near-miss inline-disable directive was found (BC-12).",
+    }),
+  ),
+}).annotations({ identifier: "Diagnostic" });
 export type Diagnostic = typeof Diagnostic.Type;
 
 /**

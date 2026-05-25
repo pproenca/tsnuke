@@ -87,17 +87,13 @@ function summarize(
   summaryScore: Option.Option<Score>,
   summaryPartial: boolean,
 ): JsonReportSummary {
-  let errorCount = 0;
-  let warningCount = 0;
-  const affectedFiles = new Set<string>();
-  for (const d of allDiagnostics) {
-    if (d.severity === "error") errorCount++;
-    else warningCount++;
-    affectedFiles.add(d.filePath);
-  }
+  // OCCURRENCE counts via a STRUCTURAL severity split — commutative, so a functional
+  // pass is provably identical to the legacy accumulator loop (proven by equivalence.test).
+  const errorCount = allDiagnostics.filter((d) => d.severity === "error").length;
+  const affectedFiles = new Set(allDiagnostics.map((d) => d.filePath));
   return {
     errorCount,
-    warningCount,
+    warningCount: allDiagnostics.length - errorCount,
     affectedFileCount: affectedFiles.size,
     totalDiagnosticCount: allDiagnostics.length,
     score: Option.getOrNull(summaryScore),

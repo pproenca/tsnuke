@@ -31,3 +31,7 @@ export {
   type BuildReportProject,
 } from "./buildReport.js";
 export { serializeError } from "./serializeError.js";
+
+// Self-barrel: backs `import { BuildReport } from "@ts-doctor/build-report-effect"`
+// then `BuildReport.buildReport(...)` — additive, all named exports above stay.
+export * as BuildReport from "./index.js";

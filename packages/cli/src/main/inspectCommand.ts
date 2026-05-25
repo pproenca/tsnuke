@@ -241,10 +241,9 @@ const decodeFileLine = (
  * A `validateModeFlags` violation FAILS the decode with a `ValidationError` (parser
  * rejection), so RULE-028 is an `Options` constraint.
  */
-export const resolveInspectFlags = (
+export const resolveInspectFlags = Effect.fn("Cli.resolveFlags")(function* (
   raw: typeof rawOptions extends Options.Options<infer A> ? A : never,
-): Effect.Effect<Omit<InspectFlags, "directory">, ValidationError.ValidationError> =>
-  Effect.gen(function* () {
+) {
     const explain = yield* decodeFileLine(raw.explain);
     const why = yield* decodeFileLine(raw.why);
 

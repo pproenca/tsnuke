@@ -41,3 +41,7 @@ export {
 
 // Canonical domain contracts (re-exported, not re-vendored).
 export { Diagnostic, Fix, TextEdit, FixKind } from "@ts-doctor/contracts-effect";
+
+// Self-barrel: opt-in namespace import (`import { FixApplier } from "..."`). ADDITIVE —
+// the named re-exports above remain the byte-stable surface every consumer imports from.
+export * as FixApplier from "./index.js";

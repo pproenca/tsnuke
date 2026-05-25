@@ -64,3 +64,8 @@ export const errorHandlingRules: ReadonlyArray<Rule> = [
   onlyThrowError,
   preferPromiseRejectErrors,
 ];
+
+// Self-barrel: makes `import { RulesErrorHandling } from
+// "@ts-doctor/rules-error-handling-effect"` resolve to this module's namespace
+// (additive — the named exports above stay byte-stable).
+export * as RulesErrorHandling from ".";

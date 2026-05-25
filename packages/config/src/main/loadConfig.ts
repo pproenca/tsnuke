@@ -30,9 +30,9 @@
  * parse it. The pure sanitizer is reviewed + final and is NOT touched here.
  */
 
+import { Effect, Either, Layer } from "effect";
 import { FileSystem, Path } from "@effect/platform";
 import { NodeFileSystem, NodePath } from "@effect/platform-node";
-import { Effect, Either, Layer } from "effect";
 import { sanitizeConfig, type SanitizeResult } from "./sanitize.js";
 
 /**
@@ -81,20 +81,18 @@ const isObject = (v: unknown): v is Record<string, unknown> =>
  * as "not present / unparseable" — the loader NEVER throws out (RULE-024). Requires
  * the `FileSystem` + `Path` services; provide a Layer at the edge.
  */
-export const loadConfigWithWarnings = (
-  dir: string,
-): Effect.Effect<SanitizeResult, never, FileSystem.FileSystem | Path.Path> =>
-  Effect.gen(function* () {
+export const loadConfigWithWarnings = Effect.fn("Config.loadWithWarnings")(
+  function* (dir: string) {
     const fs = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
 
     // A failed `exists` (PlatformError) is treated as "absent", matching legacy
     // where `existsSync` returns `false` rather than throwing.
-    const safeExists = (p: string): Effect.Effect<boolean> =>
+    const exists = (p: string): Effect.Effect<boolean> =>
       fs.exists(p).pipe(Effect.orElseSucceed(() => false));
 
     const configPath = path.join(dir, "tsdoctor.config.json");
-    if (yield* safeExists(configPath)) {
+    if (yield* exists(configPath)) {
       const raw = yield* tryParseJson(configPath);
       if (raw === undefined) {
         return {
@@ -106,7 +104,7 @@ export const loadConfigWithWarnings = (
     }
 
     const pkgPath = path.join(dir, "package.json");
-    if (yield* safeExists(pkgPath)) {
+    if (yield* exists(pkgPath)) {
       const pkg = yield* tryParseJson(pkgPath);
       if (isObject(pkg) && pkg["tsDoctor"] !== undefined) {
         return sanitizeConfig(pkg["tsDoctor"]);
@@ -114,7 +112,8 @@ export const loadConfigWithWarnings = (
     }
 
     return { config: {}, warnings: [] } satisfies SanitizeResult;
-  });
+  },
+);
 
 /**
  * Load config from a directory, returning ONLY the sanitized config (RULE-024).
@@ -122,10 +121,9 @@ export const loadConfigWithWarnings = (
  * `loadConfigWithWarnings(dir).config`. Same requirements/error channel as
  * {@link loadConfigWithWarnings}.
  */
-export const loadConfig = (
-  dir: string,
-): Effect.Effect<SanitizeResult["config"], never, FileSystem.FileSystem | Path.Path> =>
-  loadConfigWithWarnings(dir).pipe(Effect.map((result) => result.config));
+export const loadConfig = Effect.fn("Config.load")(function* (dir: string) {
+  return (yield* loadConfigWithWarnings(dir)).config;
+});
 
 /**
  * The production Layer: the real Node-backed `FileSystem` + `Path` services. This is

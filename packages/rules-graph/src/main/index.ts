@@ -37,3 +37,7 @@ export { noImportCycles, noUnusedExports };
  * hand-written, mirroring the v1 manual-registry seam in rules-core.
  */
 export const graphRules: ReadonlyArray<GraphRule> = [noImportCycles, noUnusedExports];
+
+// Self-barrel: `import { RulesGraph } from "@ts-doctor/rules-graph-effect"`
+// resolves to this module's namespace. Additive — the named exports above stay the surface.
+export * as RulesGraph from "./index.js";

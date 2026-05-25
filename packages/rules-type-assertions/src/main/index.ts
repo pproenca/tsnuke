@@ -77,3 +77,7 @@ export const typeAssertionsRules: ReadonlyArray<Rule> = [
   preferSatisfiesOverAs,
   tsExpectErrorRequiresDescription,
 ];
+
+// Self-barrel — the module's own namespace. Additive: the named re-exports above
+// remain the stable surface; this only enables `import { RulesTypeAssertions } from "."`.
+export * as RulesTypeAssertions from ".";

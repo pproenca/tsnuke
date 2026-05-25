@@ -25,13 +25,11 @@ function isThenable(
   type: ts.Type,
 ): boolean {
   const constituents = type.isUnion() ? type.types : [type];
-  for (const constituent of constituents) {
+  return constituents.some((constituent) => {
     const then = constituent.getProperty("then");
-    if (then === undefined) continue;
-    const thenType = checker.getTypeOfSymbolAtLocation(then, node);
-    if (thenType.getCallSignatures().length > 0) return true;
-  }
-  return false;
+    if (then === undefined) return false;
+    return checker.getTypeOfSymbolAtLocation(then, node).getCallSignatures().length > 0;
+  });
 }
 
 export const rule = defineRule(

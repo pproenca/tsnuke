@@ -21,8 +21,8 @@ export const rule = defineRule(
   () => ({
     [ts.SyntaxKind.CallExpression]: (node, ctx) => {
       if (!ts.isCallExpression(node)) return;
-      const { expression } = node;
-      if (!ts.isIdentifier(expression) || expression.text !== "eval") return;
+      if (!ts.isIdentifier(node.expression) || node.expression.text !== "eval")
+        return;
 
       const start = node.getStart(ctx.sourceFile);
       const { line, character } =
@@ -37,8 +37,11 @@ export const rule = defineRule(
     },
     [ts.SyntaxKind.NewExpression]: (node, ctx) => {
       if (!ts.isNewExpression(node)) return;
-      const { expression } = node;
-      if (!ts.isIdentifier(expression) || expression.text !== "Function") return;
+      if (
+        !ts.isIdentifier(node.expression) ||
+        node.expression.text !== "Function"
+      )
+        return;
 
       const start = node.getStart(ctx.sourceFile);
       const { line, character } =

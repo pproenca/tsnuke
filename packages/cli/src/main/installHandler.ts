@@ -126,23 +126,21 @@ export function planInstall(flags: InstallFlags): PlannedWrite[] {
  * `mkdirSync(dirname, { recursive }) + writeFileSync`. `stdout` is the injected writer
  * (Terminal in production, an in-memory sink in tests).
  */
-export const runInstall = (
+export const runInstall = Effect.fn("Cli.install")(function* (
   flags: InstallFlags,
   stdout: (text: string) => Effect.Effect<void>,
-): Effect.Effect<0, PlatformError, FileSystem.FileSystem | Path.Path> =>
-  Effect.gen(function* () {
+) {
     const fs = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
-    const writes = planInstall(flags);
 
-    for (const w of writes) {
-      if (flags.dryRun) {
-        yield* stdout(`[dry-run] would write ${w.path} — ${w.description}\n`);
-        continue;
-      }
-      yield* fs.makeDirectory(path.dirname(w.path), { recursive: true });
-      yield* fs.writeFileString(w.path, w.contents);
-      yield* stdout(`wrote ${w.path} — ${w.description}\n`);
-    }
+    yield* Effect.forEach(planInstall(flags), (w) =>
+      flags.dryRun
+        ? stdout(`[dry-run] would write ${w.path} — ${w.description}\n`)
+        : Effect.gen(function* () {
+            yield* fs.makeDirectory(path.dirname(w.path), { recursive: true });
+            yield* fs.writeFileString(w.path, w.contents);
+            yield* stdout(`wrote ${w.path} — ${w.description}\n`);
+          }),
+    );
     return 0 as const;
   });

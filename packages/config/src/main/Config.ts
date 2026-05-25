@@ -30,7 +30,9 @@ import { Schema } from "effect";
  * from the engine's canonical `Severity`. Kept verbatim by {@link sanitizeConfig};
  * normalized to the engine vocab downstream (filter-pipeline slice).
  */
-export const ConfigSeverity = Schema.Literal("error", "warn", "off");
+export const ConfigSeverity = Schema.Literal("error", "warn", "off").annotations({
+  identifier: "ConfigSeverity",
+});
 export type ConfigSeverity = typeof ConfigSeverity.Type;
 
 /**
@@ -39,7 +41,9 @@ export type ConfigSeverity = typeof ConfigSeverity.Type;
  * {@link ConfigSeverity}'s `"warn"`. This split is a known vocabulary trap; it is
  * preserved here for legacy parity, not reconciled (see Config.ts header + RULE-040).
  */
-export const FailOn = Schema.Literal("error", "warning", "none");
+export const FailOn = Schema.Literal("error", "warning", "none").annotations({
+  identifier: "ConfigFailOn",
+});
 export type FailOn = typeof FailOn.Type;
 
 /**
@@ -48,9 +52,15 @@ export type FailOn = typeof FailOn.Type;
  * by `files`, then drop the named `rules` (or all diagnostics if `rules` is absent).
  */
 export const IgnoreOverride = Schema.Struct({
-  files: Schema.Array(Schema.String),
-  rules: Schema.optional(Schema.Array(Schema.String)),
-});
+  files: Schema.Array(Schema.String).annotations({
+    description: "Glob patterns this override applies to (required; bad entries dropped).",
+  }),
+  rules: Schema.optional(
+    Schema.Array(Schema.String).annotations({
+      description: "Rules to drop for matching files; absent means drop all diagnostics.",
+    }),
+  ),
+}).annotations({ identifier: "IgnoreOverride" });
 export type IgnoreOverride = typeof IgnoreOverride.Type;
 
 /**
@@ -60,11 +70,21 @@ export type IgnoreOverride = typeof IgnoreOverride.Type;
  * not read it (auto-suppress uses a frozen tag set) — kept here for fidelity.
  */
 export const IgnoreConfig = Schema.Struct({
-  rules: Schema.optional(Schema.Array(Schema.String)),
-  files: Schema.optional(Schema.Array(Schema.String)),
-  tags: Schema.optional(Schema.Array(Schema.String)),
-  overrides: Schema.optional(Schema.Array(IgnoreOverride)),
-});
+  rules: Schema.optional(
+    Schema.Array(Schema.String).annotations({ description: "Rule ids suppressed everywhere." }),
+  ),
+  files: Schema.optional(
+    Schema.Array(Schema.String).annotations({ description: "Glob patterns suppressed everywhere." }),
+  ),
+  tags: Schema.optional(
+    Schema.Array(Schema.String).annotations({
+      description: "Tags in the config contract; not read by the filter pipeline (kept for fidelity).",
+    }),
+  ),
+  overrides: Schema.optional(
+    Schema.Array(IgnoreOverride).annotations({ description: "Per-file-set rule suppressions." }),
+  ),
+}).annotations({ identifier: "IgnoreConfig" });
 export type IgnoreConfig = typeof IgnoreConfig.Type;
 
 /**
@@ -77,13 +97,27 @@ export type IgnoreConfig = typeof IgnoreConfig.Type;
  */
 export const TsDoctorConfig = Schema.Struct({
   ignore: Schema.optional(IgnoreConfig),
-  failOn: Schema.optional(FailOn),
-  customRulesOnly: Schema.optional(Schema.Boolean),
-  /** v1: IGNORED and never loaded (RULE-039). Present only so it can be warned about. */
-  plugins: Schema.optional(Schema.Array(Schema.String)),
-  rules: Schema.optional(Schema.Record({ key: Schema.String, value: ConfigSeverity })),
-  categories: Schema.optional(
-    Schema.Record({ key: Schema.String, value: ConfigSeverity }),
+  failOn: Schema.optional(
+    FailOn.annotations({ description: 'The `--fail-on` gate mode ("error" | "warning" | "none").' }),
   ),
-});
+  customRulesOnly: Schema.optional(
+    Schema.Boolean.annotations({ description: "Run only user-supplied rules." }),
+  ),
+  /** v1: IGNORED and never loaded (RULE-039). Present only so it can be warned about. */
+  plugins: Schema.optional(
+    Schema.Array(Schema.String).annotations({
+      description: "v1: retained for a warning but NEVER loaded/resolved (RULE-039).",
+    }),
+  ),
+  rules: Schema.optional(
+    Schema.Record({ key: Schema.String, value: ConfigSeverity }).annotations({
+      description: "Per-rule severity overrides (config vocabulary).",
+    }),
+  ),
+  categories: Schema.optional(
+    Schema.Record({ key: Schema.String, value: ConfigSeverity }).annotations({
+      description: "Per-category severity overrides (config vocabulary).",
+    }),
+  ),
+}).annotations({ identifier: "TsDoctorConfig" });
 export type TsDoctorConfig = typeof TsDoctorConfig.Type;

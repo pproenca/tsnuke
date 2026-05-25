@@ -30,7 +30,9 @@ import { Schema } from "effect";
  * purpose from {@link FailOn}'s vocabulary and from the engine's canonical `Severity`
  * (`Diagnostic.ts`).
  */
-export const ConfigSeverity = Schema.Literal("error", "warn", "off");
+export const ConfigSeverity = Schema.Literal("error", "warn", "off").annotations({
+  identifier: "ConfigSeverity",
+});
 export type ConfigSeverity = typeof ConfigSeverity.Type;
 
 /**
@@ -39,7 +41,9 @@ export type ConfigSeverity = typeof ConfigSeverity.Type;
  * {@link ConfigSeverity}'s `"warn"`. This split is a known vocabulary trap; it is
  * preserved here for legacy parity, NOT reconciled (see module header + RULE-040).
  */
-export const FailOn = Schema.Literal("error", "warning", "none");
+export const FailOn = Schema.Literal("error", "warning", "none").annotations({
+  identifier: "FailOn",
+});
 export type FailOn = typeof FailOn.Type;
 
 /**
@@ -50,7 +54,7 @@ export type FailOn = typeof FailOn.Type;
 export const IgnoreOverride = Schema.Struct({
   files: Schema.Array(Schema.String),
   rules: Schema.optional(Schema.Array(Schema.String)),
-});
+}).annotations({ identifier: "IgnoreOverride" });
 export type IgnoreOverride = typeof IgnoreOverride.Type;
 
 /**
@@ -65,7 +69,7 @@ export const IgnoreConfig = Schema.Struct({
   files: Schema.optional(Schema.Array(Schema.String)),
   tags: Schema.optional(Schema.Array(Schema.String)),
   overrides: Schema.optional(Schema.Array(IgnoreOverride)),
-});
+}).annotations({ identifier: "IgnoreConfig" });
 export type IgnoreConfig = typeof IgnoreConfig.Type;
 
 /**
@@ -81,12 +85,17 @@ export const TsDoctorConfig = Schema.Struct({
   failOn: Schema.optional(FailOn),
   customRulesOnly: Schema.optional(Schema.Boolean),
   /** v1: IGNORED and never loaded (RULE-039). Present only so it can be warned about. */
-  plugins: Schema.optional(Schema.Array(Schema.String)),
+  plugins: Schema.optional(
+    Schema.Array(Schema.String).annotations({
+      description:
+        "v1: IGNORED and never loaded (RULE-039). Present only so it can be warned about.",
+    }),
+  ),
   rules: Schema.optional(Schema.Record({ key: Schema.String, value: ConfigSeverity })),
   categories: Schema.optional(
     Schema.Record({ key: Schema.String, value: ConfigSeverity }),
   ),
-});
+}).annotations({ identifier: "TsDoctorConfig" });
 export type TsDoctorConfig = typeof TsDoctorConfig.Type;
 
 /**

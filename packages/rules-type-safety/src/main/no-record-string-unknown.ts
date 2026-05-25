@@ -24,6 +24,14 @@ function isUnknownOrAny(t: ts.TypeNode): boolean {
   return t.kind === ts.SyntaxKind.UnknownKeyword || t.kind === ts.SyntaxKind.AnyKeyword;
 }
 
+/** True iff `args` is exactly `<string-like-key, unknown|any>` — the untyped bag shape. */
+function isUntypedRecordArgs(args: ts.NodeArray<ts.TypeNode> | undefined): boolean {
+  if (args === undefined || args.length !== 2) return false;
+  const key = args[0];
+  const value = args[1];
+  return key !== undefined && value !== undefined && isStringKey(key) && isUnknownOrAny(value);
+}
+
 export const rule = defineRule(
   {
     id: "no-record-string-unknown",
@@ -53,13 +61,7 @@ export const rule = defineRule(
       [ts.SyntaxKind.TypeReference]: (node, ctx) => {
         if (!ts.isTypeReferenceNode(node)) return;
         if (!ts.isIdentifier(node.typeName) || node.typeName.text !== "Record") return;
-        const args = node.typeArguments;
-        if (args === undefined || args.length !== 2) return;
-        const key = args[0];
-        const value = args[1];
-        if (key !== undefined && value !== undefined && isStringKey(key) && isUnknownOrAny(value)) {
-          report(node, ctx);
-        }
+        if (isUntypedRecordArgs(node.typeArguments)) report(node, ctx);
       },
       // { [k: string]: unknown } — an index-signature-only object type.
       [ts.SyntaxKind.TypeLiteral]: (node, ctx) => {
@@ -78,13 +80,7 @@ export const rule = defineRule(
       [ts.SyntaxKind.ExpressionWithTypeArguments]: (node, ctx) => {
         if (!ts.isExpressionWithTypeArguments(node)) return;
         if (!ts.isIdentifier(node.expression) || node.expression.text !== "Record") return;
-        const args = node.typeArguments;
-        if (args === undefined || args.length !== 2) return;
-        const key = args[0];
-        const value = args[1];
-        if (key !== undefined && value !== undefined && isStringKey(key) && isUnknownOrAny(value)) {
-          report(node, ctx);
-        }
+        if (isUntypedRecordArgs(node.typeArguments)) report(node, ctx);
       },
     };
   },

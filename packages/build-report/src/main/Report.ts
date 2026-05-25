@@ -33,21 +33,29 @@ export const JSON_REPORT_SCHEMA_VERSION = 1 as const;
  * `scoreLabel` field is the WIRE name; it carries the score slice's `band` value.
  */
 export const JsonReportSummary = Schema.Struct({
-  /** Occurrences with `severity === "error"`. */
-  errorCount: Schema.Int,
-  /** All NON-error occurrences (binary split, same as RULE-001). */
-  warningCount: Schema.Int,
-  /** Size of the set of DISTINCT `filePath`s across the flat diagnostic union. */
-  affectedFileCount: Schema.Int,
-  /** Total OCCURRENCES — NOT distinct rules (RULE-004 flagged defect). */
-  totalDiagnosticCount: Schema.Int,
-  /** MIN over per-project scores (RULE-003); `null` when nothing is scored. */
-  score: Schema.NullOr(Schema.Int),
-  /** Band label of `score` — WIRE field carrying the score slice's `band`; `null` iff `score` is null. */
-  scoreLabel: Schema.NullOr(Schema.String),
-  /** Logical OR of per-project partial flags. */
-  scorePartial: Schema.Boolean,
-});
+  errorCount: Schema.Int.annotations({
+    description: 'Occurrences with `severity === "error"`.',
+  }),
+  warningCount: Schema.Int.annotations({
+    description: "All NON-error occurrences (binary split, same as RULE-001).",
+  }),
+  affectedFileCount: Schema.Int.annotations({
+    description: "Size of the set of DISTINCT `filePath`s across the flat diagnostic union.",
+  }),
+  totalDiagnosticCount: Schema.Int.annotations({
+    description: "Total OCCURRENCES — NOT distinct rules (RULE-004 flagged defect).",
+  }),
+  score: Schema.NullOr(Schema.Int).annotations({
+    description: "MIN over per-project scores (RULE-003); `null` when nothing is scored.",
+  }),
+  scoreLabel: Schema.NullOr(Schema.String).annotations({
+    description:
+      "Band label of `score` — WIRE field carrying the score slice's `band`; `null` iff `score` is null.",
+  }),
+  scorePartial: Schema.Boolean.annotations({
+    description: "Logical OR of per-project partial flags.",
+  }),
+}).annotations({ identifier: "JsonReportSummary" });
 export type JsonReportSummary = typeof JsonReportSummary.Type;
 
 /** Per-project entry in a (possibly monorepo) report. */
@@ -58,16 +66,17 @@ export const JsonReportProjectEntry = Schema.Struct({
   scorePartial: Schema.Boolean,
   skippedChecks: Schema.Array(Schema.String),
   elapsedMilliseconds: Schema.Number,
-});
+}).annotations({ identifier: "JsonReportProjectEntry" });
 export type JsonReportProjectEntry = typeof JsonReportProjectEntry.Type;
 
 /** A serialized error, carried when a run fails (`ok:false`). The `.cause` chain flattened root-LAST. */
 export const JsonReportError = Schema.Struct({
   message: Schema.String,
   name: Schema.String,
-  /** The `.cause` chain flattened to messages, ROOT-LAST. */
-  chain: Schema.Array(Schema.String),
-});
+  chain: Schema.Array(Schema.String).annotations({
+    description: "The `.cause` chain flattened to messages, ROOT-LAST.",
+  }),
+}).annotations({ identifier: "JsonReportError" });
 export type JsonReportError = typeof JsonReportError.Type;
 
 /** Diff/staged-mode metadata (present only when `mode !== "full"`). */
@@ -76,11 +85,13 @@ export const JsonReportDiffInfo = Schema.Struct({
   currentBranch: Schema.NullOr(Schema.String),
   changedFileCount: Schema.Int,
   isCurrentChanges: Schema.Boolean,
-});
+}).annotations({ identifier: "JsonReportDiffInfo" });
 export type JsonReportDiffInfo = typeof JsonReportDiffInfo.Type;
 
 /** Report scan mode (RULE-033). */
-export const ReportMode = Schema.Literal("full", "diff", "staged");
+export const ReportMode = Schema.Literal("full", "diff", "staged").annotations({
+  identifier: "ReportMode",
+});
 export type ReportMode = typeof ReportMode.Type;
 
 /**
@@ -99,5 +110,5 @@ export const JsonReportV1 = Schema.Struct({
   projects: Schema.Array(JsonReportProjectEntry),
   elapsedMilliseconds: Schema.Number,
   error: Schema.NullOr(JsonReportError),
-});
+}).annotations({ identifier: "JsonReportV1" });
 export type JsonReportV1 = typeof JsonReportV1.Type;

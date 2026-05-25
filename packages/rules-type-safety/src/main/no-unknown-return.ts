@@ -17,15 +17,14 @@ function isUnknownReturn(type: ts.TypeNode): boolean {
   if (type.kind === ts.SyntaxKind.UnknownKeyword) return true;
   // Promise<unknown>
   if (
-    ts.isTypeReferenceNode(type) &&
-    ts.isIdentifier(type.typeName) &&
-    type.typeName.text === "Promise" &&
-    type.typeArguments?.length === 1
+    !ts.isTypeReferenceNode(type) ||
+    !ts.isIdentifier(type.typeName) ||
+    type.typeName.text !== "Promise" ||
+    type.typeArguments?.length !== 1
   ) {
-    const arg = type.typeArguments[0];
-    return arg !== undefined && arg.kind === ts.SyntaxKind.UnknownKeyword;
+    return false;
   }
-  return false;
+  return type.typeArguments[0]?.kind === ts.SyntaxKind.UnknownKeyword;
 }
 
 export const rule = defineRule(

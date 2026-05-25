@@ -27,7 +27,7 @@ call. Enforced behaviorally AND by a static source-scan test over all of `src/ma
 | Barrel re-exporting the 5 guards | `index.ts:8-21` | `src/main/index.ts` |
 | Frozen caps `1024` / `24` (RULE-014/041) | `glob.ts:13-15` | `src/main/Glob.ts:24-26` |
 | `validateGlobPattern` (RULE-014/BC-17) | `glob.ts:32-47` | `src/main/Glob.ts:55-72` |
-| `InvalidGlobPatternError` (BC-17) | `glob.ts:18-25` (`class extends Error`) | `src/main/Glob.ts:38-45` (`Data.TaggedError`) — see **D1** |
+| `InvalidGlobPatternError` (BC-17) | `glob.ts:18-25` (`class extends Error`) | `src/main/Glob.ts:38-45` (`Schema.TaggedError`) — see **D1** |
 | `isSafeGitRevision` (RULE-027/BC-15) | `git-revision.ts:17-28` | `src/main/GitRevision.ts:25-33` (verbatim) |
 | `sanitizeEnv` (RULE-027/BC-19) | `env.ts:13-29` | `src/main/Env.ts:19-32` (verbatim) |
 | `isInsideTempDir` (RULE-027/BC-16) | `staged-files.ts:12-37` | `src/main/StagedFiles.ts:21-39` (verbatim) |
@@ -43,10 +43,10 @@ already pure. The only code change is in `Glob.ts` (the error type, **D1**).
 
 ## 2. Deliberate deviations from legacy behavior
 
-### D1 — `InvalidGlobPatternError`: hand-rolled `class` → `effect/Data` tagged error (structural, idiomatic)
+### D1 — `InvalidGlobPatternError`: hand-rolled `class` → `effect/Schema` tagged error (structural, idiomatic)
 Legacy `glob.ts:18-25` defined `class InvalidGlobPatternError extends Error` with a
 manual `_tag` field, `this.name = …`, and `Object.setPrototypeOf`. This module uses
-`Data.TaggedError("InvalidGlobPatternError")<{ message: string }>` from `effect/Data`
+`Schema.TaggedError<InvalidGlobPatternError>()("InvalidGlobPatternError", { message: Schema.String })` from `effect/Schema`
 (`Glob.ts:38`) — the Effect-native tagged error, ready for the typed error channel /
 `Effect.catchTag` when the guard is wired at its sink.
 
@@ -86,7 +86,7 @@ The canonical struct is a structural SUPERSET that includes
   Deliberate (Brief lines 25/91): these are pure CPU predicates with no IO; wrapping
   them in fibers buys nothing. The brief wires them into `Effect` *at their sinks*
   (the subprocess / glob / extraction code paths), not in the guards themselves. The
-  Effect ecosystem appears only in the idiomatic `Data.TaggedError` (D1).
+  Effect ecosystem appears only in the idiomatic `Schema.TaggedError` (D1).
 - **No dead code in the legacy guards** — every line is live (the guards are correct,
   just dormant per RULE-027), so nothing was dropped. Legacy's manual prototype
   plumbing in `InvalidGlobPatternError` is the only thing "removed", replaced per D1.
@@ -126,7 +126,7 @@ The canonical struct is a structural SUPERSET that includes
    incl. the by-construction source-scan over `Config.ts`) with no assertion change.
 3. **`InvalidGlobPatternError` typed-error channel (D1):** when `validateGlobPattern` is
    wired into an `Effect` at the glob sink, prefer `Effect.try`/`catchTag` over a raw
-   `try/catch` — the `Data.TaggedError` already carries the `_tag` for `catchTag`.
+   `try/catch` — the `Schema.TaggedError` already carries the `_tag` for `catchTag`.
 4. **RULE-039 must NEVER gain a plugin-loading path (P0).** Do not add
    `require`/`import()`/`eval`/`Function`/module-resolution against scanned-repo paths
    anywhere. Any future opt-in must resolve bare npm names from the **tool's own**

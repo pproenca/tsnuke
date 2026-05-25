@@ -328,77 +328,74 @@ const detectProjectKind = (
  * The error messages are reproduced VERBATIM (they reach the CLI / `serializeError`,
  * RULE-037). `typecheckOk` is HARDCODED `false` (PENDING — engine reconciles, RULE-021).
  */
-export const discoverTsProject = (
+export const discoverTsProject: (
   dir: string,
-): Effect.Effect<
+) => Effect.Effect<
   ProjectInfo,
   TsconfigNotFoundError | NoTypeScriptProjectError,
   FileSystem.FileSystem | Path.Path
-> =>
-  Effect.gen(function* () {
-    const fs = yield* FileSystem.FileSystem;
-    const path = yield* Path.Path;
-    const root = path.resolve(dir);
+> = Effect.fn("Discovery.discover")(function* (dir: string) {
+  const fs = yield* FileSystem.FileSystem;
+  const path = yield* Path.Path;
+  const root = path.resolve(dir);
 
-    const tsconfigPath = path.join(root, "tsconfig.json");
-    if (!(yield* safeExists(fs, tsconfigPath))) {
-      return yield* Effect.fail(
-        new TsconfigNotFoundError(
-          `No tsconfig.json found in ${root}. ts-doctor analyzes TypeScript projects only.`,
-        ),
-      );
-    }
+  const tsconfigPath = path.join(root, "tsconfig.json");
+  if (!(yield* safeExists(fs, tsconfigPath))) {
+    return yield* Effect.fail(
+      new TsconfigNotFoundError(
+        `No tsconfig.json found in ${root}. ts-doctor analyzes TypeScript projects only.`,
+      ),
+    );
+  }
 
-    const tsconfig = yield* readTsconfig(path, tsconfigPath);
-    const compilerOptions = tsconfig.compilerOptions ?? {};
+  const tsconfig = yield* readTsconfig(path, tsconfigPath);
+  const compilerOptions = tsconfig.compilerOptions ?? {};
 
-    // A broken/unreadable/non-object package.json is NON-fatal — defaults to {}.
-    const pkgPath = path.join(root, "package.json");
-    let pkg: Record<string, unknown> = {};
-    if (yield* safeExists(fs, pkgPath)) {
-      const raw = yield* readJsonFile(pkgPath);
-      if (isObject(raw)) pkg = raw;
-    }
+  // A broken/unreadable/non-object package.json is NON-fatal — defaults to {}.
+  const pkgPath = path.join(root, "package.json");
+  const rawPkg = (yield* safeExists(fs, pkgPath))
+    ? yield* readJsonFile(pkgPath)
+    : undefined;
+  const pkg: Record<string, unknown> = isObject(rawPkg) ? rawPkg : {};
 
-    const sourceFileCount = yield* countSourceFiles(root);
-    const tsResolvable = yield* hasTypeScript(fs, path, root, pkg);
-    if (!tsResolvable && sourceFileCount === 0) {
-      return yield* Effect.fail(
-        new NoTypeScriptProjectError(
-          `No resolvable 'typescript' dependency and no .ts/.tsx sources found in ${root}.`,
-        ),
-      );
-    }
+  const sourceFileCount = yield* countSourceFiles(root);
+  const tsResolvable = yield* hasTypeScript(fs, path, root, pkg);
+  if (!tsResolvable && sourceFileCount === 0) {
+    return yield* Effect.fail(
+      new NoTypeScriptProjectError(
+        `No resolvable 'typescript' dependency and no .ts/.tsx sources found in ${root}.`,
+      ),
+    );
+  }
 
-    const tsVersion = yield* resolveTsVersion(fs, path, root, pkg);
-    const tsMajorParsed = tsVersion !== null ? Number.parseInt(tsVersion, 10) : null;
+  const tsVersion = yield* resolveTsVersion(fs, path, root, pkg);
+  const tsMajorParsed = tsVersion !== null ? Number.parseInt(tsVersion, 10) : null;
 
-    const strictFlags: Record<string, boolean> = {};
-    for (const flag of STRICT_FLAGS) {
-      if (compilerOptions[flag] === true) strictFlags[flag] = true;
-    }
+  const strictFlags: Record<string, boolean> = Object.fromEntries(
+    STRICT_FLAGS.filter((f) => compilerOptions[f] === true).map((f) => [f, true]),
+  );
 
-    const pkgName = pkg["name"];
-    const projectName =
-      typeof pkgName === "string" && pkgName.length > 0 ? pkgName : path.basename(root);
+  const pkgName = pkg["name"];
+  const projectName =
+    typeof pkgName === "string" && pkgName.length > 0 ? pkgName : path.basename(root);
 
-    const projectKind = yield* detectProjectKind(fs, path, root, pkg);
-    const buildTool = yield* detectBuildTool(fs, path, root, pkg);
+  const projectKind = yield* detectProjectKind(fs, path, root, pkg);
+  const buildTool = yield* detectBuildTool(fs, path, root, pkg);
 
-    return {
-      rootDirectory: root,
-      projectName,
-      tsVersion,
-      tsMajor:
-        tsMajorParsed !== null && Number.isFinite(tsMajorParsed) ? tsMajorParsed : null,
-      projectKind,
-      moduleSystem: detectModuleSystem(pkg, compilerOptions),
-      buildTool,
-      strictFlags,
-      // PENDING (RULE-021): discovery does NOT type-check. The engine reconciles the
-      // real `typecheckOk` from a `ts.Program` later. Default false so the partial-
-      // honesty path (BC-03) is the safe default until proven clean.
-      typecheckOk: false,
-      sourceFileCount,
-    } satisfies ProjectInfo;
-  });
+  return {
+    rootDirectory: root,
+    projectName,
+    tsVersion,
+    tsMajor:
+      tsMajorParsed !== null && Number.isFinite(tsMajorParsed) ? tsMajorParsed : null,
+    projectKind,
+    moduleSystem: detectModuleSystem(pkg, compilerOptions),
+    buildTool,
+    strictFlags,
+    // PENDING (RULE-021): discovery does NOT type-check. The engine reconciles the
+    // real `typecheckOk` from a `ts.Program` later. Default false so the partial-
+    // honesty path (BC-03) is the safe default until proven clean.
+    typecheckOk: false,
+    sourceFileCount,
+  } satisfies ProjectInfo;
+});

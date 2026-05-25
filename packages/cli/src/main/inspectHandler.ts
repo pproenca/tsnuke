@@ -142,12 +142,11 @@ export function buildJsonString(
  * exit the process — the process edge (`bin.ts`) sets `process.exitCode`. A faithful
  * port of legacy `runInspect` over the injected {@link InspectIo} seam.
  */
-export const runInspect = (
+export const runInspect = Effect.fn("Cli.inspect")(function* (
   flags: InspectFlags,
   io: InspectIo,
   version: string,
-): Effect.Effect<0 | 1, unknown> =>
-  Effect.gen(function* () {
+) {
     // 2. analyze (the one genuinely-effectful + possibly-failing step).
     const result = yield* io.diagnose(flags.directory, toDiagnoseOptions(flags));
 
@@ -193,22 +192,18 @@ export const runInspect = (
     // 5. choose output. Legacy `inspect.ts:152-167`. The engine's score result carries
     //    `label` already (it maps the score slice's `band` → `label`), so the format
     //    slice's structural `{ score, label, partial }` input is satisfied directly.
-    if (flags.score) {
-      yield* io.stdout(`${renderScoreLine(result.score, result.scorePartial)}\n`);
-    } else if (flags.json) {
-      yield* io.stdout(`${buildJsonString(result, flags, version)}\n`);
-    } else if (flags.format === "agent") {
-      const report = formatAgentReport(
-        result.diagnostics,
-        result.score,
-        result.project.rootDirectory,
-      );
-      yield* io.stdout(`${JSON.stringify(report, null, 2)}\n`);
-    } else {
-      yield* io.stdout(
-        `${renderPretty(result.diagnostics, result.score, result.scorePartial, flags.showScore)}\n`,
-      );
-    }
+    const output = flags.score
+      ? renderScoreLine(result.score, result.scorePartial)
+      : flags.json
+        ? buildJsonString(result, flags, version)
+        : flags.format === "agent"
+          ? JSON.stringify(
+              formatAgentReport(result.diagnostics, result.score, result.project.rootDirectory),
+              null,
+              2,
+            )
+          : renderPretty(result.diagnostics, result.score, result.scorePartial, flags.showScore);
+    yield* io.stdout(`${output}\n`);
 
     // 6. exit-code gate (RULE-030, via the exit-code slice). `--score` never fails.
     return resolveExitCode({

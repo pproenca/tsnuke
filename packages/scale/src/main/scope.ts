@@ -15,6 +15,8 @@
  *   drop the hand-rolled `using` machinery and express the same contract natively.
  *   This is genuinely effectful — returning `Effect<...>` here is CORRECT (unlike
  *   the pure memory guard in {@link ./memory.ts}, which stays a plain function).
+ *   Both helpers are wrapped in `Effect.fn` so each carries a tracing span
+ *   ("Scale.scopedProgram" / "Scale.withProgram") without changing semantics.
  *
  * THE CONTRACT PRESERVED — AND STRENGTHENED:
  *   Legacy's try/finally guarantees `dispose` runs after `fn` on SUCCESS and on
@@ -39,9 +41,7 @@ import { Effect, type Scope } from "effect";
  * does IO). We accept BOTH and lift the sync form with `Effect.sync` so a thrown
  * error inside a sync release is captured into the finalizer rather than escaping.
  */
-const toReleaseEffect = <P>(
-  release: (program: P) => void | Effect.Effect<void>,
-) => {
+const toReleaseEffect = <P>(release: (program: P) => void | Effect.Effect<void>) => {
   return (program: P): Effect.Effect<void> => {
     const result = release(program);
     return Effect.isEffect(result) ? result : Effect.sync(() => result);
@@ -68,13 +68,16 @@ const toReleaseEffect = <P>(
  *                 a Scope finalizer, uninterruptibly, exactly once.
  * @returns `Effect<P, E, R | Scope.Scope>` — the Program, scoped.
  */
-export const scopedProgram = <P, E, R>(
+export const scopedProgram = Effect.fn("Scale.scopedProgram")(function* <P, E, R>(
   acquire: Effect.Effect<P, E, R>,
   release: (program: P) => void | Effect.Effect<void>,
-): Effect.Effect<P, E, R | Scope.Scope> => {
-  const releaseEffect = toReleaseEffect(release);
-  return Effect.acquireRelease(acquire, (program) => releaseEffect(program));
-};
+) {
+  const free = toReleaseEffect(release);
+  return yield* Effect.acquireRelease(acquire, (program) => free(program));
+}) as <P, E, R>(
+  acquire: Effect.Effect<P, E, R>,
+  release: (program: P) => void | Effect.Effect<void>,
+) => Effect.Effect<P, E, R | Scope.Scope>;
 
 /**
  * Build a Program, run `use` with it, and release it afterward — the Effect-native
@@ -98,13 +101,15 @@ export const scopedProgram = <P, E, R>(
  *                 uninterruptibly, exactly once.
  * @returns `Effect<A, E | E2, R | R2>` — the result of `use`, with disposal guaranteed.
  */
-export const withProgram = <P, E, R, A, E2, R2>(
+export const withProgram = Effect.fn("Scale.withProgram")(function* <P, E, R, A, E2, R2>(
   acquire: Effect.Effect<P, E, R>,
   use: (program: P) => Effect.Effect<A, E2, R2>,
   release: (program: P) => void | Effect.Effect<void>,
-): Effect.Effect<A, E | E2, R | R2> => {
-  const releaseEffect = toReleaseEffect(release);
-  return Effect.acquireUseRelease(acquire, use, (program) =>
-    releaseEffect(program),
-  );
-};
+) {
+  const free = toReleaseEffect(release);
+  return yield* Effect.acquireUseRelease(acquire, use, (program) => free(program));
+}) as <P, E, R, A, E2, R2>(
+  acquire: Effect.Effect<P, E, R>,
+  use: (program: P) => Effect.Effect<A, E2, R2>,
+  release: (program: P) => void | Effect.Effect<void>,
+) => Effect.Effect<A, E | E2, R | R2>;

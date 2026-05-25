@@ -10,6 +10,15 @@ import { defineRule } from "@ts-doctor/rules-core-effect";
  */
 const ANY_DENSITY_THRESHOLD = 5;
 
+/** Count every `any` keyword token in the subtree (a syntactic walk). */
+function countAny(node: ts.Node): number {
+  let sum = node.kind === ts.SyntaxKind.AnyKeyword ? 1 : 0;
+  ts.forEachChild(node, (child) => {
+    sum += countAny(child);
+  });
+  return sum;
+}
+
 export const rule = defineRule(
   {
     id: "any-density-budget",
@@ -25,13 +34,7 @@ export const rule = defineRule(
     [ts.SyntaxKind.SourceFile]: (node, ctx) => {
       if (!ts.isSourceFile(node)) return;
 
-      let count = 0;
-      const walk = (n: ts.Node): void => {
-        if (n.kind === ts.SyntaxKind.AnyKeyword) count += 1;
-        ts.forEachChild(n, walk);
-      };
-      walk(node);
-
+      const count = countAny(node);
       if (count <= ANY_DENSITY_THRESHOLD) return;
 
       // Report once, at the start of the file (1:1 by convention).

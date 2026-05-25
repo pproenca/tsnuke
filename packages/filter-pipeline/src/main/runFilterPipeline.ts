@@ -58,26 +58,26 @@ export function runFilterPipeline(
 ): Diagnostic[] {
   const respectInline = options.respectInlineDisables !== false;
 
+  // Fixed, load-bearing stage order (RULE-023): auto-suppress (1) → severity (2) →
+  // ignore (3) → inline-disable (4, only when enabled). Order MUST NOT change.
   const stages: Stage[] = [
     stageAutoSuppress, // 1
     makeSeverityStage(config), // 2
     makeIgnoreStage(config), // 3
+    ...(respectInline ? [makeInlineDisableStage(options.sources)] : []), // 4
   ];
-  if (respectInline) {
-    stages.push(makeInlineDisableStage(options.sources)); // 4
-  }
 
-  const out: Diagnostic[] = [];
-  outer: for (const d of diagnostics) {
-    let current: DiagnosticWithTags | null = d;
-    for (const stage of stages) {
-      current = stage(current);
-      if (current === null) continue outer; // dropped — skip later stages
-    }
-    // Strip the engine-only `tags` field before emitting a public Diagnostic.
-    const { tags: _tags, ...rest } = current;
+  // Thread each diagnostic through the stages in order; once a stage drops it
+  // (returns null) the later stages never see it (short-circuit). Survivors keep
+  // input order; the engine-only `tags` field is stripped before emit.
+  return diagnostics.flatMap((d) => {
+    const survivor = stages.reduce<DiagnosticWithTags | null>(
+      (current, stage) => (current === null ? null : stage(current)),
+      d,
+    );
+    if (survivor === null) return [];
+    const { tags: _tags, ...rest } = survivor;
     void _tags;
-    out.push(rest);
-  }
-  return out;
+    return [rest];
+  });
 }

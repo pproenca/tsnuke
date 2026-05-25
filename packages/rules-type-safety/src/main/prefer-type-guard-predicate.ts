@@ -47,6 +47,15 @@ function isGuardExpression(expr: ts.Expression): boolean {
   return false;
 }
 
+/** The single guard expression a function body returns, or undefined if its shape doesn't qualify. */
+function bodyGuard(body: ts.ConciseBody): ts.Expression | undefined {
+  if (!ts.isBlock(body)) return body; // concise arrow body
+  if (body.statements.length !== 1) return undefined;
+  const stmt = body.statements[0];
+  if (stmt === undefined || !ts.isReturnStatement(stmt)) return undefined;
+  return stmt.expression;
+}
+
 export const rule = defineRule(
   {
     id: "prefer-type-guard-predicate",
@@ -67,18 +76,8 @@ export const rule = defineRule(
       const body = fn.body;
       if (body === undefined) return;
 
-      let guard: ts.Expression | undefined;
-      if (ts.isBlock(body)) {
-        if (body.statements.length !== 1) return;
-        const stmt = body.statements[0];
-        if (stmt === undefined || !ts.isReturnStatement(stmt) || stmt.expression === undefined) {
-          return;
-        }
-        guard = stmt.expression;
-      } else {
-        guard = body; // concise arrow body
-      }
-      if (!isGuardExpression(guard)) return;
+      const guard = bodyGuard(body);
+      if (guard === undefined || !isGuardExpression(guard)) return;
 
       const start = node.getStart(ctx.sourceFile);
       const { line, character } = ctx.sourceFile.getLineAndCharacterOfPosition(start);

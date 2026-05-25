@@ -87,13 +87,13 @@ const readSourceFiles = (
  */
 export const overridesFromConfig = (
   rules: Record<string, "error" | "warn" | "off"> | undefined,
-): SeverityOverrides => {
-  const out = new Map<string, Severity | "off">();
-  for (const [id, value] of Object.entries(rules ?? {})) {
-    out.set(id, value === "warn" ? "warning" : value);
-  }
-  return out;
-};
+): SeverityOverrides =>
+  new Map<string, Severity | "off">(
+    Object.entries(rules ?? {}).map(([id, value]) => [
+      id,
+      value === "warn" ? "warning" : value,
+    ]),
+  );
 
 /**
  * Diagnose a single TypeScript project (the public boundary) — as an `Effect`.
@@ -111,15 +111,18 @@ export const overridesFromConfig = (
  * @param options    `deep` / `includePaths` / `respectInlineDisables` + the RULE-013
  *                   memory guard (forwarded to {@link runEngine})
  */
-export const diagnose = (
+export const diagnose: (
   directory: string,
-  options: DiagnoseOptions & { readonly memory?: RunEngineOptions["memory"] } = {},
-): Effect.Effect<
+  options?: DiagnoseOptions & { readonly memory?: RunEngineOptions["memory"] },
+) => Effect.Effect<
   DiagnoseResult,
   TsconfigNotFoundError | NoTypeScriptProjectError,
   FileSystem.FileSystem | Path.Path | Scope.Scope
-> =>
-  Effect.gen(function* () {
+> = Effect.fn("Engine.diagnose")(
+  function* (
+    directory: string,
+    options: DiagnoseOptions & { readonly memory?: RunEngineOptions["memory"] } = {},
+  ) {
     const startedAt = yield* Effect.sync(() => Date.now());
 
     const path = yield* Path.Path;
@@ -184,4 +187,5 @@ export const diagnose = (
         : {}),
     };
     return result;
-  });
+  },
+);

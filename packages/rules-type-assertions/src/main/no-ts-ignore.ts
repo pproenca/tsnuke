@@ -21,16 +21,17 @@ export const rule = defineRule(
     recommendation:
       "Replace `@ts-ignore` with `@ts-expect-error` (so the suppression self-removes when no longer needed) or fix the underlying type error.",
   },
-  (ctx) => {
-    // We attach to the SourceFile node and scan its full text once. Comments are
-    // trivia, not nodes, so a syntax-kind keyed visitor over SourceFile is the
-    // cleanest hook for a comment-directive rule.
-    const visit = (): void => {
-      const text = ctx.sourceFile.getFullText();
+  // We attach to the SourceFile node and scan its full text once. Comments are
+  // trivia, not nodes, so a syntax-kind keyed visitor over SourceFile is the
+  // cleanest hook for a comment-directive rule.
+  () => ({
+    [ts.SyntaxKind.SourceFile]: (node, ctx) => {
+      if (!ts.isSourceFile(node)) return;
+      const text = node.getFullText();
       const re = /\/\/\s*@ts-ignore\b/g;
-      let match: RegExpExecArray | null;
-      while ((match = re.exec(text)) !== null) {
-        const pos = ctx.sourceFile.getLineAndCharacterOfPosition(match.index);
+      let match: RegExpExecArray | null = re.exec(text);
+      while (match !== null) {
+        const pos = node.getLineAndCharacterOfPosition(match.index);
         ctx.report({
           filePath: ctx.filePath,
           message: "Avoid `@ts-ignore`; it silences the compiler unconditionally.",
@@ -38,11 +39,8 @@ export const rule = defineRule(
           line: pos.line + 1,
           column: pos.character + 1,
         });
+        match = re.exec(text);
       }
-    };
-
-    return {
-      [ts.SyntaxKind.SourceFile]: () => visit(),
-    };
-  },
+    },
+  }),
 );

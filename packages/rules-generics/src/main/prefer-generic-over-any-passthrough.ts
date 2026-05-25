@@ -92,16 +92,16 @@ export const rule = defineRule(
       const fn = node as ts.FunctionLikeDeclaration;
 
       // Parameters explicitly annotated `: any`.
-      const anyParamNames = new Set<string>();
-      for (const p of fn.parameters) {
-        if (
-          p.type !== undefined &&
-          p.type.kind === ts.SyntaxKind.AnyKeyword &&
-          ts.isIdentifier(p.name)
-        ) {
-          anyParamNames.add(p.name.text);
-        }
-      }
+      const anyParamNames = new Set(
+        fn.parameters
+          .filter(
+            (p) =>
+              p.type !== undefined &&
+              p.type.kind === ts.SyntaxKind.AnyKeyword &&
+              ts.isIdentifier(p.name),
+          )
+          .map((p) => (p.name as ts.Identifier).text),
+      );
       if (anyParamNames.size === 0) return;
 
       // Resolved return type must be `any` (catches both `: any` and inferred any).
