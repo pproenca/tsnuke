@@ -122,26 +122,22 @@ export function formatAgentReport(
   repoRoot = "",
 ): AgentReport {
   const byRule = new Map<string, AgentRuleEntry>();
-  let occurrenceCount = 0;
 
   for (const d of diagnostics) {
-    occurrenceCount++;
     const key = `${d.plugin}/${d.rule}`;
-    let entry = byRule.get(key);
-    if (entry === undefined) {
-      entry = {
-        rule: d.rule,
-        plugin: d.plugin,
-        severity: d.severity,
-        tier: d.tier,
-        fixKind: d.fix?.kind ?? "manual",
-        message: d.message,
-        help: d.help,
-        ...(d.url !== undefined ? { url: d.url } : {}),
-        occurrences: [],
-      };
-      byRule.set(key, entry);
-    }
+    const existing = byRule.get(key);
+    const entry = existing ?? {
+      rule: d.rule,
+      plugin: d.plugin,
+      severity: d.severity,
+      tier: d.tier,
+      fixKind: d.fix?.kind ?? "manual",
+      message: d.message,
+      help: d.help,
+      ...(d.url !== undefined ? { url: d.url } : {}),
+      occurrences: [],
+    };
+    if (existing === undefined) byRule.set(key, entry);
     entry.occurrences.push({
       filePath: toRepoRelative(d.filePath, repoRoot),
       line: d.line,
@@ -169,11 +165,8 @@ export function formatAgentReport(
 
   for (const entry of sortedEntries) {
     const category = ruleCategory.get(`${entry.plugin}/${entry.rule}`) ?? "";
-    let bucket = byCategory.get(category);
-    if (bucket === undefined) {
-      bucket = [];
-      byCategory.set(category, bucket);
-    }
+    const bucket = byCategory.get(category) ?? [];
+    if (!byCategory.has(category)) byCategory.set(category, bucket);
     bucket.push(entry);
   }
 
@@ -185,7 +178,7 @@ export function formatAgentReport(
     score: score?.score ?? null,
     scoreLabel: score?.label ?? null,
     ruleCount: byRule.size,
-    occurrenceCount,
+    occurrenceCount: diagnostics.length,
     categories,
   };
 }

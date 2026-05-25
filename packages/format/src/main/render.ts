@@ -76,25 +76,18 @@ export function renderPretty(
 
   const byCategory = new Map<string, Diagnostic[]>();
   for (const d of diagnostics) {
-    let bucket = byCategory.get(d.category);
-    if (bucket === undefined) {
-      bucket = [];
-      byCategory.set(d.category, bucket);
-    }
+    const bucket = byCategory.get(d.category) ?? [];
+    if (!byCategory.has(d.category)) byCategory.set(d.category, bucket);
     bucket.push(d);
   }
 
   const categories = [...byCategory.keys()].sort((a, b) => a.localeCompare(b));
   for (const category of categories) {
-    lines.push(`${category}:`);
-    const group = byCategory.get(category) ?? [];
-    for (const d of group) lines.push(renderDiagnostic(d));
-    lines.push("");
+    lines.push(`${category}:`, ...(byCategory.get(category) ?? []).map(renderDiagnostic), "");
   }
 
-  const errorCount = diagnostics.filter((d) => d.severity === "error").length;
-  const warningCount = diagnostics.length - errorCount;
-  lines.push(`${errorCount} error(s), ${warningCount} warning(s).`);
+  const errors = diagnostics.filter((d) => d.severity === "error").length;
+  lines.push(`${errors} error(s), ${diagnostics.length - errors} warning(s).`);
 
   return lines.join("\n");
 }

@@ -39,3 +39,7 @@ export {
   type RuleLookup,
   type ExplainContext,
 } from "./explain.js";
+
+// --- Self-barrel: opt-in namespace import (`import { Format } from "..."`). ADDITIVE —
+// the named re-exports above remain the byte-stable surface every consumer imports from. ---
+export * as Format from "./index.js";
