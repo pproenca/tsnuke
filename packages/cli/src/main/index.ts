@@ -50,3 +50,7 @@ export {
   type InstallFlags,
   type PlannedWrite,
 } from "./installHandler.js";
+
+// ── Self-barrel: lets `import { Cli } from "@ts-doctor/cli-effect"` resolve to the
+//    module namespace, while the named re-exports above stay for direct imports. ──
+export * as Cli from "./index.js";

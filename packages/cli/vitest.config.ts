@@ -3,6 +3,11 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     include: ["src/test/**/*.test.ts"],
+    // The e2e tests build a REAL `ts.Program` per case (3-8s each under load); the 5s
+    // Vitest default times them out non-deterministically when the machine is busy. Raise
+    // the per-test timeout so the real-compile cases run reliably (they assert real engine
+    // output end-to-end). Unit/handler tests are unaffected (they finish in ms).
+    testTimeout: 60000,
     // EVERY `@ts-doctor/*` dependency the CLI consumes is a `file:` link whose entry
     // point is a `.ts` file (`exports: "./src/main/index.ts"`). Inline ALL of them — plus
     // their full transitive `.ts`-entry closure — so Vitest's esbuild transform compiles
