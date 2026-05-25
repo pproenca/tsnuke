@@ -81,3 +81,7 @@ export const typeSafetyRules: ReadonlyArray<Rule> = [
   noWrapperObjectTypes,
   preferTypeGuardPredicate,
 ];
+
+// Self-barrel: `import { RulesTypeSafety } from "@ts-doctor/rules-type-safety-effect"`
+// resolves to this module's namespace. Additive — the named exports above stay stable.
+export * as RulesTypeSafety from "./index.js";

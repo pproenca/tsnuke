@@ -27,12 +27,8 @@ function typeofResults(type: ts.Type): Set<string> | null {
     else if (f & ts.TypeFlags.Null) out.add("object");
     else if (f & ts.TypeFlags.Object) {
       // An object type is "object" — or "function" if it is callable/constructable.
-      const t = p as ts.Type;
-      if (t.getCallSignatures().length > 0 || t.getConstructSignatures().length > 0) {
-        out.add("function");
-      } else {
-        out.add("object");
-      }
+      const callable = p.getCallSignatures().length > 0 || p.getConstructSignatures().length > 0;
+      out.add(callable ? "function" : "object");
     } else if (f & ts.TypeFlags.Never) {
       // contributes nothing
     } else {
@@ -40,6 +36,19 @@ function typeofResults(type: ts.Type): Set<string> | null {
     }
   }
   return out;
+}
+
+/** Extract the `typeof x === "..."` pair from either operand orientation. */
+function typeofPair(
+  node: ts.BinaryExpression,
+): { typeofExpr: ts.TypeOfExpression; literal: string } | undefined {
+  if (ts.isTypeOfExpression(node.left) && ts.isStringLiteralLike(node.right)) {
+    return { typeofExpr: node.left, literal: node.right.text };
+  }
+  if (ts.isTypeOfExpression(node.right) && ts.isStringLiteralLike(node.left)) {
+    return { typeofExpr: node.right, literal: node.left.text };
+  }
+  return undefined;
 }
 
 export const rule = defineRule(
@@ -68,28 +77,26 @@ export const rule = defineRule(
         op === ts.SyntaxKind.ExclamationEqualsToken;
       if (!isEq && !isNeq) return;
 
-      let typeofExpr: ts.TypeOfExpression | undefined;
-      let literal: string | undefined;
-      if (ts.isTypeOfExpression(node.left) && ts.isStringLiteralLike(node.right)) {
-        typeofExpr = node.left;
-        literal = node.right.text;
-      } else if (
-        ts.isTypeOfExpression(node.right) &&
-        ts.isStringLiteralLike(node.left)
-      ) {
-        typeofExpr = node.right;
-        literal = node.left.text;
-      }
-      if (typeofExpr === undefined || literal === undefined) return;
+      const pair = typeofPair(node);
+      if (pair === undefined) return;
+      const { typeofExpr, literal } = pair;
 
       const results = typeofResults(checker.getTypeAtLocation(typeofExpr.expression));
       if (results === null) return;
       const present = results.has(literal);
       const onlyThis = results.size === 1 && present;
 
-      let verdict: "always-true" | "always-false" | null = null;
-      if (isEq) verdict = !present ? "always-false" : onlyThis ? "always-true" : null;
-      else verdict = !present ? "always-true" : onlyThis ? "always-false" : null;
+      const verdict = isEq
+        ? !present
+          ? "always-false"
+          : onlyThis
+            ? "always-true"
+            : null
+        : !present
+          ? "always-true"
+          : onlyThis
+            ? "always-false"
+            : null;
       if (verdict === null) return;
 
       const start = node.getStart(ctx.sourceFile);

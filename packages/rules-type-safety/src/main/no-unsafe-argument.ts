@@ -25,12 +25,8 @@ export const rule = defineRule(
       "Narrow the value to the parameter's type before passing it. An `any`-typed argument is accepted without checking, so a mismatch at the call boundary goes undetected.",
   },
   () => ({
-    [ts.SyntaxKind.CallExpression]: (node, ctx) => {
-      check(node, ctx);
-    },
-    [ts.SyntaxKind.NewExpression]: (node, ctx) => {
-      check(node, ctx);
-    },
+    [ts.SyntaxKind.CallExpression]: check,
+    [ts.SyntaxKind.NewExpression]: check,
   }),
 );
 
@@ -45,21 +41,16 @@ function check(node: ts.Node, ctx: RuleContext): void {
   const sig = checker.getResolvedSignature(node);
   if (sig === undefined) return; // couldn't resolve the callee — bail.
 
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
-    if (arg === undefined) continue;
-
+  args.forEach((arg, i) => {
     const argType = checker.getTypeAtLocation(arg);
-    if ((argType.flags & ts.TypeFlags.Any) === 0) continue; // arg isn't `any`.
+    if ((argType.flags & ts.TypeFlags.Any) === 0) return; // arg isn't `any`.
 
     const param = sig.parameters[i];
-    if (param === undefined) continue; // rest/variadic past the declared list.
+    if (param === undefined) return; // rest/variadic past the declared list.
 
     const paramType = checker.getTypeOfSymbolAtLocation(param, node);
     // `any`/`unknown` parameters legitimately accept anything — no unsafety.
-    if ((paramType.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) !== 0) {
-      continue;
-    }
+    if ((paramType.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) !== 0) return;
 
     const start = arg.getStart(ctx.sourceFile);
     const { line, character } =
@@ -71,5 +62,5 @@ function check(node: ts.Node, ctx: RuleContext): void {
       line: line + 1,
       column: character + 1,
     });
-  }
+  });
 }
