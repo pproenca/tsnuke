@@ -21,8 +21,8 @@ export const rule = defineRule(
   () => ({
     [ts.SyntaxKind.NewExpression]: (node, ctx) => {
       if (!ts.isNewExpression(node)) return;
-      const { expression } = node;
-      if (!ts.isIdentifier(expression) || expression.text !== "Buffer") return;
+      if (!ts.isIdentifier(node.expression) || node.expression.text !== "Buffer")
+        return;
 
       const start = node.getStart(ctx.sourceFile);
       const { line, character } =

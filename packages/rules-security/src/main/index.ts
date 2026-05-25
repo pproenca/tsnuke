@@ -47,3 +47,7 @@ export const securityRules: ReadonlyArray<Rule> = [
   noNewBuffer,
   noSecretsInSource,
 ];
+
+// Self-barrel: `import { RulesSecurity } from "@ts-doctor/rules-security-effect"`
+// resolves to this module's namespace. Additive — the named exports above stay the surface.
+export * as RulesSecurity from "./index.js";

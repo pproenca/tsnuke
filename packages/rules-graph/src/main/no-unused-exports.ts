@@ -36,10 +36,7 @@ export const rule = defineGraphRule(
     const { files, imports, exports, usedExports, wildcardUsed } = ctx.graph;
 
     // Files referenced (imported) by at least one other module.
-    const referenced = new Set<string>();
-    for (const [, targets] of imports) {
-      for (const t of targets) referenced.add(t);
-    }
+    const referenced = new Set([...imports.values()].flat());
 
     for (const file of files) {
       if (!referenced.has(file)) continue; // root/entry — skip.

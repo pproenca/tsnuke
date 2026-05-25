@@ -41,3 +41,7 @@ export const moduleBoundariesRules: ReadonlyArray<Rule> = [
   noDefaultExport,
   publicApiMustBeExplicit,
 ];
+
+// Self-barrel: `import { RulesModuleBoundaries } from "@ts-doctor/rules-module-boundaries-effect"`
+// resolves to this module's namespace. Additive — the named exports above stay the surface.
+export * as RulesModuleBoundaries from "./index.js";

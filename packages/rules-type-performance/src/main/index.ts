@@ -40,3 +40,7 @@ export const typePerformanceRules: ReadonlyArray<Rule> = [
   noLargeIntersectionType,
   preferInterfaceForLargeObjectType,
 ];
+
+// Self-barrel: `import { RulesTypePerformance } from "@ts-doctor/rules-type-performance-effect"`
+// resolves to this module's namespace. Additive — the named exports above stay the surface.
+export * as RulesTypePerformance from "./index.js";
