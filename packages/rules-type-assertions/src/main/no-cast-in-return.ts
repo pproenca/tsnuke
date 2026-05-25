@@ -48,8 +48,7 @@ export const rule = defineRule(
 
       // Only flag when the function declares an explicit return type — that's the
       // contract the cast is papering over.
-      const fnLike = fn as ts.SignatureDeclaration;
-      if (fnLike.type === undefined) return;
+      if ((fn as ts.SignatureDeclaration).type === undefined) return;
 
       const start = inner.getStart(ctx.sourceFile);
       const { line, character } = ctx.sourceFile.getLineAndCharacterOfPosition(start);
