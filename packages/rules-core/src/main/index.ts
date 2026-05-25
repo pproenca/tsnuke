@@ -54,3 +54,8 @@ export { ruleRegistry } from "./registry.js";
 // (TYP; one-file `ts.Program` + checker); `runGraphRule` is the GRAPH tier (whole-graph
 // `analyze` over a `ModuleGraph`).
 export { runRule, runTypeAwareRule, runGraphRule } from "./runRule.js";
+
+// Self-barrel: `import { RulesCore } from "@ts-doctor/rules-core-effect"` resolves to the
+// namespace of this module (the opencode-ts module shape). Additive — the named re-exports
+// above remain the canonical import surface the 14 consumers depend on.
+export * as RulesCore from "./index.js";
