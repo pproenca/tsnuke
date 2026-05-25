@@ -156,8 +156,7 @@ const COMPILER_OPTIONS: ts.CompilerOptions = {
  */
 function buildProgramFromFiles(files: readonly SourceFileInput[]): ts.Program {
   const host = ts.createCompilerHost(COMPILER_OPTIONS, /* setParentNodes */ true);
-  const fileMap = new Map<string, string>();
-  for (const f of files) fileMap.set(resolve(f.filePath), f.text);
+  const fileMap = new Map<string, string>(files.map((f) => [resolve(f.filePath), f.text]));
 
   const origGet = host.getSourceFile.bind(host);
   host.getSourceFile = (fileName, lvOrOpts, onError, shouldCreate) => {
@@ -203,24 +202,31 @@ function buildProgramFromFiles(files: readonly SourceFileInput[]): ts.Program {
  * @param options      rules / graphRules / configFilePath / RULE-013 memory guard
  * @returns `Effect<EngineResult, never, Scope.Scope>`
  */
-export function runEngine(
+export const runEngine: (
   files: readonly SourceFileInput[],
   caps: ReadonlySet<Capability>,
   ignoredTags: ReadonlySet<string>,
   overrides: SeverityOverrides,
   deep: boolean | undefined,
-  options: RunEngineOptions = {},
-): Effect.Effect<EngineResult, never, Scope.Scope> {
-  const rules = options.rules ?? ruleRegistry;
-  const graphRules = options.graphRules ?? graphRuleRegistry;
-  const configFilePath = options.configFilePath ?? "tsconfig.json";
-  const mem = options.memory ?? {};
-  const currentRssBytes = mem.currentRssBytes ?? 0;
-  const estimatedProgramBytes = mem.estimatedProgramBytes ?? 0;
-  const ceilingBytes = mem.ceilingBytes ?? DEFAULT_TIER2_MEMORY_CEILING_BYTES;
-  const onProgramRelease = options.onProgramRelease;
+  options?: RunEngineOptions,
+) => Effect.Effect<EngineResult, never, Scope.Scope> = Effect.fn("Engine.run")(
+  function* (
+    files: readonly SourceFileInput[],
+    caps: ReadonlySet<Capability>,
+    ignoredTags: ReadonlySet<string>,
+    overrides: SeverityOverrides,
+    deep: boolean | undefined,
+    options: RunEngineOptions = {},
+  ) {
+    const rules = options.rules ?? ruleRegistry;
+    const graphRules = options.graphRules ?? graphRuleRegistry;
+    const configFilePath = options.configFilePath ?? "tsconfig.json";
+    const mem = options.memory ?? {};
+    const currentRssBytes = mem.currentRssBytes ?? 0;
+    const estimatedProgramBytes = mem.estimatedProgramBytes ?? 0;
+    const ceilingBytes = mem.ceilingBytes ?? DEFAULT_TIER2_MEMORY_CEILING_BYTES;
+    const onProgramRelease = options.onProgramRelease;
 
-  return Effect.gen(function* () {
     // --- Single Program build + typecheck:ok as a RESULT, not a pre-step (§4.1). ---
     // RULE-036: the Program is acquired into the Scope and released when it closes — the
     // OOM cure legacy never ran. The build/release are the one genuinely-effectful part.
@@ -238,13 +244,11 @@ export function runEngine(
         )
       : undefined;
 
-    let typecheckOk = false;
-    if (program !== undefined) {
-      const errors = ts
+    const typecheckOk =
+      program !== undefined &&
+      ts
         .getPreEmitDiagnostics(program)
-        .filter((d) => d.category === ts.DiagnosticCategory.Error);
-      typecheckOk = errors.length === 0;
-    }
+        .filter((d) => d.category === ts.DiagnosticCategory.Error).length === 0;
 
     // --- RULE-013 (WIRED, inert by default): under memory pressure, skip Tier-2. ---
     // We model "skip for memory" as forcing the planner's `deep` to false ONLY for the
@@ -260,7 +264,7 @@ export function runEngine(
     // Reconcile the capability set with what the single build actually proved.
     const effectiveCaps = new Set<Capability>(caps);
     if (typecheckOk) effectiveCaps.add("typecheck:ok");
-    else effectiveCaps.delete("typecheck:ok");
+    if (!typecheckOk) effectiveCaps.delete("typecheck:ok");
 
     // The `deep` the planner sees: the caller's `deep`, but forced false under memory
     // pressure so Tier-2 is gated CLOSED and every would-be TYP rule is recorded skipped.
@@ -293,8 +297,7 @@ export function runEngine(
     }
 
     // Index activated rules by id so we can recover the `create` body.
-    const ruleById = new Map<string, Rule>();
-    for (const r of rules) ruleById.set(r.id, r);
+    const ruleById = new Map<string, Rule>(rules.map((r) => [r.id, r]));
 
     const diagnostics: Diagnostic[] = [];
     const sink = (d: Diagnostic): void => {
@@ -398,8 +401,8 @@ export function runEngine(
       skippedCheckReasons,
       scorePartial: plan.scorePartial,
     } satisfies EngineResult;
-  });
-}
+  },
+);
 
 /**
  * Why a TYP check was skipped under RULE-013 memory pressure (WIRED here — legacy never

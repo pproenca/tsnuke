@@ -46,3 +46,7 @@ export type {
 
 // ---- Production runnable + Layer ----
 export { diagnoseNode, NodeContext } from "./node.js";
+
+// ---- Self-barrel: opt-in namespace import (`import { Engine } from "..."`). ADDITIVE —
+// the named re-exports above remain the byte-stable surface cli + mcp import from. ---
+export * as Engine from "./index.js";
