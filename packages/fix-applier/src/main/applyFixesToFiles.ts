@@ -95,11 +95,8 @@ const isSymlink = (
  * `rootDir` is the project root the writes must stay inside; it is resolved with the
  * platform `Path` service so the containment check matches the host's semantics.
  */
-export const applyFixesToFilesDetailed = (
-  diagnostics: readonly Diagnostic[],
-  rootDir: string,
-): Effect.Effect<ApplyFilesDetailedResult, never, FileSystem.FileSystem | Path.Path> =>
-  Effect.gen(function* () {
+export const applyFixesToFilesDetailed = Effect.fn("FixApplier.applyToFilesDetailed")(
+  function* (diagnostics: readonly Diagnostic[], rootDir: string) {
     const fs = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
 
@@ -195,15 +192,16 @@ export const applyFixesToFilesDetailed = (
         ),
       );
 
-      if (wrote) {
-        filesChanged++;
-      } else {
+      if (!wrote) {
         rejected.push({ filePath: group.filePath, reason: "write-error" });
+        continue;
       }
+      filesChanged++;
     }
 
     return { filesChanged, appliedCount, skippedCount, rejected };
-  });
+  },
+);
 
 /**
  * Apply all fixes for a diagnostic set (the legacy aggregate shape only). Drops the
