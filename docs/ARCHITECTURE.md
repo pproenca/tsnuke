@@ -2,7 +2,9 @@
 
 *Phase C of `/modernize-reimagine`. Target design for the TypeScript-equivalent of react-doctor. Generated 2026-05-24. Reviewed by `architecture-critic` (§9).*
 
-Inputs: `AI_NATIVE_SPEC.md` (capabilities C1–C20, behavior contract BC-01…BC-24, Phase-B decisions §6). Scope reflects the recorded decisions: **P0 = C1–C10, C13, C14, C16**; Tier-2 type-aware = seam + stub; remote score **dropped**; ESLint adapter + GitHub Action **deferred**; scoring model kept, weights re-tuned for TS.
+> **Implementation note (added after the rewrite).** This document records the **target design**. The shipped implementation is an **Effect-TS v3.21 strangler-fig rewrite** across **32 workspace packages** (`@ts-doctor/<dir>-effect`, each with `src/main` + `src/test`) — see root `CLAUDE.md` §2 for the real package table. The **conceptual** design here is current (the two-tier engine §4, scoring §5, the security guards, the BC contract). Two concrete decisions were **reversed** in the rewrite, and are flagged inline below: (1) §1.5/§6 "drop Effect" — Effect was *adopted*: `Effect`/`Scope`/`Schema` carry the resource lifecycles, error channel, and wire contracts the design assigned to hand-rolled `using`/`Result`/validators; (2) §3 "three packages" + §6 "tsup" — the implementation is 32 packages built with **esbuild** (`build.mjs`) for the CLI/MCP bundles. Package names like `@ts-doctor/core` / `ts-doctor-rules` below map to the real tree (`@ts-doctor/engine-effect` + the `rules-*-effect` slices, etc.).*
+
+Inputs: `AI_NATIVE_SPEC.md` (capabilities C1–C20, behavior contract BC-01…BC-24, Phase-B decisions §6). Scope reflects the recorded decisions: **P0 = C1–C10, C13, C14, C16**; remote score **dropped**; ESLint adapter + GitHub Action **deferred**; scoring model kept, weights re-tuned for TS. *(The Phase-B "Tier-2 = seam + stub" decision was superseded: all four tiers, including the 18 type-aware TYP rules, are now live.)*
 
 ---
 
@@ -12,7 +14,7 @@ Inputs: `AI_NATIVE_SPEC.md` (capabilities C1–C20, behavior contract BC-01…BC
 2. **Local, deterministic, offline.** No network in the hot path. The score is computed in-process from the diagnostic set. Same inputs → identical diagnostics, identity strings, and score. This is the property an agent loop (`while score < target: fix && rescan`) depends on.
 3. **Agent-first output.** Structured machine-applicable fixes and rule-deduplicated, fix-sorted output are P0, not an afterthought. The deterministic diagnostic identity is the stable contract an agent references across runs.
 4. **Carry the proven mechanism, rebuild the domain.** The registry codegen, capability-gated activation predicate, filter pipeline, diagnostic identity, scoring math, versioned report, and every security guard transfer from react-doctor (verified domain-agnostic). Only detection logic + the token vocabulary + project discovery are rewritten.
-5. **Lighter dependency surface than legacy.** Drop Effect (react-doctor's beta-pinned debt #4) in favor of plain TypeScript with tagged-error classes and a small `Result` type + explicit dependency injection. This removes a pre-release runtime dependency — but it does **not** remove the resource-lifecycle work Effect was doing; it moves it onto us. The disposal of three resources must be hand-managed via a `using`/`Symbol.dispose` convention (TS 5.2+): the `ts.Program` (pins memory until dropped — critical on the monorepo loop, §4.3), temp files (the atomic-private-write pattern, BC carried), and git subprocesses (kill-on-timeout). One `Disposable` helper covers all three. *(Incorporates critic m1.)*
+5. **Resource-lifecycle discipline.** *(Design intent below; the implementation reversed the Effect choice — see the implementation note at the top.)* The original design dropped Effect (react-doctor's beta-pinned debt #4) in favor of plain TypeScript with tagged-error classes and a small `Result` type + explicit dependency injection, hand-managing three resource lifecycles via a `using`/`Symbol.dispose` convention. **The shipped rewrite instead adopted Effect-TS v3** (a stable release, not the legacy beta): the `ts.Program` lifecycle goes through an Effect `Scope` (`scale.scopedProgram`, `Effect.acquireRelease` — RULE-036), errors flow on the Effect error channel (`effect/Data` `TaggedError`), wire contracts are `effect/Schema`, and DI uses `@effect/platform` `FileSystem`/`Path` service Layers (no bespoke `Context.Service`). The resources still needing disposal are the same: the `ts.Program` (pins memory until dropped — critical on the monorepo loop, §4.3), temp files (atomic-private-write, BC carried), and git subprocesses (kill-on-timeout). *(Incorporates critic m1; Effect-drop decision reversed in the rewrite.)*
 6. **No custom plugin loading in v1 — BC-18 satisfied by construction.** react-doctor's #1 security finding is the CWE-94 RCE from auto-`require`-ing plugins declared in a *scanned* repo's config. There is nothing to "carry" here — the legacy behavior *is* the vulnerability. v1 ships a **first-party catalog only**: `tsdoctor.config.json#plugins` is **ignored** (warned, never executed). This removes the entire RCE class by construction. If third-party plugins are ever wanted, they must be bare npm names resolved from the *tool's own* `node_modules` behind an explicit `--allow-plugins` flag — never from the scanned repo. *(Incorporates critic B2.)*
 
 ---
@@ -28,12 +30,12 @@ C4Container
     System_Ext(ci, "CI Runner", "Runs the CLI on PRs (GH Action deferred; raw CLI for now)")
     System_Ext(scanned, "Scanned Repo", "Untrusted TS source + tsdoctor.config.json + tsconfig.json")
 
-    Container_Boundary(npm, "ts-doctor (pnpm monorepo)") {
-        Container(cli, "CLI — `ts-doctor`", "TS / Node >=22", "[SCAFFOLD] inspect/install; diff/staged/full modes; --fix; --json; --format agent; --fail-on gate; --explain")
-        Container(core, "Diagnostic Core — `@ts-doctor/core`", "TS", "[SCAFFOLD] discovery, capability computation, two-tier engine orchestration, filter pipeline, LOCAL score, report builder, security services (git/staged/glob)")
-        Container(engine, "Rule Engine — `ts-doctor-rules`", "TS / ts compiler API", "[SCAFFOLD] codegen rule registry; defineRule visitor model; Tier-1 SYN/GRAPH/CFG rule bodies; Tier-2 TYP rule defs (stubbed)")
-        Container(api, "Programmatic API — `@ts-doctor/api`", "TS", "[DEFERRED] thin diagnose() wrapper over core")
-        ContainerDb(report, "JSON Report (schema v1)", "TS types + runtime validator", "versioned single-arm union; consumed by agents/CI")
+    Container_Boundary(npm, "ts-doctor (pnpm workspace — 32 @ts-doctor/*-effect packages)") {
+        Container(cli, "CLI — `@ts-doctor/cli-effect` (bin `ts-doctor`)", "Effect-TS / @effect/cli / Node >=22", "inspect/install; diff/staged/full modes; --fix; --format agent; --fail-on gate; --explain; esbuild bundle")
+        Container(core, "Orchestrator — `@ts-doctor/engine-effect` (+ ~12 slices)", "Effect-TS", "discovery, capability computation, two-tier engine orchestration, filter pipeline, LOCAL score, report builder, security guards (git/staged/glob)")
+        Container(engine, "Rule catalog — `rules-core-effect` + 12 `rules-*-effect`", "Effect-TS / ts compiler API", "hand-assembled rule registry; defineRule visitor model; Tier-1 SYN/GRAPH/CFG + Tier-2 TYP rule bodies (all live)")
+        Container(api, "Delivery — `@ts-doctor/mcp-effect` (bin `ts-doctor-mcp`)", "Effect-TS / MCP stdio", "ts_doctor_diagnose / explain / list_rules; esbuild bundle")
+        ContainerDb(report, "JSON Report (schema v1)", "effect/Schema contract", "versioned single-arm union; consumed by agents/CI")
     }
 
     System_Ext(tsc, "TypeScript compiler API", "ts.Program / SourceFile / TypeChecker — the single AST substrate")
@@ -48,7 +50,7 @@ C4Container
     Rel(agent, cli, "runs (--format agent), applies fixes, loops on score")
     Rel(ci, cli, "runs")
     Rel(cli, core, "orchestrates diagnose")
-    Rel(api, core, "wraps")
+    Rel(api, core, "calls diagnose")
     Rel(core, engine, "loads registry, runs visitors")
     Rel(engine, tsc, "parses (Tier-1) / type-checks (Tier-2)")
     Rel(core, git, "spawns (guarded)")
@@ -61,28 +63,28 @@ C4Container
 
 ## 3. Service boundaries & rationale
 
-Three packages are **scaffolded** (Phase E cap = 3); one is **deferred**. Boundaries follow react-doctor's proven decomposition (engine / core / consumer) minus the website.
+> **Implementation note.** The design below described **three packages** (engine / core / CLI) plus a deferred API. The rewrite decomposed these into **32 fine-grained `@ts-doctor/<dir>-effect` slices** (strangler-fig granularity, one slice per concern) — the engine/core/CLI *responsibilities* below are intact, just spread across many packages. The mapping: **Rule Engine** → `rules-core-effect` (substrate) + 12 `rules-*-effect` category slices + `rules-registry-effect`; **Diagnostic Core** → `engine-effect` (orchestrator) over `discovery`/`capabilities`/`config`/`engine-plan`/`module-graph`/`filter-pipeline`/`score`/`build-report`/`scale`/`security`/`contracts`/`errors`; **CLI** → `cli-effect`; the deferred **API** shipped as the **MCP server** `mcp-effect` instead (the stronger AI-native surface, §8). See root `CLAUDE.md` §2 for the full table.
 
-### 3.1 `ts-doctor-rules` (Rule Engine) — *scaffold*
-**Owns:** the rule catalog and the activation substrate. Houses: `defineRule` visitor model; the codegen rule registry (directory = category, file = rule; `gen:check` fails on missing metadata / unknown bucket — BC carried from C20); all Tier-1 **SYN** rule bodies (Type Assertions, Naming, Dead-code-syntactic, syntactic Security); **GRAPH** rule bodies (cycles, unused exports — over the module graph core provides); **CFG** rule bodies (strictness-gap rules reading tsconfig); and Tier-2 **TYP** rule *definitions* registered with metadata + `tier:"TYP"` but with `create()` bodies that emit nothing and are marked pending (BC-03/BC-10 seam).
-**Entities:** `Rule`, `Preset`, `Category`, the capability-gating predicate (pure, over a token `Set<string>`).
-**Why separate:** mirrors `oxlint-plugin-react-doctor` — the catalog evolves fastest and must be independently testable; the registry codegen is a build-time concern isolated here.
-**Depends on:** `typescript` (AST types), leaf otherwise.
+### 3.1 `ts-doctor-rules` (Rule Engine) → `rules-core-effect` + `rules-*-effect`
+**Owns:** the rule catalog and the activation substrate. Houses: `defineRule`/`defineGraphRule` visitor model + `runRule`/`runTypeAwareRule`/`runGraphRule` runners + diagnostic identity (`rules-core-effect`); a **hand-assembled rule registry** (`rules-registry-effect` — the codegen `gen:check` of the original C20 design was replaced by a typed aggregator); all Tier-1 **SYN** rule bodies (Type Assertions, Naming, syntactic Security, …); **GRAPH** rule bodies (cycles, unused exports — over the module graph the engine provides); **CFG** rule bodies (strictness-gap rules reading tsconfig, in `rules-core/src/main/rules/strictness/`); and the Tier-2 **TYP** rules — **all 18 are live** (the original design's "stubbed `create()` bodies" seam was filled): they read `ctx.checker` under `typecheck:ok` and emit nothing on the Tier-1 / broken-project path. One package per category (`rules-async`, `rules-type-safety`, …), one file per rule.
+**Entities:** `Rule`, `Category`, `Capability`/`RuleMeta`, the capability-gating predicate (pure, over a token `Set<string>` — in `capabilities-effect`).
+**Why separate:** the catalog evolves fastest and must be independently testable; the strangler-fig rewrite gave each category its own package so it could be transformed + equivalence-tested in isolation.
+**Depends on:** `typescript` (AST types) + `contracts-effect` (Diagnostic/RuleMeta); `rules-*` depend on `rules-core-effect`.
 
-### 3.2 `@ts-doctor/core` (Diagnostic Core) — *scaffold*
-**Owns:** everything between "a directory" and "a report." Project discovery (`discover-ts-project`: tsconfig resolution through `extends`, project-kind classification, TS version, module system, build-tool detection — C1); capability computation incl. the `typecheck:ok` probe (C2, BC-07); the **two-tier engine orchestrator** (Tier-1 always; Tier-2 only under `typecheck:ok`, building one shared `ts.Program` and reusing the checker across TYP rules — C4); the **module graph** builder (feeds GRAPH rules); the **filter pipeline** (auto-suppress → severity → ignore → inline-disable — C6, BC-11); **local scoring** (C7, BC-01/02/03); the **report builder** (C9, BC-23, monorepo worst-project min BC-05); and the **security services** (`git` with `isSafeGitRevision` BC-15; `staged-files` with Zip-Slip defense BC-16; `match-glob-pattern` ReDoS caps BC-17; sanitized subprocess env BC-19; hardened plugin trust boundary BC-18). Owns the `Diagnostic`/`Fix`/`Report`/`ProjectInfo`/`Config` types.
-**Why separate:** the same split react-doctor uses (`@react-doctor/core`); the orchestration + services are the stable, security-critical heart and must not depend on CLI concerns.
-**Module graph:** built via **`ts.resolveModuleName`** with the parsed `CompilerOptions` (honors `paths`/`baseUrl`/`exports`/`extends`) — not import-string scraping; GRAPH rules consume it (§4.1).
-**Public boundary:** core exports the exact `DiagnoseResult` shape from `AI_NATIVE_SPEC.md §3.2` **today**, so the deferred `@ts-doctor/api` is later a literal re-export, not a redesign (avoids designing the surface twice — critic m5).
-**Depends on:** `ts-doctor-rules`, `typescript`, `git` (subprocess).
+### 3.2 `@ts-doctor/core` (Diagnostic Core) → `engine-effect` + slices
+**Owns:** everything between "a directory" and "a report." Project discovery (`discovery-effect` — tsconfig resolution through `extends`, project-kind classification, TS version, module system, build-tool detection — C1); capability computation incl. the `typecheck:ok` probe (`capabilities-effect` + `discovery-effect`, C2, BC-07); the **two-tier engine orchestrator** (`engine-effect`/`engine-plan-effect` — Tier-1 always; Tier-2 only under `typecheck:ok`, building one shared `ts.Program` and reusing the checker across TYP rules — C4); the **module graph** builder (`module-graph-effect`, feeds GRAPH rules); the **filter pipeline** (`filter-pipeline-effect` — auto-suppress → severity → ignore → inline-disable — C6, BC-11); **local scoring** (`score-effect`, C7, BC-01/02/03); the **report builder** (`build-report-effect`, C9, BC-23, monorepo worst-project min BC-05); the **scale guard** (`scale-effect`, BC-24); and the **security guards** (`security-effect` — `GitRevision` with `isSafeGitRevision` BC-15; `StagedFiles` with Zip-Slip defense BC-16; `Glob` ReDoS caps BC-17; `Env` sanitization BC-19; `Plugins` trust boundary BC-18). The `Diagnostic`/`Fix`/`RuleMeta`/`Config` types live in `contracts-effect`; `ProjectInfo` in `discovery-effect`; tagged errors in `errors-effect`.
+**Why separate:** the orchestration + guards are the stable, security-critical heart and must not depend on CLI concerns; the rewrite split them into one slice per concern for isolated transformation + equivalence testing.
+**Module graph:** GRAPH rules consume a `ModuleGraph` built by `module-graph-effect` (relative-specifier resolution against the in-project file set) §4.1.
+**Public boundary:** `engine-effect` exports the `DiagnoseResult` shape from `AI_NATIVE_SPEC.md §3.2`; consumers (`cli-effect`, `mcp-effect`) call `diagnose`/`diagnoseNode` directly.
+**Depends on:** the rule slices, `typescript`, `git` (subprocess via `security-effect`), `@effect/platform` FileSystem/Path.
 
-### 3.3 `ts-doctor` (CLI) — *scaffold*
+### 3.3 `ts-doctor` (CLI) → `cli-effect`
 **Owns:** the published binary (C10). Commands `inspect` (default) + `install`; flags/modes (diff/staged/full, `--json`/`--json-compact`, `--score`, `--deep`/`--no-deep`, `--fail-on`, `--annotations`, `--pr-comment`, `--explain`/`--why`, `--respect-inline-disables`); the **`--fix` applier** (C13 — applies `Fix.edits` as non-overlapping descending char-offset splices; on overlap, apply first + drop conflicts this pass, converge in ≤2 passes); the **agent output formatter** (C14 — `--format agent`: rule-deduplicated, tier+fixKind sorted, category-grouped, path-stripped); exit-code gate (BC-21); renderers; `install` (skill C18 + git hooks). **`--explain`/`--why` is fully offline/deterministic** — it renders the static `rule.recommendation` / `help` / (for TYP) `inferredType` from rule metadata; **no model call in v1** (the "AI-native" value is structured metadata an agent consumes, not an in-tool LLM round-trip). *(critic m2, m3.)*
-**Why separate:** consumer of core; the place all human/agent-facing presentation lives.
-**Depends on:** `@ts-doctor/core`, `ts-doctor-rules` (for `--explain` rule metadata).
+**Why separate:** consumer of core; the place all human/agent-facing presentation lives. Built with **esbuild** (`build.mjs`) into a self-contained `dist/cli.js` (`typescript` external). The flag surface is re-imagined on `@effect/cli` (POSIX parsing, auto-help, RULE-028 flag-exclusivity as `Options` constraints) — behaviorally equivalent (same flags, validations, output, exit codes), not a byte-verbatim port of the hand-rolled argv parser. Formatters live in `format-effect`.
+**Depends on:** `engine-effect`, `format-effect`, `fix-applier-effect`, `build-report-effect`, `exit-code-effect`, `rules-registry-effect` (for `--explain` rule metadata).
 
-### 3.4 `@ts-doctor/api` (Programmatic API) — *deferred*
-A thin `diagnose(dir, opts) → DiagnoseResult` wrapper (C12). Deferred because it is a trivial projection of core's public function once core stabilizes; scaffolding it now would duplicate a moving surface.
+### 3.4 Programmatic API + delivery → `mcp-effect`
+The deferred thin `diagnose(dir, opts) → DiagnoseResult` API (C12) shipped instead as the **MCP server** `mcp-effect` (bin `ts-doctor-mcp`) — the stronger AI-native surface flagged in §8. It exposes `ts_doctor_diagnose` / `ts_doctor_explain` / `ts_doctor_list_rules` over stdio; pure handlers in `tools.ts`, SDK wiring in `server.ts` with `effect/Schema` arg validation (zod gone — RULE-029). Built with esbuild → `dist/server.js`. Callers who want the in-process API import `diagnose`/`diagnoseNode` from `@ts-doctor/engine-effect` directly.
 
 ---
 
@@ -170,14 +172,14 @@ empty diagnostics → 100 ; bands: ≥75 "Great" / ≥50 "Needs work" / else "Cr
 |---|---|---|
 | Language / runtime | strict ESM TypeScript, Node ≥22 | carry the proven legacy baseline |
 | AST substrate | **in-process `typescript` compiler API** (no subprocess) | one substrate, one parse, one type-check for both tiers; removes oxlint's type-unaware ceiling (§1.1, §4.1) |
-| Core composition | **plain TS + tagged errors + small `Result` + `using` disposal** (no Effect) | kills legacy debt #4 (beta-pinned Effect); the `Disposable` helper covers Program/temp-files/subprocess lifecycles Effect used to manage (§1.5) |
-| Monorepo | **pnpm workspaces + turbo** | carry legacy tooling — proven, low-risk |
-| Build | **tsup** (per package) | fast ESM+d.ts builds; simpler than legacy's vite-plus |
-| Tests | **vitest** | fast, ESM-native; fixtures-per-rule like legacy |
-| Rule registry | **codegen Node script** (carry) | directory=category, file=rule; `gen:check` fails on missing metadata |
-| Fix application | **structured text edits** (`range = [startOffset, endOffset)` char offsets + `replacement`; apply non-overlapping descending, drop conflicts this pass, converge in ≤2 passes) | language-neutral, agent-applicable; ts-morph reserved for codemods later (§3.3, critic m2) |
-| Agent surface (v1) | **`--format agent` + `SKILL.md`** | meets C14/C18 now; **MCP server** noted as the stronger AI-native surface for a fast-follow (§8) |
-| Validation | **runtime schema validator** (zod or hand-rolled) for report + config + optional score wire | replace Effect Schema with a lighter validator; keep the versioned single-arm union (BC-23) |
+| Core composition | **Effect-TS v3.21** — `Effect` + `Scope` + `effect/Schema` + `effect/Data` tagged errors + `@effect/platform` service Layers *(design originally said "plain TS, no Effect"; reversed in the rewrite — §1.5)* | a stable Effect release (not the legacy beta) carries the Program/temp-file/subprocess lifecycles via `Scope`, the error channel, and the wire contracts; DI is platform Layers, no bespoke `Context.Service` |
+| Monorepo | **pnpm workspace** (32 packages, `packages/*`) | proven, low-risk; root scripts are `pnpm -r run typecheck` / `pnpm -r run test` |
+| Build | **esbuild** (`build.mjs`) for the CLI + MCP runnable bundles; libs resolve from `src/main` *(design originally said "tsup")* | self-contained ESM binary, `typescript` external |
+| Tests | **`@effect/vitest` + `vitest`** | fast, ESM-native; no mocks (in-memory `FileSystem.layerNoop` stubs); 14 `*equivalence.test.ts` oracles pin legacy behaviour |
+| Rule registry | **hand-assembled aggregator** (`rules-registry-effect`) *(design originally said codegen `gen:check`)* | a typed `registry.ts` importing each `rules-*` slice |
+| Fix application | **structured text edits** (`range = [startOffset, endOffset)` char offsets + `replacement`; apply non-overlapping descending, drop conflicts this pass, converge in ≤2 passes) | language-neutral, agent-applicable; the file-writing shell is an Effect over FileSystem (atomic temp-then-rename, CWE-59 reject) §3.3 |
+| Agent surface | **`--format agent` + MCP server** (`mcp-effect`) | meets C14; the MCP server (the original §8 fast-follow) shipped |
+| Validation | **`effect/Schema`** for report + config + MCP tool args | the versioned single-arm union (BC-23) is a Schema; zod removed (RULE-029) |
 
 ---
 
@@ -196,11 +198,14 @@ No schema-conversion, backfill, or dual-write phase is required.
 
 ---
 
-## 8. Forward path (post-v1, out of scope for the scaffold)
+## 8. Forward path
 
-- **MCP server** as a first-class agent surface (stronger than a skill file): expose `diagnose`, `explain`, `apply_fix` as tools. The agent-format output (C14) is the payload; this is the most AI-native delivery and the recommended fast-follow.
-- **Tier-2 real implementation** — wire the `ts.Program` + checker into the TYP `create()` bodies behind the seam scaffolded in v1.
-- **`@ts-doctor/api`**, **ESLint adapter (C15)**, **GitHub Action (C17)** — deferred surfaces.
+*The two top items below were called out here as future work and have since **shipped** in the Effect-TS rewrite; the rest remain forward-looking.*
+
+- ✅ **MCP server** as a first-class agent surface — shipped as `mcp-effect` (bin `ts-doctor-mcp`): `ts_doctor_diagnose` / `ts_doctor_explain` / `ts_doctor_list_rules` over stdio (an `apply_fix` tool wrapping `--fix` is a natural addition).
+- ✅ **Tier-2 real implementation** — the `ts.Program` + checker are wired; all 18 TYP rules are live (read `ctx.checker` under `typecheck:ok`).
+- **ESLint adapter (C15)**, **GitHub Action (C17)** — deferred surfaces.
+- **`Schema.TaggedError` migration** — complete the signature-preserving move of the `errors`/`security` tagged errors from `effect/Data` `TaggedError` to `Schema.TaggedError` where compatible.
 - **Rust/oxlint Tier-1 fast-path** if parse latency demands it.
 - **Optional remote telemetry** (C19) — only if a leaderboard is wanted, behind the proven request caps (BC-20).
 
@@ -218,11 +223,11 @@ An adversarial `architecture-critic` pass reviewed this design against the spec.
 | **M2** — per-file parse not cheaper on healthy path; GRAPH overclaimed | major | §4.1 — Program's parsed sources serve Tier-1 on healthy path; GRAPH uses `ts.resolveModuleName`; `no-unused-exports` → `typecheck:ok` path |
 | **M3** — legacy batch/binary-split is a no-op vs in-process Program | major | §4.2 — re-derived scale model (per-project Program, sequential dispose, diff-bounded reporting, memory-ceiling graceful degrade); BC-24 retained only for a future subprocess path |
 | **M4** — monorepo one-Program model under-specified | major | §4.3 — per-workspace tsconfig, sequential build→analyze→dispose, never N resident; BC-05 `min`; summary `scorePartial` if any project partial |
-| **m1** — Effect drop moves resource-lifecycle work onto us | minor | §1.5 — `using`/`Symbol.dispose` `Disposable` helper covering Program/temp-files/subprocesses |
+| **m1** — Effect drop moves resource-lifecycle work onto us | minor | §1.5 — *resolved differently in the rewrite:* Effect-TS was adopted (stable v3.21), so its `Scope` carries the Program/temp-file/subprocess lifecycles directly (the "drop Effect" decision was reversed) |
 | **m2** — fix offsets/overlap undefined | minor | §3.3, §6 — `range = [startOffset,endOffset)` char offsets; non-overlapping descending, drop conflicts, ≤2-pass convergence |
 | **m3** — `--explain` "natural-language" risked an LLM call | minor | §3.3 — renders static metadata only; offline/deterministic; no model call in v1 |
 | **m4** — identity oversold as cross-run stable | minor | §7 — note: stable across non-mutating rescans; `--fix` invalidates positional identity by design |
-| **m5** — `@ts-doctor/api` surface designed twice | minor | §3.2 — core exports the exact `DiagnoseResult` now; api is a later re-export |
+| **m5** — `@ts-doctor/api` surface designed twice | minor | §3.2/§3.4 — `engine-effect` exports the `DiagnoseResult`; the API shipped as the MCP server (`mcp-effect`) rather than a separate re-export package |
 | **m6** — §9 empty but header claimed review | minor | this table |
 
-**Affirmed by the critic as correct — frozen, not to be re-litigated:** the two-tier engine concept; local/deterministic/offline scoring + dropping C19; partial-score honesty as a first-class fail-safe; carrying the domain-agnostic security guards verbatim (BC-15/16/17/19); the filter-pipeline order + identity scheme (BC-11/13); three packages (engine/core/CLI) with API deferred and no website; text-edit fixes over ts-morph for v1; codegen registry with `gen:check` failing on missing metadata; MCP server kept out of v1 as a fast-follow.
+**Affirmed by the critic as correct — frozen, not to be re-litigated:** the two-tier engine concept; local/deterministic/offline scoring + dropping C19; partial-score honesty as a first-class fail-safe; carrying the domain-agnostic security guards verbatim (BC-15/16/17/19); the filter-pipeline order + identity scheme (BC-11/13); the engine/core/CLI decomposition (the rewrite refined this into 32 fine-grained slices, §3) with no website; text-edit fixes over ts-morph for v1. *(Two design choices the critic affirmed were later revised by the rewrite: the codegen registry became a hand-assembled aggregator, and the MCP server — flagged as a fast-follow — shipped.)*
