@@ -1,8 +1,8 @@
-# AI-Native Specification — `ts-fix`
+# AI-Native Specification — `tsnuke`
 
 *Phase A output of `/modernize-reimagine react-doctor "equivalent tool but for TypeScript, like react-doctor is for React projects"`. Generated 2026-05-24.*
 
-> **Implementation note (added after the rewrite).** This is the **specification**; it remains the authority for *what* the tool must do — the 20 capabilities, the domain model, and the **BC-01…BC-24 behavior contract are current and binding**. The shipped implementation is an **Effect-TS v3.21 strangler-fig rewrite** across **32 `@ts-fix/<dir>-effect` packages** (see root `CLAUDE.md` §2; build/wire details in `ARCHITECTURE.md`). Two concrete claims in this file have been overtaken by the implementation: (1) §2.3's "~45–62 initial rules" estimate is now **88 rules** across 13 categories; (2) §6's Phase-B "build the seam, stub Tier-2" decision is **superseded** — all four tiers are live, including the 18 type-aware TYP rules. Where this file says "zod or hand-rolled validator", the implementation uses `effect/Schema`.
+> **Implementation note (added after the rewrite).** This is the **specification**; it remains the authority for *what* the tool must do — the 20 capabilities, the domain model, and the **BC-01…BC-24 behavior contract are current and binding**. The shipped implementation is an **Effect-TS v3.21 strangler-fig rewrite** across **32 `@tsnuke/<dir>-effect` packages** (see root `CLAUDE.md` §2; build/wire details in `ARCHITECTURE.md`). Two concrete claims in this file have been overtaken by the implementation: (1) §2.3's "~45–62 initial rules" estimate is now **88 rules** across 13 categories; (2) §6's Phase-B "build the seam, stub Tier-2" decision is **superseded** — all four tiers are live, including the 18 type-aware TYP rules. Where this file says "zod or hand-rolled validator", the implementation uses `effect/Schema`.
 
 > **This is a rebuild from extracted intent, not a port.** `react-doctor` is the **specification source** — the proven *mechanisms* (scoring, the diagnostic filter pipeline, capability-gated rule activation, the security trust boundaries, the distribution surfaces). The React **domain** (286 React/JSX/RN rules, framework+version gating, a mandatory remote score round-trip) is replaced by a **TypeScript** domain designed AI-native for 2026.
 >
@@ -16,7 +16,7 @@
 
 The May-2026 ecosystem has already split along this exact seam: oxlint/Biome ship fast **syntactic** rules in Rust; **typescript-eslint** owns the canonical **type-aware** set; `tsgolint`/`tsgo` is preview-stage. **A naive port of react-doctor's single-tier oxlint architecture would silently drop the most valuable third of the TypeScript catalog.**
 
-→ **Architectural consequence:** `ts-fix` runs a **two-tier engine** — Tier 1 syntactic (fast, always available) + Tier 2 type-aware (gated on the project actually type-checking) — and computes its score **locally and deterministically** (no mandatory network round-trip). These two divergences from react-doctor are the heart of the reimagine; everything else is carried-over mechanism.
+→ **Architectural consequence:** `tsnuke` runs a **two-tier engine** — Tier 1 syntactic (fast, always available) + Tier 2 type-aware (gated on the project actually type-checking) — and computes its score **locally and deterministically** (no mandatory network round-trip). These two divergences from react-doctor are the heart of the reimagine; everything else is carried-over mechanism.
 
 ---
 
@@ -36,7 +36,7 @@ Derived from the union of legacy business rules and external interfaces. Each ca
 | C8 | **Mark the score partial / not-comparable when type info is unavailable** (Tier-2 skipped) | new | **P0** | §0 fail-safe; RULE-063 |
 | C9 | **Build a versioned JSON report** (`schemaVersion`, summary, per-project entries, worst-project min for monorepos) | carry | **P0** | RULE-005/006/068; JsonReportV1 |
 | C10 | **CLI** — `inspect` (default) with diff/staged/full modes, `--json`, `--score`, `--fail-on` exit-code gate, GH annotations, PR-comment mode; `install` for skill + git hooks | adapt | **P0** | RULE-040/041/042/043/044/045/062/064/065 |
-| C11 | **Lenient config loading** — `tsfix.config.json` / `package.json#tsFix`; invalid fields dropped with a warning, never fatal; boundary-stopped ancestor walk | carry | **P1** | RULE-026/027/028/029/030 |
+| C11 | **Lenient config loading** — `tsnuke.config.json` / `package.json#tsNuke`; invalid fields dropped with a warning, never fatal; boundary-stopped ancestor walk | carry | **P1** | RULE-026/027/028/029/030 |
 | C12 | **Programmatic API** — `diagnose(dir, opts) → { diagnostics, score, project, skippedChecks, elapsedMs }` | adapt | **P1** | `diagnose()` interface |
 | C13 | **Machine-applicable fixes** — each rule declares `fixKind` (`auto-fix`/`codemod`/`manual`); fixes emitted as structured range+replacement edits; type-aware rules ship the inferred type | new | **P0** ⬆ | §0; AI-native |
 | C14 | **Agent-tuned output** — rule-deduplicated, tier+fixKind sorted, category-grouped, path-stripped, token-efficient | new | **P0** ⬆ | AI-native |
@@ -168,7 +168,7 @@ erDiagram
 
 ### 2.3 Rule-catalog taxonomy (13 categories ← 19 React buckets)
 
-| # | ts-fix category | Analogous react-doctor bucket | Dominant tier |
+| # | tsnuke category | Analogous react-doctor bucket | Dominant tier |
 |---|---|---|---|
 | 1 | Type Safety (`any`/`unknown` discipline, unsafe value flow) | state-and-effects (core correctness) | **TYP** |
 | 2 | Type Assertions & Escapes (`as`, `!`, `@ts-ignore`) | react-builtins escape hatches | SYN |
@@ -190,12 +190,12 @@ Buckets that vanish (React-only): Design, A11y, JSX, React-Native, framework-bui
 
 ## 3. Interface Contracts
 
-### 3.1 CLI (inbound) — `ts-fix [directory]`
+### 3.1 CLI (inbound) — `tsnuke [directory]`
 
 Carry react-doctor's flag/mode/exit-code surface verbatim; rename product; swap React-specific framing.
 
 ```
-ts-fix [directory]              # default = inspect; directory default "."
+tsnuke [directory]              # default = inspect; directory default "."
   --lint / --no-lint
   --dead-code / --no-dead-code     # GRAPH tier; default on
   --deep / --no-deep               # NEW: force/skip Tier-2 type-aware pass
@@ -210,7 +210,7 @@ ts-fix [directory]              # default = inspect; directory default "."
   --explain <file:line> | --why <file:line>   # AI-native: natural-language "why"
   --respect-inline-disables / --no-respect-inline-disables
   --no-score
-ts-fix install [--yes --dry-run --agent-hooks --cwd <dir>]
+tsnuke install [--yes --dry-run --agent-hooks --cwd <dir>]
 ```
 
 **Exit codes:** `0` success / gate not tripped · `1` gate tripped (per `--fail-on`, on the `ciFailure` surface; suppressed under `--score`) or uncaught error (JSON mode writes `{ok:false,error}` then exit 1) · `0` on EPIPE · `130` on SIGINT/SIGTERM. **Mutually-exclusive mode rules** carried from RULE-042.
@@ -239,7 +239,7 @@ interface DiagnoseResult {
 }
 ```
 
-Tagged errors: `TsFixError`, `ProjectNotFoundError`, `NoTypeScriptProjectError` (replaces `NoReactDependencyError`), `TsconfigNotFoundError`, `AmbiguousProjectError`.
+Tagged errors: `TsNukeError`, `ProjectNotFoundError`, `NoTypeScriptProjectError` (replaces `NoReactDependencyError`), `TsconfigNotFoundError`, `AmbiguousProjectError`.
 
 ### 3.3 JSON report (outbound) — `JsonReportV1`
 
@@ -258,7 +258,7 @@ Carry the versioned single-arm union design **as-is**; add `tier` to `Diagnostic
                   "score": null, "scorePartial": false, "skippedChecks": [],
                   "skippedCheckReasons": {}, "elapsedMilliseconds": 0 } ],
   "diagnostics": [ {
-    "filePath": "string", "plugin": "ts-fix", "rule": "string",
+    "filePath": "string", "plugin": "tsnuke", "rule": "string",
     "severity": "error | warning", "message": "string", "help": "string",
     "url": "string?", "line": 0, "column": 0, "category": "string",
     "tier": "SYN | TYP | GRAPH | CFG",
@@ -317,7 +317,7 @@ Metadata changes from react-doctor: drop `framework`/`reactVersion`; add `tsVers
 
 - **ESLint flat-config plugin:** `{ meta, rules, configs }`; presets become TS-domain (`recommended`/`strict`/`library`/`app`/`node`).
 - **GitHub Action:** inputs `directory/diff/fail-on/annotations/github-token/no-score/node-version`; output `score`; **pin the CLI version** (not `@latest`), read-only token on forks.
-- **Agent skill:** `SKILL.md` with TS triggers + `npx ts-fix --diff` regression-check recipe.
+- **Agent skill:** `SKILL.md` with TS triggers + `npx tsnuke --diff` regression-check recipe.
 - **Share/badge/OG:** keep `p/s/e/w/f` param contract + numeric clamping + caching; `/leaderboard` deferred (P2 / drop).
 
 ---
@@ -362,11 +362,11 @@ These Given/When/Then rules are the **acceptance tests** the scaffolding must en
 | **BC-15** | Git ref-name guard | **P0** | carry RULE-035 | *Given* `--diff <base>` *Then* reject empty / leading `-` / leading/trailing `.` / `..` / `@{` / chars outside `[A-Za-z0-9_./-]` before any git call. **Freeze verbatim.** |
 | **BC-16** | Zip-Slip defense (staged) | **P0** | carry RULE-037 | *Given* a staged relative path *Then* write into temp dir only if resolved path stays inside it; else skip. **Freeze verbatim.** |
 | **BC-17** | Glob ReDoS caps | **P0** | carry RULE-038 | *Given* a user glob *Then* require length≤1024 and wildcard-count≤24; else reject/drop that pattern. **Freeze verbatim.** |
-| **BC-18** | Plugin trust boundary (v1: no plugin loading) | **P0** | fix RULE-031 | *Given* a `tsfix.config.json` with `plugins` (e.g. `["./evil.js"]`) from a **scanned** repo *Then* the entry is **ignored and never `require`d** (warn only). v1 ships a first-party catalog only → the CWE-94 RCE class is removed *by construction*. (Future: bare names from the tool's own `node_modules` behind `--allow-plugins`.) |
+| **BC-18** | Plugin trust boundary (v1: no plugin loading) | **P0** | fix RULE-031 | *Given* a `tsnuke.config.json` with `plugins` (e.g. `["./evil.js"]`) from a **scanned** repo *Then* the entry is **ignored and never `require`d** (warn only). v1 ships a first-party catalog only → the CWE-94 RCE class is removed *by construction*. (Future: bare names from the tool's own `node_modules` behind `--allow-plugins`.) |
 | **BC-19** | Subprocess env sanitization | **P0** | carry RULE-034 | *Given* an engine subprocess *Then* strip `NODE_OPTIONS`/`NODE_DEBUG`/`npm_config_*`; array-arg, no shell. |
 | **BC-20** | Score-API request caps | P2 | carry RULE-039 | *Given* a POST to the optional `/api/score` *Then* enforce 2 MB / 25 MB decompressed / 50k count + per-item shape; else 4xx. |
 | **BC-21** | Fail-on → exit code | **P0** | carry RULE-040 | *Given* fail-on level + `ciFailure` diagnostics *Then* none→never; warning→any; error→any error-severity; failure sets exit 1; `--score` never fails. |
-| **BC-22** | Lenient config | P1 | carry RULE-026 | *Given* `tsfix.config.json` *Then* non-object→ignore+warn; invalid fields dropped+warn; never fatal. |
+| **BC-22** | Lenient config | P1 | carry RULE-026 | *Given* `tsnuke.config.json` *Then* non-object→ignore+warn; invalid fields dropped+warn; never fatal. |
 | **BC-23** | Versioned report | P1 | carry RULE-068 | *Given* a run *Then* emit `JsonReportV1` with `schemaVersion:1` inside a single-arm union (forward-compat). |
 | **BC-24** | Scale guard (re-derived for in-process substrate) | P1 | adapt RULE-014 | *Given* an in-process `ts.Program` (no argv/subprocess batching) *Then* the guard is **per-project Program built & disposed sequentially** + memory-ceiling → graceful Tier-2 skip (`scorePartial=true`), not file-list binary-split. The legacy `ceil(len/2)` split is retained **only** if a `tsgolint` subprocess path is reintroduced. *(Revised per architecture-critic M3.)* |
 

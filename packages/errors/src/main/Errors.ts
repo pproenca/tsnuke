@@ -21,14 +21,14 @@
  * guard. Here each error is an INDEPENDENT `Schema.TaggedError` — subclassing one
  * tagged base would freeze `name` to the base tag (Effect derives `name` from the
  * tag literal), violating the per-class `name` contract. The guard is therefore
- * contract-based (`_tag` membership of {@link TS_FIX_ERROR_TAGS}), not
+ * contract-based (`_tag` membership of {@link TSNUKE_ERROR_TAGS}), not
  * `instanceof`-based. See TRANSFORMATION_NOTES.md §2.
  */
 
 import { Schema } from "effect";
 
 /**
- * `effect/Schema` field shape every ts-fix error carries: a human message and
+ * `effect/Schema` field shape every tsnuke error carries: a human message and
  * an optional cause. `Schema.optional(Schema.Unknown)` forwards a supplied cause
  * to the native `Error` `.cause` (and respects `exactOptionalPropertyTypes`).
  */
@@ -43,13 +43,13 @@ const fields = {
 };
 
 /**
- * Base discovery error — `_tag` / `name` === `"TsFixError"`.
+ * Base discovery error — `_tag` / `name` === `"TsNukeError"`.
  *
- * Constructed as `new TsFixError(message, { cause })` to keep the legacy
+ * Constructed as `new TsNukeError(message, { cause })` to keep the legacy
  * call-site signature identical for the discovery/engine slice that throws these.
  */
-export class TsFixError extends Schema.TaggedError<TsFixError>()(
-  "TsFixError",
+export class TsNukeError extends Schema.TaggedError<TsNukeError>()(
+  "TsNukeError",
   fields,
 ) {
   constructor(message: string, options?: { readonly cause?: unknown }) {
@@ -111,21 +111,21 @@ function buildProps(
     : { message };
 }
 
-/** The union of every concrete ts-fix discovery error (RULE-037). */
-export type AnyTsFixError =
-  | TsFixError
+/** The union of every concrete tsnuke discovery error (RULE-037). */
+export type AnyTsNukeError =
+  | TsNukeError
   | ProjectNotFoundError
   | NoTypeScriptProjectError
   | TsconfigNotFoundError
   | AmbiguousProjectError;
 
 /**
- * FROZEN set of the five discriminant tags (RULE-037). The {@link isTsFixError}
+ * FROZEN set of the five discriminant tags (RULE-037). The {@link isTsNukeError}
  * guard discriminates on membership of this set — the contract-based replacement
- * for legacy's `instanceof TsFixError` (see the deviation note above).
+ * for legacy's `instanceof TsNukeError` (see the deviation note above).
  */
-export const TS_FIX_ERROR_TAGS: ReadonlySet<string> = new Set([
-  "TsFixError",
+export const TSNUKE_ERROR_TAGS: ReadonlySet<string> = new Set([
+  "TsNukeError",
   "ProjectNotFoundError",
   "NoTypeScriptProjectError",
   "TsconfigNotFoundError",
@@ -135,13 +135,13 @@ export const TS_FIX_ERROR_TAGS: ReadonlySet<string> = new Set([
 /**
  * Type guard: is `value` one of this tool's discovery errors (RULE-037)?
  *
- * Matches when `value` is an `Error` carrying a `_tag` in {@link TS_FIX_ERROR_TAGS}.
+ * Matches when `value` is an `Error` carrying a `_tag` in {@link TSNUKE_ERROR_TAGS}.
  * Requiring `instanceof Error` (not merely a `_tag`-shaped plain object) keeps the
  * guard honest: it answers "is this one of OUR thrown errors?", parity with
- * legacy's `instanceof TsFixError`.
+ * legacy's `instanceof TsNukeError`.
  */
-export function isTsFixError(value: unknown): value is AnyTsFixError {
+export function isTsNukeError(value: unknown): value is AnyTsNukeError {
   if (!(value instanceof Error)) return false;
   const tag = (value as { _tag?: unknown })._tag;
-  return typeof tag === "string" && TS_FIX_ERROR_TAGS.has(tag);
+  return typeof tag === "string" && TSNUKE_ERROR_TAGS.has(tag);
 }

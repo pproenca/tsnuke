@@ -8,7 +8,7 @@ export default defineConfig({
     // the per-test timeout so the real-compile cases run reliably (they assert real engine
     // output end-to-end). Unit/handler tests are unaffected (they finish in ms).
     testTimeout: 60000,
-    // EVERY `@ts-fix/*` dependency the CLI consumes is a `file:` link whose entry
+    // EVERY `@tsnuke/*` dependency the CLI consumes is a `file:` link whose entry
     // point is a `.ts` file (`exports: "./src/main/index.ts"`). Inline ALL of them — plus
     // their full transitive `.ts`-entry closure — so Vitest's esbuild transform compiles
     // their TypeScript at test time instead of trying to load them as pre-built deps
@@ -19,39 +19,39 @@ export default defineConfig({
       deps: {
         inline: [
           // Direct deps the CLI imports.
-          "@ts-fix/build-report-effect",
-          "@ts-fix/contracts-effect",
-          "@ts-fix/engine-effect",
-          "@ts-fix/exit-code-effect",
-          "@ts-fix/fix-applier-effect",
-          "@ts-fix/format-effect",
-          "@ts-fix/rules-registry-effect",
+          "@tsnuke/build-report-effect",
+          "@tsnuke/contracts-effect",
+          "@tsnuke/engine-effect",
+          "@tsnuke/exit-code-effect",
+          "@tsnuke/fix-applier-effect",
+          "@tsnuke/format-effect",
+          "@tsnuke/rules-registry-effect",
           // Transitive: the engine + build-report pull these in.
-          "@ts-fix/capabilities-effect",
-          "@ts-fix/config-effect",
-          "@ts-fix/discovery-effect",
-          "@ts-fix/engine-plan-effect",
-          "@ts-fix/errors-effect",
-          "@ts-fix/filter-pipeline-effect",
-          "@ts-fix/module-graph-effect",
-          "@ts-fix/rules-core-effect",
-          "@ts-fix/scale-effect",
-          "@ts-fix/score-effect",
+          "@tsnuke/capabilities-effect",
+          "@tsnuke/config-effect",
+          "@tsnuke/discovery-effect",
+          "@tsnuke/engine-plan-effect",
+          "@tsnuke/errors-effect",
+          "@tsnuke/filter-pipeline-effect",
+          "@tsnuke/module-graph-effect",
+          "@tsnuke/rules-core-effect",
+          "@tsnuke/scale-effect",
+          "@tsnuke/score-effect",
           // Transitive: every per-category rule slice the registry aggregates (each a
           // `.ts`-entry `file:` dep). Without these, importing `ruleRegistry` /
           // `graphRuleRegistry` would fail to parse their `.ts` sources at test time.
-          "@ts-fix/rules-type-performance-effect",
-          "@ts-fix/rules-declaration-api-effect",
-          "@ts-fix/rules-security-effect",
-          "@ts-fix/rules-naming-idioms-effect",
-          "@ts-fix/rules-generics-effect",
-          "@ts-fix/rules-type-assertions-effect",
-          "@ts-fix/rules-async-effect",
-          "@ts-fix/rules-error-handling-effect",
-          "@ts-fix/rules-type-safety-effect",
-          "@ts-fix/rules-exhaustiveness-effect",
-          "@ts-fix/rules-module-boundaries-effect",
-          "@ts-fix/rules-graph-effect",
+          "@tsnuke/rules-type-performance-effect",
+          "@tsnuke/rules-declaration-api-effect",
+          "@tsnuke/rules-security-effect",
+          "@tsnuke/rules-naming-idioms-effect",
+          "@tsnuke/rules-generics-effect",
+          "@tsnuke/rules-type-assertions-effect",
+          "@tsnuke/rules-async-effect",
+          "@tsnuke/rules-error-handling-effect",
+          "@tsnuke/rules-type-safety-effect",
+          "@tsnuke/rules-exhaustiveness-effect",
+          "@tsnuke/rules-module-boundaries-effect",
+          "@tsnuke/rules-graph-effect",
         ],
       },
     },

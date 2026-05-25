@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-fix/rules-core-effect";
+import { runRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/no-cast-in-return.js";
 
 // Ported VERBATIM from legacy `.../type-assertions/no-cast-in-return.test.ts`,

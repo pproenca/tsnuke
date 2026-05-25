@@ -1,8 +1,8 @@
 {
-  "name": "@ts-fix/rules-naming-idioms-effect",
+  "name": "@tsnuke/rules-naming-idioms-effect",
   "private": true,
   "version": "0.1.0",
-  "description": "Effect-native rewrite of ts-fix's `naming-idioms` rule category (RULE-025): 14 SYN AST/token predicates (consistent-type-definitions, no-array-constructor, no-const-enum, no-empty-interface, no-inferrable-type-annotation, no-json-parse-stringify-clone, no-namespace, no-unnecessary-template-literal, no-var, pascal-case-types, prefer-array-methods, prefer-optional-chain, prefer-union-over-enum, triple-equals). Strangler-fig slice — consumes @ts-fix/rules-core-effect for the rule substrate (defineRule/runRule/Rule/RuleContext) and @ts-fix/contracts-effect for the Diagnostic/RuleMeta contracts. Plain-TS AST predicates wrapping the TS compiler API — NOT Effect-wrapped (visitors are sync). Preserves the RULE-026 broken auto-fix quirk: triple-equals/no-var/no-const-enum/no-inferrable-type-annotation declare fixKind:\"auto-fix\" but emit no fix payload, and triple-equals allows the `== null` idiom.",
+  "description": "Effect-native rewrite of tsnuke's `naming-idioms` rule category (RULE-025): 14 SYN AST/token predicates (consistent-type-definitions, no-array-constructor, no-const-enum, no-empty-interface, no-inferrable-type-annotation, no-json-parse-stringify-clone, no-namespace, no-unnecessary-template-literal, no-var, pascal-case-types, prefer-array-methods, prefer-optional-chain, prefer-union-over-enum, triple-equals). Strangler-fig slice — consumes @tsnuke/rules-core-effect for the rule substrate (defineRule/runRule/Rule/RuleContext) and @tsnuke/contracts-effect for the Diagnostic/RuleMeta contracts. Plain-TS AST predicates wrapping the TS compiler API — NOT Effect-wrapped (visitors are sync). Preserves the RULE-026 broken auto-fix quirk: triple-equals/no-var/no-const-enum/no-inferrable-type-annotation declare fixKind:\"auto-fix\" but emit no fix payload, and triple-equals allows the `== null` idiom.",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -14,8 +14,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ts-fix/contracts-effect": "workspace:*",
-    "@ts-fix/rules-core-effect": "workspace:*",
+    "@tsnuke/contracts-effect": "workspace:*",
+    "@tsnuke/rules-core-effect": "workspace:*",
     "typescript": "^5.8.0"
   },
   "devDependencies": {

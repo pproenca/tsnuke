@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-fix/rules-core-effect";
+import { runRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/prefer-union-over-enum.js";
 
 // Ported VERBATIM from legacy `.../naming-idioms/prefer-union-over-enum.test.ts`.

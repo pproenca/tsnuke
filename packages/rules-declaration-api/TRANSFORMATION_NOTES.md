@@ -1,15 +1,15 @@
 # Transformation Notes — `declaration-api` rule category → Effect-native substrate
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix declaration-api effect`.
+Strangler-fig slice produced by `/code-modernization:modernize-transform tsnuke declaration-api effect`.
 
-Source (READ-ONLY): `legacy/ts-fix/packages/ts-fix-rules/src/rules/declaration-api/`
+Source (READ-ONLY): `legacy/tsnuke/packages/tsnuke-rules/src/rules/declaration-api/`
 (4 SYN rules + their colocated `*.test.ts`).
-Target: `modernized/rules-declaration-api/effect/` — package `@ts-fix/rules-declaration-api-effect`.
+Target: `modernized/rules-declaration-api/effect/` — package `@tsnuke/rules-declaration-api-effect`.
 
 This is the FIRST SYN AST rule-category slice on the Effect-native rule substrate. It is a
 **true strangler-fig**: it CONSUMES the already-completed substrate
-(`@ts-fix/rules-core-effect` for `defineRule` / `runRule` / `Rule` / `RuleContext`) and the
-canonical data contracts (`@ts-fix/contracts-effect` for `Diagnostic` / `RuleMeta`, reached
+(`@tsnuke/rules-core-effect` for `defineRule` / `runRule` / `Rule` / `RuleContext`) and the
+canonical data contracts (`@tsnuke/contracts-effect` for `Diagnostic` / `RuleMeta`, reached
 transitively through rules-core). Neither dependency was modified — nor was `legacy/`.
 
 Implements the `declaration-api` slice of **RULE-025** (per-rule detection predicates by
@@ -20,12 +20,12 @@ drives them via rules-core's shared `runRule` walk/dispatch (one parse, walk, di
 `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `verbatimModuleSyntax`.
 
 **`file:` dependency imports:** both `file:../../rules-core/effect`
-(`@ts-fix/rules-core-effect`) and `file:../../contracts/effect`
-(`@ts-fix/contracts-effect`) import cleanly via package name. `typescript` is a real runtime
+(`@tsnuke/rules-core-effect`) and `file:../../contracts/effect`
+(`@tsnuke/contracts-effect`) import cleanly via package name. `typescript` is a real runtime
 DEPENDENCY (the rules call the compiler API at runtime — `ts.is*`, `ts.getModifiers`,
 `ts.SyntaxKind`), not a devDependency. Vitest transpiles the two `.ts`-entry `file:` deps at test
-time via `vitest.config.ts → test.server.deps.inline: ["@ts-fix/rules-core-effect",
-"@ts-fix/contracts-effect"]` (contracts must be inlined too because rules-core imports it).
+time via `vitest.config.ts → test.server.deps.inline: ["@tsnuke/rules-core-effect",
+"@tsnuke/contracts-effect"]` (contracts must be inlined too because rules-core imports it).
 No relative-import fallback was needed.
 
 ---
@@ -43,7 +43,7 @@ META (id / severity / category / tier / fixKind / tags / recommendation) and the
 (the exact `ts.is*` guards, conditions, 1-based line/column, message/help strings) were ported
 **verbatim**. The ONLY change to each rule file is the import line: `defineRule` (and the
 `RuleContext` type, for `explicit-member-accessibility`) now come from
-`@ts-fix/rules-core-effect` instead of the legacy relative `../../define-rule.js`.
+`@tsnuke/rules-core-effect` instead of the legacy relative `../../define-rule.js`.
 
 ### Predicate / edge-case preservation (per rule)
 
@@ -87,8 +87,8 @@ position assertions. 46 tests total (10 ported from legacy + 32 added edge cases
 
 ## 4. Deviations
 
-- **No vendored substrate / contracts.** This slice CONSUMES `@ts-fix/rules-core-effect`
-  (`defineRule`, `runRule`, `Rule`, `RuleContext`) and `@ts-fix/contracts-effect`
+- **No vendored substrate / contracts.** This slice CONSUMES `@tsnuke/rules-core-effect`
+  (`defineRule`, `runRule`, `Rule`, `RuleContext`) and `@tsnuke/contracts-effect`
   (`Diagnostic`, `RuleMeta`, reached transitively) rather than re-declaring any of them. Legacy
   imported `defineRule`/`runRule` from sibling files within one package; here they cross the
   package boundary by name.

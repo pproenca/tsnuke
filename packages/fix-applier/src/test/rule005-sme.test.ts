@@ -30,7 +30,7 @@
 
 import { describe, expect, it } from "vitest";
 import { applyFixes } from "../main/applyFixes.js";
-import type { Fix, TextEdit } from "@ts-fix/contracts-effect";
+import type { Fix, TextEdit } from "@tsnuke/contracts-effect";
 
 const autoFix = (...edits: TextEdit[]): Fix => ({ kind: "auto-fix", edits });
 const edit = (start: number, end: number, replacement: string): TextEdit => ({

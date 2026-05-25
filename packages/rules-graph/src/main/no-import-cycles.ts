@@ -1,4 +1,4 @@
-import { defineGraphRule } from "@ts-fix/rules-core-effect";
+import { defineGraphRule } from "@tsnuke/rules-core-effect";
 
 /**
  * GRAPH — flag circular import dependencies between modules (RULE-015).
@@ -10,8 +10,8 @@ import { defineGraphRule } from "@ts-fix/rules-core-effect";
  * each file that closes a cycle is reported once (at line 1).
  *
  * Ported VERBATIM from legacy
- * `packages/ts-fix-rules/src/rules/module-boundaries/no-import-cycles.ts`; the only
- * change is importing `defineGraphRule` from the `@ts-fix/rules-core-effect` substrate
+ * `packages/tsnuke-rules/src/rules/module-boundaries/no-import-cycles.ts`; the only
+ * change is importing `defineGraphRule` from the `@tsnuke/rules-core-effect` substrate
  * rather than the legacy `../../define-rule.js`. The analyze body — the 3-color DFS and the
  * report-the-cycle-target-once-at-line-1 logic — is unchanged.
  */

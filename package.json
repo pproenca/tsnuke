@@ -1,5 +1,5 @@
 {
-  "name": "ts-fix-monorepo",
+  "name": "tsnuke-monorepo",
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@11.2.2",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-fix/rules-core-effect";
+import { runRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/explicit-member-accessibility.js";
 
 describe("explicit-member-accessibility (SYN)", () => {
@@ -32,7 +32,7 @@ describe("explicit-member-accessibility (SYN)", () => {
     expect(diags[0]!.severity).toBe("warning");
     expect(diags[0]!.category).toBe("Declaration & API Hygiene");
     expect(diags[0]!.tier).toBe("SYN");
-    expect(diags[0]!.plugin).toBe("ts-fix");
+    expect(diags[0]!.plugin).toBe("tsnuke");
   });
 
   it("uses the member name in the message when it is an identifier", () => {

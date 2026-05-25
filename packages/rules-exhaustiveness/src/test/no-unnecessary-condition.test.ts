@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule, runTypeAwareRule } from "@ts-fix/rules-core-effect";
+import { runRule, runTypeAwareRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/no-unnecessary-condition.js";
 
 describe("no-unnecessary-condition (TYP / BC-10)", () => {

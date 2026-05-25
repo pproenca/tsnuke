@@ -1,7 +1,7 @@
 /**
- * `@ts-fix/rules-async-effect` — the `async` rule category (7 rules: 4 SYN + 3 TYP).
+ * `@tsnuke/rules-async-effect` — the `async` rule category (7 rules: 4 SYN + 3 TYP).
  *
- * Pure AST / type-aware predicates that plug into the `@ts-fix/rules-core-effect`
+ * Pure AST / type-aware predicates that plug into the `@tsnuke/rules-core-effect`
  * substrate (`defineRule` + the per-file `SyntaxKind → visitor` shape). The engine drives
  * the SYN rules via the same walk/dispatch as `runRule`, and the TYP rules via
  * `runTypeAwareRule` (which supplies a live `ts.TypeChecker` on the `typecheck:ok` path):
@@ -20,13 +20,13 @@
  *     - {@link noMisusedPromises} — a Promise used directly as a boolean condition.
  *
  * The substrate (`defineRule`/`runRule`/`runTypeAwareRule`/`Rule`/`RuleContext`) is imported
- * from `@ts-fix/rules-core-effect`; the data contracts (`Diagnostic`/`RuleMeta`/`Fix`/
- * `TextEdit`) live in `@ts-fix/contracts-effect`. This slice does NOT re-export either's
+ * from `@tsnuke/rules-core-effect`; the data contracts (`Diagnostic`/`RuleMeta`/`Fix`/
+ * `TextEdit`) live in `@tsnuke/contracts-effect`. This slice does NOT re-export either's
  * symbols (barrel hygiene — it publishes only what it owns: the seven rules + the category
  * registry). See TRANSFORMATION_NOTES.md for the legacy → target mapping.
  */
 
-import type { Rule } from "@ts-fix/rules-core-effect";
+import type { Rule } from "@tsnuke/rules-core-effect";
 
 // SYN (Tier-1, AST-only).
 import { rule as noAsyncPromiseExecutor } from "./no-async-promise-executor.js";
@@ -67,6 +67,6 @@ export const asyncRules: ReadonlyArray<Rule> = [
   noMisusedPromises,
 ];
 
-// Self-barrel: makes `import { RulesAsync } from "@ts-fix/rules-async-effect"`
+// Self-barrel: makes `import { RulesAsync } from "@tsnuke/rules-async-effect"`
 // resolve to this module's namespace (additive — the named exports above stay).
 export * as RulesAsync from ".";

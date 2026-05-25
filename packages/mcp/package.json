@@ -1,12 +1,12 @@
 {
-  "name": "@ts-fix/mcp-effect",
+  "name": "@tsnuke/mcp-effect",
   "private": true,
   "version": "0.1.0",
-  "description": "The ts-fix MCP (Model Context Protocol) server (stdio), Effect-TS slice. Exposes the linter to coding agents via three tools (ts_fix_diagnose / ts_fix_explain / ts_fix_list_rules). The pure handlers are a faithful port of legacy `packages/mcp/src/tools.ts`, rewired onto the modern engine/format/registry slices; the SDK wiring (`packages/mcp/src/server.ts`) swaps tool-argument validation from zod to `effect/Schema` (RULE-029). zod is GONE.",
+  "description": "The tsnuke MCP (Model Context Protocol) server (stdio), Effect-TS slice. Exposes the linter to coding agents via three tools (tsnuke_diagnose / tsnuke_explain / tsnuke_list_rules). The pure handlers are a faithful port of legacy `packages/mcp/src/tools.ts`, rewired onto the modern engine/format/registry slices; the SDK wiring (`packages/mcp/src/server.ts`) swaps tool-argument validation from zod to `effect/Schema` (RULE-029). zod is GONE.",
   "license": "MIT",
   "type": "module",
   "bin": {
-    "ts-fix-mcp": "./dist/server.js"
+    "tsnuke-mcp": "./dist/server.js"
   },
   "exports": {
     ".": "./src/main/index.ts"
@@ -20,10 +20,10 @@
   "dependencies": {
     "@effect/platform-node": "^0.106.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@ts-fix/contracts-effect": "workspace:*",
-    "@ts-fix/engine-effect": "workspace:*",
-    "@ts-fix/format-effect": "workspace:*",
-    "@ts-fix/rules-registry-effect": "workspace:*",
+    "@tsnuke/contracts-effect": "workspace:*",
+    "@tsnuke/engine-effect": "workspace:*",
+    "@tsnuke/format-effect": "workspace:*",
+    "@tsnuke/rules-registry-effect": "workspace:*",
     "effect": "^3.21.2",
     "typescript": "^5.8.0"
   },

@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { defineRule } from "@ts-fix/rules-core-effect";
+import { defineRule } from "@tsnuke/rules-core-effect";
 
 /**
  * Object-type aliases beyond this many members are better expressed as an interface.
@@ -23,8 +23,8 @@ const LARGE_OBJECT_TYPE_MEMBERS = 12;
  * mapped types are skipped.
  *
  * Ported verbatim from legacy
- * `packages/ts-fix-rules/src/rules/type-performance/prefer-interface-for-large-object-type.ts`;
- * the only change is importing `defineRule` from the `@ts-fix/rules-core-effect`
+ * `packages/tsnuke-rules/src/rules/type-performance/prefer-interface-for-large-object-type.ts`;
+ * the only change is importing `defineRule` from the `@tsnuke/rules-core-effect`
  * substrate rather than the legacy `../../define-rule.js`.
  */
 export const rule = defineRule(

@@ -1,13 +1,13 @@
 # Transformation Notes — `module-boundaries` rule category → Effect-TS
 
 Strangler-fig slice produced by
-`/code-modernization:modernize-transform ts-fix rules-module-boundaries effect`.
+`/code-modernization:modernize-transform tsnuke rules-module-boundaries effect`.
 
-Source (READ-ONLY): `legacy/ts-fix/packages/ts-fix-rules/src/rules/module-boundaries/`
+Source (READ-ONLY): `legacy/tsnuke/packages/tsnuke-rules/src/rules/module-boundaries/`
 (+ the `Diagnostic`/`RuleMeta` contracts and the `defineRule`/`runRule` substrate, now
-owned by `@ts-fix/contracts-effect` and `@ts-fix/rules-core-effect` respectively).
+owned by `@tsnuke/contracts-effect` and `@tsnuke/rules-core-effect` respectively).
 Target: `modernized/rules-module-boundaries/effect/` (package
-`@ts-fix/rules-module-boundaries-effect`).
+`@tsnuke/rules-module-boundaries-effect`).
 
 Implements the category's **3 SYN rules**: **RULE-011** (`no-deep-relative-import` —
 deep relative import with `>= 4` LEADING `..` segments), `no-default-export`, and
@@ -29,7 +29,7 @@ The category's fourth rule, `no-import-cycles` (tier **GRAPH**), is **DEFERRED**
 | `no-default-export` | RULE-025 (module-boundaries row) | `…/module-boundaries/no-default-export.ts` | `src/main/no-default-export.ts` |
 | `public-api-must-be-explicit` | RULE-025 (module-boundaries row) | `…/module-boundaries/public-api-must-be-explicit.ts` | `src/main/public-api-must-be-explicit.ts` |
 | category barrel + `moduleBoundariesRules` registry | — (v1 manual codegen seam) | (codegen would fold into the global registry) | `src/main/index.ts` |
-| `runRule` test driver | legacy `ts-fix-rules/src/test-utils.ts` | imported from `@ts-fix/rules-core-effect` (not vendored) | `src/test/*.test.ts` |
+| `runRule` test driver | legacy `tsnuke-rules/src/test-utils.ts` | imported from `@tsnuke/rules-core-effect` (not vendored) | `src/test/*.test.ts` |
 | legacy `*.test.ts` vectors | the behavioral spec | `…/module-boundaries/*.test.ts` | ported into `src/test/*.test.ts` |
 | `no-import-cycles` | RULE-015 (cycle detection, GRAPH) | `…/module-boundaries/no-import-cycles.ts` | **NOT migrated — deferred (§4)** |
 
@@ -51,16 +51,16 @@ are structural / dependency-routing:
 ### D1 — Import the substrate, do NOT re-vendor it
 - `defineRule` (and the `RuleContext` type, used by `no-deep-relative-import` and
   `no-default-export` for their helper signatures) is imported from
-  `@ts-fix/rules-core-effect` instead of the legacy relative `../../define-rule.js`.
+  `@tsnuke/rules-core-effect` instead of the legacy relative `../../define-rule.js`.
 - `runRule` (the SYN AST driver, legacy `test-utils.ts`) is imported from
-  `@ts-fix/rules-core-effect` in the tests — the engine drives these rules through the
+  `@tsnuke/rules-core-effect` in the tests — the engine drives these rules through the
   *same* walk/dispatch, so the tests exercise the real production driver, not a copy.
-- `Diagnostic` / `RuleMeta` come from `@ts-fix/contracts-effect` transitively (rules
+- `Diagnostic` / `RuleMeta` come from `@tsnuke/contracts-effect` transitively (rules
   never name them directly here; they flow through `defineRule`/`ctx.report`). This slice
   does not re-vendor any contract or substrate symbol.
 
 ### D2 — Two `file:` deps + double inline (consumption pattern)
-`package.json` adds `@ts-fix/rules-core-effect` **and** `@ts-fix/contracts-effect`
+`package.json` adds `@tsnuke/rules-core-effect` **and** `@tsnuke/contracts-effect`
 as `file:` deps, plus `typescript` as a real **dependency** (not devDependency): the rules
 call `ts.SyntaxKind` / `ts.is*` / `getLineAndCharacterOfPosition` at **runtime**, so the
 compiler API is a production dependency, not a build-only tool. `vitest.config.ts` inlines

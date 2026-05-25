@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule, runTypeAwareRule } from "@ts-fix/rules-core-effect";
+import { runRule, runTypeAwareRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/no-unnecessary-typeof.js";
 
 // Ported VERBATIM from legacy `.../type-safety/no-unnecessary-typeof.test.ts`.

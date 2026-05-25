@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-fix/rules-core-effect";
+import { runRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/prefer-type-guard-predicate.js";
 
 // Ported VERBATIM from legacy `.../type-safety/prefer-type-guard-predicate.test.ts`.

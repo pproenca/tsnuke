@@ -1,9 +1,9 @@
 # Transformation Notes — `type-assertions` rule category → Effect-TS
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix type-assertions effect`.
-Source (READ-ONLY): `legacy/ts-fix/packages/ts-fix-rules/src/rules/type-assertions/**`
+Strangler-fig slice produced by `/code-modernization:modernize-transform tsnuke type-assertions effect`.
+Source (READ-ONLY): `legacy/tsnuke/packages/tsnuke-rules/src/rules/type-assertions/**`
 (12 SYN rules + 1 TYP rule + their colocated `*.test.ts` behavioral specs). Target:
-`modernized/rules-type-assertions/effect/` (package `@ts-fix/rules-type-assertions-effect`).
+`modernized/rules-type-assertions/effect/` (package `@tsnuke/rules-type-assertions-effect`).
 
 Implements **RULE-025** (per-rule detection predicates for the `type-assertions`
 category, a.k.a. "Type Assertions & Escapes"). This category spans BOTH analysis tiers:
@@ -14,7 +14,7 @@ category, a.k.a. "Type Assertions & Escapes"). This category spans BOTH analysis
 
 **Result:** 69/69 characterization tests pass across 14 files · `tsc --noEmit` clean
 under `strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes`. Both `file:`
-deps (`@ts-fix/rules-core-effect`, `@ts-fix/contracts-effect`) link and inline
+deps (`@tsnuke/rules-core-effect`, `@tsnuke/contracts-effect`) link and inline
 correctly under Vitest's esbuild transform. The TYP rule runs through `runTypeAwareRule`
 (real one-file `ts.Program` + live `ts.TypeChecker`); the SYN rules run through `runRule`.
 
@@ -50,7 +50,7 @@ parenthesis-unwrapping loops, the comment-scanning regexes for the `@ts-*` direc
 rules, the 1-based `line + 1` / `column + 1`, and the message + help text. The ONLY edit
 applied to each rule file was the import rewrite:
 `import { defineRule } from "../../define-rule.js"` →
-`import { defineRule } from "@ts-fix/rules-core-effect"`.
+`import { defineRule } from "@tsnuke/rules-core-effect"`.
 
 ### Comment-directive rules (mechanism ported verbatim)
 
@@ -84,13 +84,13 @@ help, 1-based position). What changed is purely structural:
 
 1. **Substrate is consumed, not vendored.** Legacy rules imported `defineRule` from a
    sibling file (`../../define-rule.js`). Here they import it from
-   `@ts-fix/rules-core-effect`, and the `Diagnostic`/`RuleMeta` contracts live in
-   `@ts-fix/contracts-effect`. This slice is a CONSUMER of both `file:` deps and does
+   `@tsnuke/rules-core-effect`, and the `Diagnostic`/`RuleMeta` contracts live in
+   `@tsnuke/contracts-effect`. This slice is a CONSUMER of both `file:` deps and does
    not re-publish or re-vendor any of their symbols (barrel hygiene — `src/main/index.ts`
    exports only the 13 rules + the `typeAssertionsRules` bundle).
 
 2. **Drivers come from rules-core.** Tests import `runRule` (SYN) and `runTypeAwareRule`
-   (TYP) from `@ts-fix/rules-core-effect` instead of the legacy
+   (TYP) from `@tsnuke/rules-core-effect` instead of the legacy
    `../../test-utils.js`. These are the SAME walk/dispatch the engine uses, so the tests
    exercise the production path, not a test-only fork.
 

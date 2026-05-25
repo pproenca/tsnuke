@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { runRule } from "@ts-fix/rules-core-effect";
+import { runRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/no-explicit-any.js";
 
 // Ported VERBATIM from legacy `.../type-safety/no-explicit-any.test.ts`.

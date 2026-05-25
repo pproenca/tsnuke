@@ -26,7 +26,7 @@ import {
   applyFixesToFilesDetailed,
   applyFixesToFilesDetailedNode,
 } from "../main/applyFixesToFiles.js";
-import type { Diagnostic, Fix, TextEdit } from "@ts-fix/contracts-effect";
+import type { Diagnostic, Fix, TextEdit } from "@tsnuke/contracts-effect";
 
 const autoFix = (...edits: TextEdit[]): Fix => ({ kind: "auto-fix", edits });
 const edit = (start: number, end: number, replacement: string): TextEdit => ({
@@ -36,7 +36,7 @@ const edit = (start: number, end: number, replacement: string): TextEdit => ({
 });
 const diagWithFix = (filePath: string, fix: Fix): Diagnostic => ({
   filePath,
-  plugin: "ts-fix",
+  plugin: "tsnuke",
   rule: "r",
   severity: "warning",
   message: "m",
@@ -147,7 +147,7 @@ describe("applyFixesToFiles — atomic write via temp-file + rename (CWE-59 cure
     expect(s.files.get(target)).toBe("const x");
     // The op log proves it was a temp write THEN a rename over the target (atomic),
     // not an in-place writeFileString on the target itself.
-    const tmp = "/proj/.a.ts.0.tsfix-fix.tmp"; // unpredictable per-run suffix (SEC-002)
+    const tmp = "/proj/.a.ts.0.tsnuke-fix.tmp"; // unpredictable per-run suffix (SEC-002)
     expect(s.ops).toEqual([`write:${tmp}`, `rename:${tmp}->${target}`]);
     // No leftover temp file.
     expect(s.files.has(tmp)).toBe(false);
@@ -327,7 +327,7 @@ describe("applyFixesToFiles — multi-file aggregate", () => {
 // ===========================================================================
 describe("PRODUCTION Layer — applyFixesToFilesDetailedNode on a REAL temp dir", () => {
   it("reads a real file, applies a fix, writes it atomically (contents updated)", async () => {
-    const dir = mkdtempSync(nodeJoin(tmpdir(), "tsfix-fix-"));
+    const dir = mkdtempSync(nodeJoin(tmpdir(), "tsnuke-fix-"));
     try {
       const file = nodeJoin(dir, "a.ts");
       writeFileSync(file, "let x = 1;");
@@ -340,7 +340,7 @@ describe("PRODUCTION Layer — applyFixesToFilesDetailedNode on a REAL temp dir"
       expect(result.rejected).toEqual([]);
       expect(readFileSync(file, "utf8")).toBe("const x = 1;");
       // No leftover temp file.
-      const tmp = nodeJoin(dir, ".a.ts.0.tsfix-fix.tmp");
+      const tmp = nodeJoin(dir, ".a.ts.0.tsnuke-fix.tmp");
       expect(() => readFileSync(tmp, "utf8")).toThrow();
     } finally {
       rmSync(dir, { recursive: true, force: true });
@@ -348,7 +348,7 @@ describe("PRODUCTION Layer — applyFixesToFilesDetailedNode on a REAL temp dir"
   });
 
   it("a REAL symlink is rejected and its target file is NOT modified (CWE-59 regression)", async () => {
-    const dir = mkdtempSync(nodeJoin(tmpdir(), "tsfix-fix-"));
+    const dir = mkdtempSync(nodeJoin(tmpdir(), "tsnuke-fix-"));
     try {
       const realTarget = nodeJoin(dir, "real.ts");
       const link = nodeJoin(dir, "link.ts");
@@ -369,8 +369,8 @@ describe("PRODUCTION Layer — applyFixesToFilesDetailedNode on a REAL temp dir"
   });
 
   it("a directory-symlink PREFIX inside root cannot redirect a write outside root (SEC-001/CWE-59)", async () => {
-    const root = mkdtempSync(nodeJoin(tmpdir(), "tsfix-fix-root-"));
-    const outside = mkdtempSync(nodeJoin(tmpdir(), "tsfix-fix-out-"));
+    const root = mkdtempSync(nodeJoin(tmpdir(), "tsnuke-fix-root-"));
+    const outside = mkdtempSync(nodeJoin(tmpdir(), "tsnuke-fix-out-"));
     try {
       // A real victim OUTSIDE the root, reachable via a directory symlink INSIDE it.
       writeFileSync(nodeJoin(outside, "victim.ts"), "let x = 1;");
@@ -394,15 +394,15 @@ describe("PRODUCTION Layer — applyFixesToFilesDetailedNode on a REAL temp dir"
   });
 
   it("a pre-planted symlink at the O_EXCL temp path is NOT followed — file skipped, pointee untouched (SEC-002)", async () => {
-    const dir = mkdtempSync(nodeJoin(tmpdir(), "tsfix-fix-"));
-    const outside = mkdtempSync(nodeJoin(tmpdir(), "tsfix-fix-out-"));
+    const dir = mkdtempSync(nodeJoin(tmpdir(), "tsnuke-fix-"));
+    const outside = mkdtempSync(nodeJoin(tmpdir(), "tsnuke-fix-out-"));
     try {
       const file = nodeJoin(dir, "a.ts");
       writeFileSync(file, "let x = 1;");
       const victim = nodeJoin(outside, "victim.txt");
       writeFileSync(victim, "SECRET");
       // Attacker pre-plants a symlink at the temp path the cure will use (first file → .0.).
-      symlinkSync(victim, nodeJoin(dir, ".a.ts.0.tsfix-fix.tmp"));
+      symlinkSync(victim, nodeJoin(dir, ".a.ts.0.tsnuke-fix.tmp"));
 
       const result = await applyFixesToFilesDetailedNode(
         [diagWithFix(file, autoFix(edit(0, 3, "const")))],
@@ -422,7 +422,7 @@ describe("PRODUCTION Layer — applyFixesToFilesDetailedNode on a REAL temp dir"
   });
 
   it("never rejects/throws for a missing file (read-error skip)", async () => {
-    const dir = mkdtempSync(nodeJoin(tmpdir(), "tsfix-fix-"));
+    const dir = mkdtempSync(nodeJoin(tmpdir(), "tsnuke-fix-"));
     try {
       const missing = nodeJoin(dir, "ghost.ts");
       const result = await applyFixesToFilesDetailedNode(

@@ -1,8 +1,8 @@
 # Transformation Notes — `errors` → Effect-TS
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix errors effect`.
-Source (READ-ONLY): `legacy/ts-fix/packages/core/src/errors.ts` (61 lines).
-Target: `modernized/errors/effect/` (package `@ts-fix/errors-effect`).
+Strangler-fig slice produced by `/code-modernization:modernize-transform tsnuke errors effect`.
+Source (READ-ONLY): `legacy/tsnuke/packages/core/src/errors.ts` (61 lines).
+Target: `modernized/errors/effect/` (package `@tsnuke/errors-effect`).
 
 Implements **RULE-037** (tagged discovery error classes). Legacy DELIBERATELY
 moved AWAY from Effect tagged errors to plain `Error` subclasses with a `_tag`
@@ -27,14 +27,14 @@ working unchanged. Both are verified explicitly (see §1 / equivalence.test.ts).
 
 | Behavior | Legacy `errors.ts` | Target |
 |----------|--------------------|--------|
-| Base error, `_tag`/`name` = `"TsFixError"` | `:10-20` | `src/main/Errors.ts:42` (`Schema.TaggedError<TsFixError>()("TsFixError", …)`) |
+| Base error, `_tag`/`name` = `"TsNukeError"` | `:10-20` | `src/main/Errors.ts:42` (`Schema.TaggedError<TsNukeError>()("TsNukeError", …)`) |
 | `ProjectNotFoundError`, `_tag`/`name` parity | `:23-29` | `src/main/Errors.ts:51` |
 | `NoTypeScriptProjectError`, `_tag`/`name` parity (BC-06) | `:32-38` | `src/main/Errors.ts:60` |
 | `TsconfigNotFoundError`, `_tag`/`name` parity (BC-06) | `:41-47` | `src/main/Errors.ts:69` |
 | `AmbiguousProjectError`, `_tag`/`name` parity | `:50-56` | `src/main/Errors.ts:78` |
 | `(message, { cause })` constructor signature | each `constructor` | `src/main/Errors.ts` ctors + `buildProps` `:92` |
 | `cause` → native `.cause` chaining | `super(message, options)` `:15` | `Schema.TaggedError` forwards `cause` prop; `buildProps` includes it only when supplied |
-| `isTsFixError` type guard | `:59-61` (`instanceof`) | `src/main/Errors.ts:128` (`_tag` membership of `TS_FIX_ERROR_TAGS`) |
+| `isTsNukeError` type guard | `:59-61` (`instanceof`) | `src/main/Errors.ts:128` (`_tag` membership of `TSNUKE_ERROR_TAGS`) |
 | Prototype-chain restore (ES5 transpile fix) | `:18` `setPrototypeOf` | **removed** — target is ES2022, no down-level `extends` break (see §3) |
 
 The legacy classes set `name` imperatively (`this.name = "…"`) and aliased it to
@@ -56,11 +56,11 @@ consumers): instances now have Effect's structural `Equal`/`Hash` and pretty
 inspection.
 
 ### D2 — Shared base class → five INDEPENDENT tagged errors ⚠️ (changes `instanceof` of the base)
-Legacy had ONE base class `TsFixError`; every subclass was `instanceof
-TsFixError`, and that's what the guard used. With `Schema.TaggedError` you CANNOT
+Legacy had ONE base class `TsNukeError`; every subclass was `instanceof
+TsNukeError`, and that's what the guard used. With `Schema.TaggedError` you CANNOT
 keep both a shared instance base AND correct per-class `name`: Effect derives
 `name` from the tag literal passed to `Schema.TaggedError<X>()(...)`, so subclassing a
-single tagged base would freeze every subclass's `name` to `"TsFixError"`
+single tagged base would freeze every subclass's `name` to `"TsNukeError"`
 (verified during scaffolding) — breaking the RULE-037 / `serializeError` `name`
 contract. So each of the five is its own independent `Schema.TaggedError`.
 
@@ -68,14 +68,14 @@ contract. So each of the five is its own independent `Schema.TaggedError`.
   base class** (there is no shared base instance). `instanceof Error` still holds
   for all five — and that is the only `instanceof` the downstream `serializeError`
   actually performs.
-- **How the guard preserves semantics:** `isTsFixError` is reimplemented as a
-  **contract-based** check — `value instanceof Error && _tag ∈ TS_FIX_ERROR_TAGS`
+- **How the guard preserves semantics:** `isTsNukeError` is reimplemented as a
+  **contract-based** check — `value instanceof Error && _tag ∈ TSNUKE_ERROR_TAGS`
   (`Errors.ts:128`). It returns `true` for all five tags and `false` for
   non-errors, foreign `Error`s, and `_tag`-shaped plain objects — proven identical
   to the legacy `instanceof`-guard's classifications in `equivalence.test.ts`.
   The `instanceof Error` clause keeps it honest ("is this one of OUR thrown
   errors?", not "does any object carry this string?").
-- **`AnyTsFixError` union type** replaces the base type for callers that want
+- **`AnyTsNukeError` union type** replaces the base type for callers that want
   the discriminated union (e.g. `switch (e._tag)`); the guard narrows to it.
 
 ### D3 — Dropped the `Object.setPrototypeOf(this, new.target.prototype)` line
@@ -112,7 +112,7 @@ workaround, not domain logic.
 1. **Discovery/engine slice (the THROWER):** when migrated onto this module, throw
    these classes with the unchanged `new X(message, { cause })` signature. Prefer
    the specific subclass (`ProjectNotFoundError`, `TsconfigNotFoundError`, …) so
-   `_tag` carries the precise failure; `TsFixError` is the catch-all base tag.
+   `_tag` carries the precise failure; `TsNukeError` is the catch-all base tag.
    If that slice is itself Effect-native it can `Effect.fail(new X(...))` /
    `yield* new X(...)` directly — `Schema.TaggedError` is designed for that.
 2. **`build-report` slice (the CONSUMER) — KEEP `instanceof Error` + native `.cause`.**
@@ -120,13 +120,13 @@ workaround, not domain logic.
    and walks `err.cause` (root-last, each link `instanceof Error`). This slice
    guarantees all of that (verified). When migrating `serializeError`, it can keep
    the exact same `instanceof Error` + `.cause`-walk logic — **do not** switch it
-   to a `_tag`-only check that would miss non-ts-fix `Error`s in the chain. If
-   it ever wants to special-case ts-fix errors, use the exported
-   `isTsFixError` / `TS_FIX_ERROR_TAGS` rather than re-deriving the tag set.
+   to a `_tag`-only check that would miss non-tsnuke `Error`s in the chain. If
+   it ever wants to special-case tsnuke errors, use the exported
+   `isTsNukeError` / `TSNUKE_ERROR_TAGS` rather than re-deriving the tag set.
 3. **Replacing the `instanceof`-base habit:** any legacy call-site that did
-   `if (e instanceof TsFixError)` must move to `if (isTsFixError(e))` (D2 —
+   `if (e instanceof TsNukeError)` must move to `if (isTsNukeError(e))` (D2 —
    there is no shared base instance anymore). For exhaustive discrimination,
-   `switch (e._tag)` over the `AnyTsFixError` union is the idiomatic form.
+   `switch (e._tag)` over the `AnyTsNukeError` union is the idiomatic form.
 4. **De-vendor the oracle:** `equivalence.test.ts` vendors a frozen copy of the
    legacy classes as the differential oracle. Once the legacy module is fully
    retired, that copy can be deleted along with the legacy source (the contract is
@@ -143,10 +143,10 @@ workaround, not domain logic.
   `Bundler` moduleResolution — same as `score`; the compiler resolves `.js` → `.ts`.
 - **Guard ordering bug caught by the characterization tests:** the first guard
   draft read `value._tag` before the `instanceof Error` short-circuit, throwing on
-  `null`/`undefined`. The negative-input test (`isTsFixError(undefined)`) caught
+  `null`/`undefined`. The negative-input test (`isTsNukeError(undefined)`) caught
   it; `instanceof Error` now guards first. (TDD working as intended.)
-- **Barrel hygiene:** `index.ts` exports only the five classes, `isTsFixError`,
-  `TS_FIX_ERROR_TAGS`, and the `AnyTsFixError` type. The internal
+- **Barrel hygiene:** `index.ts` exports only the five classes, `isTsNukeError`,
+  `TSNUKE_ERROR_TAGS`, and the `AnyTsNukeError` type. The internal
   `fields`/`buildProps` stay unexported — nothing consumers need.
 - **Run:** `cd modernized/errors/effect && pnpm test` (vitest) · `pnpm typecheck` (tsc).
 
@@ -172,13 +172,13 @@ correctly and that it remains `instanceof Error`.
 confirmed the two load-bearing claims `build-report.serializeError` depends on:
 `instanceof Error` is true, and a constructor `cause` lands on the **native** `.cause`
 own-property (so the root-last chain walk works). It also grepped the repo and found
-**zero** `instanceof TsFixError` consumers, so dropping the shared base (D2) is not a
+**zero** `instanceof TsNukeError` consumers, so dropping the shared base (D2) is not a
 regression — `serializeError` only uses `instanceof Error` + native `.cause`.
 
 **Applied:**
-- **Drift guard added (MEDIUM).** `isTsFixError` discriminates via `_tag` membership of
-  `TS_FIX_ERROR_TAGS` (D2), a second source of truth that can silently diverge from the
-  exported classes. `errors.test.ts` now asserts `TS_FIX_ERROR_TAGS.size === <#classes>`
+- **Drift guard added (MEDIUM).** `isTsNukeError` discriminates via `_tag` membership of
+  `TSNUKE_ERROR_TAGS` (D2), a second source of truth that can silently diverge from the
+  exported classes. `errors.test.ts` now asserts `TSNUKE_ERROR_TAGS.size === <#classes>`
   and that every class's tag is present, so adding a 6th error without updating the set
   fails CI.
 

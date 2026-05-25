@@ -1,15 +1,15 @@
 # Transformation Notes — `error-handling` rule category → Effect-native substrate
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix error-handling effect`.
+Strangler-fig slice produced by `/code-modernization:modernize-transform tsnuke error-handling effect`.
 
-Source (READ-ONLY): `legacy/ts-fix/packages/ts-fix-rules/src/rules/error-handling/`
+Source (READ-ONLY): `legacy/tsnuke/packages/tsnuke-rules/src/rules/error-handling/`
 (8 rules — 6 SYN + 2 TYP — plus their colocated `*.test.ts`).
-Target: `modernized/rules-error-handling/effect/` — package `@ts-fix/rules-error-handling-effect`.
+Target: `modernized/rules-error-handling/effect/` — package `@tsnuke/rules-error-handling-effect`.
 
 This is the FIRST rule-category slice on the Effect-native rule substrate to mix the SYN and
 TYP (type-aware) tiers. It is a **true strangler-fig**: it CONSUMES the already-completed
-substrate (`@ts-fix/rules-core-effect` for `defineRule` / `runRule` / `runTypeAwareRule` /
-`Rule` / `RuleContext`) and the canonical data contracts (`@ts-fix/contracts-effect` for
+substrate (`@tsnuke/rules-core-effect` for `defineRule` / `runRule` / `runTypeAwareRule` /
+`Rule` / `RuleContext`) and the canonical data contracts (`@tsnuke/contracts-effect` for
 `Diagnostic` / `RuleMeta`, reached transitively through rules-core). Neither dependency was
 modified — nor was `legacy/`. Same two-`file:`-dep + inline + `typescript`-runtime config
 structure as the completed `declaration-api` sibling.
@@ -23,12 +23,12 @@ drives SYN rules via `runRule` (one parse, walk, dispatch by kind) and TYP rules
 `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `verbatimModuleSyntax`.
 
 **`file:` dependency imports + `runTypeAwareRule`:** both `file:../../rules-core/effect`
-(`@ts-fix/rules-core-effect`) and `file:../../contracts/effect` (`@ts-fix/contracts-effect`)
+(`@tsnuke/rules-core-effect`) and `file:../../contracts/effect` (`@tsnuke/contracts-effect`)
 import cleanly by package name. `typescript` is a real runtime DEPENDENCY (the rules call the
 compiler API at runtime — `ts.is*`, `ts.TypeFlags`, `checker.getTypeAtLocation` /
 `checker.typeToString`), not a devDependency. Vitest transpiles the two `.ts`-entry `file:` deps
-at test time via `vitest.config.ts → test.server.deps.inline: ["@ts-fix/rules-core-effect",
-"@ts-fix/contracts-effect"]` (contracts must be inlined too because rules-core imports it).
+at test time via `vitest.config.ts → test.server.deps.inline: ["@tsnuke/rules-core-effect",
+"@tsnuke/contracts-effect"]` (contracts must be inlined too because rules-core imports it).
 `runTypeAwareRule` (the TYP driver) was consumed for the first time by a category slice here —
 it builds the real default lib, so the checker resolves `Promise`, `Error` subclasses, and
 literal types correctly. No relative-import fallback was needed.
@@ -52,7 +52,7 @@ META (id / severity / category / tier / requires / fixKind / tags / recommendati
 predicate body (the exact `ts.is*` guards, helper functions, `ts.TypeFlags` masks, 1-based
 line/column, message/help strings) were ported **verbatim**. The ONLY change to each rule file
 is the import line: `defineRule` (and the `RuleContext` type, for `no-throw-in-finally`) now come
-from `@ts-fix/rules-core-effect` instead of the legacy relative `../../define-rule.js`.
+from `@tsnuke/rules-core-effect` instead of the legacy relative `../../define-rule.js`.
 
 ### Predicate / edge-case preservation (per rule)
 
@@ -135,9 +135,9 @@ suffix branch — the literal branch still catches `Error` itself.
 
 ## 4. Deviations
 
-- **No vendored substrate / contracts.** This slice CONSUMES `@ts-fix/rules-core-effect`
+- **No vendored substrate / contracts.** This slice CONSUMES `@tsnuke/rules-core-effect`
   (`defineRule`, `runRule`, `runTypeAwareRule`, `Rule`, `RuleContext`) and
-  `@ts-fix/contracts-effect` (`Diagnostic`, `RuleMeta`, reached transitively) rather than
+  `@tsnuke/contracts-effect` (`Diagnostic`, `RuleMeta`, reached transitively) rather than
   re-declaring any of them. Legacy imported `defineRule`/`runRule` from sibling files within one
   package; here they cross the package boundary by name. Equivalence = the ported legacy test
   vectors, which all pass unmodified.

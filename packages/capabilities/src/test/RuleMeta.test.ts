@@ -26,7 +26,7 @@ describe("Severity — RULE-019 (literal union, no 'info')", () => {
     expect(Either.isRight(decode("warning"))).toBe(true);
   });
 
-  it("rejects 'info' (ts-fix v1 has no info level)", () => {
+  it("rejects 'info' (tsnuke v1 has no info level)", () => {
     expect(Either.isLeft(decode("info"))).toBe(true);
   });
 });

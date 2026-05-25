@@ -1,8 +1,8 @@
 {
-  "name": "@ts-fix/format-effect",
+  "name": "@tsnuke/format-effect",
   "private": true,
   "version": "0.1.0",
-  "description": "Effect-TS slice for ts-fix's PURE output formatters: formatAgentReport (RULE-032 cheapest-action-first agent report), renderScoreLine/renderPretty (terminal output), and the offline explain/explainDiagnostic (--explain text). Plain pure functions over structural inputs — consumes @ts-fix/contracts-effect for the Diagnostic/RuleMeta contract. NOT Effect-wrapped (no IO).",
+  "description": "Effect-TS slice for tsnuke's PURE output formatters: formatAgentReport (RULE-032 cheapest-action-first agent report), renderScoreLine/renderPretty (terminal output), and the offline explain/explainDiagnostic (--explain text). Plain pure functions over structural inputs — consumes @tsnuke/contracts-effect for the Diagnostic/RuleMeta contract. NOT Effect-wrapped (no IO).",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ts-fix/contracts-effect": "workspace:*",
+    "@tsnuke/contracts-effect": "workspace:*",
     "effect": "^3.21.2"
   },
   "devDependencies": {

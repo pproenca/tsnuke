@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { defineRule } from "@ts-fix/rules-core-effect";
+import { defineRule } from "@tsnuke/rules-core-effect";
 
 /** Intersections beyond this many members are expensive to instantiate. */
 const MAX_INTERSECTION_MEMBERS = 5;
@@ -15,8 +15,8 @@ const MAX_INTERSECTION_MEMBERS = 5;
  * to aliases), so a 6-member intersection nested inside another construct fires.
  *
  * Ported verbatim from legacy
- * `packages/ts-fix-rules/src/rules/type-performance/no-large-intersection-type.ts`;
- * the only change is importing `defineRule` from the `@ts-fix/rules-core-effect`
+ * `packages/tsnuke-rules/src/rules/type-performance/no-large-intersection-type.ts`;
+ * the only change is importing `defineRule` from the `@tsnuke/rules-core-effect`
  * substrate rather than the legacy `../../define-rule.js`.
  */
 export const rule = defineRule(

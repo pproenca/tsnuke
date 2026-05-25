@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Diagnostic } from "@ts-fix/contracts-effect";
+import type { Diagnostic } from "@tsnuke/contracts-effect";
 import { renderPretty, renderScoreLine, type RenderScoreResult } from "../main/index.js";
 import {
   frozenRenderPretty,
@@ -11,7 +11,7 @@ import {
 function diag(over: Partial<Diagnostic> & Pick<Diagnostic, "rule">): Diagnostic {
   return {
     filePath: "/repo/src/a.ts",
-    plugin: "ts-fix",
+    plugin: "tsnuke",
     severity: "warning",
     message: `msg-${over.rule}`,
     help: `help-${over.rule}`,
@@ -100,9 +100,9 @@ describe("renderPretty", () => {
 
 describe("equivalence vs frozen legacy render", () => {
   const crafted: FrozenDiagnostic[] = [
-    { filePath: "/repo/src/z.ts", plugin: "ts-fix", rule: "z-r", severity: "error", message: "boom", help: "h", line: 12, column: 4, category: "Zeta", tier: "SYN" },
-    { filePath: "/repo/src/a.ts", plugin: "ts-fix", rule: "a-r", severity: "warning", message: "soft", help: "h", line: 2, column: 1, category: "Alpha", tier: "TYP" },
-    { filePath: "/repo/src/a2.ts", plugin: "ts-fix", rule: "a-r2", severity: "error", message: "boom2", help: "h", line: 5, column: 6, category: "Alpha", tier: "SYN" },
+    { filePath: "/repo/src/z.ts", plugin: "tsnuke", rule: "z-r", severity: "error", message: "boom", help: "h", line: 12, column: 4, category: "Zeta", tier: "SYN" },
+    { filePath: "/repo/src/a.ts", plugin: "tsnuke", rule: "a-r", severity: "warning", message: "soft", help: "h", line: 2, column: 1, category: "Alpha", tier: "TYP" },
+    { filePath: "/repo/src/a2.ts", plugin: "tsnuke", rule: "a-r2", severity: "error", message: "boom2", help: "h", line: 5, column: 6, category: "Alpha", tier: "SYN" },
   ];
   const ported = crafted as unknown as Diagnostic[];
 

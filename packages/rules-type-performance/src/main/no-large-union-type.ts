@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { defineRule } from "@ts-fix/rules-core-effect";
+import { defineRule } from "@tsnuke/rules-core-effect";
 
 /** Unions beyond this many members make the checker slow to instantiate. */
 const MAX_UNION_MEMBERS = 12;
@@ -16,8 +16,8 @@ const MAX_UNION_MEMBERS = 12;
  * `UnionTypeNode` — a union nested inside another construct is not counted.
  *
  * Ported verbatim from legacy
- * `packages/ts-fix-rules/src/rules/type-performance/no-large-union-type.ts`;
- * the only change is importing `defineRule` from the `@ts-fix/rules-core-effect`
+ * `packages/tsnuke-rules/src/rules/type-performance/no-large-union-type.ts`;
+ * the only change is importing `defineRule` from the `@tsnuke/rules-core-effect`
  * substrate rather than the legacy `../../define-rule.js`.
  */
 export const rule = defineRule(

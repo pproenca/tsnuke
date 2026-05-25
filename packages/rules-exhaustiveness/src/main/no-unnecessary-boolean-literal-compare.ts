@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { defineRule } from "@ts-fix/rules-core-effect";
+import { defineRule } from "@tsnuke/rules-core-effect";
 
 /**
  * TYP (Tier-2, type-aware) — flag a (in)equality comparison between a `boolean`

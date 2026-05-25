@@ -1,8 +1,8 @@
 # Transformation Notes — `score` → Effect-TS
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix score effect`.
-Source (READ-ONLY): `legacy/ts-fix/packages/core/src/score.ts` (+ the `Diagnostic`
-contract from `packages/ts-fix-rules/src/types.ts`). Target: `modernized/score/effect/`.
+Strangler-fig slice produced by `/code-modernization:modernize-transform tsnuke score effect`.
+Source (READ-ONLY): `legacy/tsnuke/packages/core/src/score.ts` (+ the `Diagnostic`
+contract from `packages/tsnuke-rules/src/types.ts`). Target: `modernized/score/effect/`.
 
 Implements **RULE-001** (health score), **RULE-002** (band label), **RULE-003**
 (monorepo MIN summary), **RULE-041** (frozen-determinism policy). Verified by 37
@@ -111,12 +111,12 @@ fast, per the architecture-critic caveat, Brief line 25).
    trust-boundary constructor in `Score.ts`), then `Option.getOrNull` the result.
 3. **De-vendor `Diagnostic` — DONE.** The local `src/main/Diagnostic.ts` was DELETED;
    the slice now imports the canonical `Diagnostic`/`Severity` from
-   `@ts-fix/contracts-effect` (barrel re-export) and `Scoring.ts` imports the
+   `@tsnuke/contracts-effect` (barrel re-export) and `Scoring.ts` imports the
    `Diagnostic` type from there too. The canonical Schema is field-identical (incl.
    `Schema.Int`) to the deleted copy — a proven superset — so the suite stayed green
    (37/37) with no assertion change. The narrow public surface is preserved: the barrel
    still re-exports ONLY `Diagnostic` + `Severity`. Dep
-   `@ts-fix/contracts-effect": file:../../contracts/effect` added; `vitest.config.ts`
+   `@tsnuke/contracts-effect": file:../../contracts/effect` added; `vitest.config.ts`
    inlines it.
 4. **`scorePartial` honesty (RULE-018/041):** this slice scores a single flat
    diagnostic set and is honestly partial-agnostic. The engine slice must carry the

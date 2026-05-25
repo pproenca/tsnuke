@@ -1,6 +1,6 @@
 import ts from "typescript";
-import { defineRule } from "@ts-fix/rules-core-effect";
-import type { RuleContext } from "@ts-fix/rules-core-effect";
+import { defineRule } from "@tsnuke/rules-core-effect";
+import type { RuleContext } from "@tsnuke/rules-core-effect";
 
 /**
  * SYN — type-level declaration names (class, interface, type alias, enum) should

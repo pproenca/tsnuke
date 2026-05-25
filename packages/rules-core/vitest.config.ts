@@ -9,14 +9,14 @@ export default defineConfig({
     // default. Give the TYP-driver tests headroom so a busy machine doesn't false-fail
     // a green test (the work is correct, just not fast). Production code is untouched.
     testTimeout: 30000,
-    // The `@ts-fix/contracts-effect` dependency is a `file:` link whose entry
+    // The `@tsnuke/contracts-effect` dependency is a `file:` link whose entry
     // point is a `.ts` file (`exports: "./src/main/index.ts"`). Inline it so
     // Vitest's esbuild transform compiles its TypeScript at test time instead of
     // trying to load it as a pre-built dependency (which would fail to parse the
-    // `.ts`). Same pattern the build-report slice uses for `@ts-fix/score-effect`.
+    // `.ts`). Same pattern the build-report slice uses for `@tsnuke/score-effect`.
     server: {
       deps: {
-        inline: ["@ts-fix/contracts-effect"],
+        inline: ["@tsnuke/contracts-effect"],
       },
     },
   },

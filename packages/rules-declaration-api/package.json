@@ -1,8 +1,8 @@
 {
-  "name": "@ts-fix/rules-declaration-api-effect",
+  "name": "@tsnuke/rules-declaration-api-effect",
   "private": true,
   "version": "0.1.0",
-  "description": "Effect-native rewrite of ts-fix's `declaration-api` rule category (RULE-025): 4 SYN AST predicates (explicit-member-accessibility, explicit-module-boundary-types, no-export-assignment, no-mutable-exports). Strangler-fig slice — consumes @ts-fix/rules-core-effect for the rule substrate (defineRule/runRule/Rule/RuleContext) and @ts-fix/contracts-effect for the Diagnostic/RuleMeta contracts. Plain-TS AST predicates wrapping the TS compiler API — NOT Effect-wrapped (visitors are sync).",
+  "description": "Effect-native rewrite of tsnuke's `declaration-api` rule category (RULE-025): 4 SYN AST predicates (explicit-member-accessibility, explicit-module-boundary-types, no-export-assignment, no-mutable-exports). Strangler-fig slice — consumes @tsnuke/rules-core-effect for the rule substrate (defineRule/runRule/Rule/RuleContext) and @tsnuke/contracts-effect for the Diagnostic/RuleMeta contracts. Plain-TS AST predicates wrapping the TS compiler API — NOT Effect-wrapped (visitors are sync).",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -14,8 +14,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ts-fix/contracts-effect": "workspace:*",
-    "@ts-fix/rules-core-effect": "workspace:*",
+    "@tsnuke/contracts-effect": "workspace:*",
+    "@tsnuke/rules-core-effect": "workspace:*",
     "typescript": "^5.8.0"
   },
   "devDependencies": {

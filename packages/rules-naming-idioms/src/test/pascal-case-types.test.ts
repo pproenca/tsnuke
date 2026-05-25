@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-fix/rules-core-effect";
+import { runRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/pascal-case-types.js";
 
 // Ported VERBATIM from legacy `.../naming-idioms/pascal-case-types.test.ts`.

@@ -11,11 +11,11 @@
 
 import { describe, expect, it } from "vitest";
 import { runFilterPipeline } from "../main/index.js";
-import type { DiagnosticWithTags, TsFixConfig } from "../main/index.js";
+import type { DiagnosticWithTags, TsNukeConfig } from "../main/index.js";
 import { diag } from "./helpers.js";
 
 describe("runFilterPipeline — RULE-023 (inline-disable gating)", () => {
-  const source = ["// ts-fix-disable-next-line no-magic", "const b: any = 2;"].join("\n");
+  const source = ["// tsnuke-disable-next-line no-magic", "const b: any = 2;"].join("\n");
 
   it("respectInlineDisables:false skips the inline-disable stage entirely", () => {
     const ds = [diag({ rule: "no-magic", filePath: "/x/a.ts", line: 2 })];
@@ -70,16 +70,16 @@ describe("runFilterPipeline — RULE-023 (tags stripping)", () => {
 
 describe("runFilterPipeline — RULE-023 (bare vs namespaced rule-id matching)", () => {
   it("severity 'off' matches via bare id", () => {
-    const config: TsFixConfig = { rules: { bare: "off" } };
-    expect(runFilterPipeline([diag({ plugin: "ts-fix", rule: "bare" })], config)).toHaveLength(0);
+    const config: TsNukeConfig = { rules: { bare: "off" } };
+    expect(runFilterPipeline([diag({ plugin: "tsnuke", rule: "bare" })], config)).toHaveLength(0);
   });
   it("severity 'off' matches via plugin/rule id", () => {
-    const config: TsFixConfig = { rules: { "ts-fix/ns": "off" } };
-    expect(runFilterPipeline([diag({ plugin: "ts-fix", rule: "ns" })], config)).toHaveLength(0);
+    const config: TsNukeConfig = { rules: { "tsnuke/ns": "off" } };
+    expect(runFilterPipeline([diag({ plugin: "tsnuke", rule: "ns" })], config)).toHaveLength(0);
   });
   it("ignore.rules matches via plugin/rule id", () => {
-    const config: TsFixConfig = { ignore: { rules: ["ts-fix/ig"] } };
-    expect(runFilterPipeline([diag({ plugin: "ts-fix", rule: "ig" })], config)).toHaveLength(0);
+    const config: TsNukeConfig = { ignore: { rules: ["tsnuke/ig"] } };
+    expect(runFilterPipeline([diag({ plugin: "tsnuke", rule: "ig" })], config)).toHaveLength(0);
   });
 });
 
@@ -95,7 +95,7 @@ describe("runFilterPipeline — RULE-023 (boundaries)", () => {
   });
 
   it("preserves input order among survivors", () => {
-    const config: TsFixConfig = { rules: { drop: "off" } };
+    const config: TsNukeConfig = { rules: { drop: "off" } };
     const ds = [
       diag({ rule: "a" }),
       diag({ rule: "drop" }),

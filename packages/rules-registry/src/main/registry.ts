@@ -11,9 +11,9 @@
  * registries the engine consumes — the Effect-native replacement for the codegen output.
  *
  * It owns NO rules itself: every entry is imported read-only from its owning slice. The
- * `Rule` / `GraphRule` TYPES come from `@ts-fix/rules-core-effect` (the substrate),
+ * `Rule` / `GraphRule` TYPES come from `@tsnuke/rules-core-effect` (the substrate),
  * which is the canonical home for the rule shapes; the data contracts they embed
- * (`Diagnostic` / `RuleMeta`) live transitively in `@ts-fix/contracts-effect`.
+ * (`Diagnostic` / `RuleMeta`) live transitively in `@tsnuke/contracts-effect`.
  *
  * Catalog tally (frozen invariant, asserted in `src/test/`):
  *   - `ruleRegistry`      = 86 per-file rules (SYN 64 + TYP 18 + CFG 4 strictness)
@@ -22,27 +22,27 @@
  *     registries — a duplicate id would double-count or shadow a rule).
  */
 
-import type { GraphRule, Rule } from "@ts-fix/rules-core-effect";
+import type { GraphRule, Rule } from "@tsnuke/rules-core-effect";
 
 // The 4 AST-free `strictness` CFG rules ship as rules-core's own `ruleRegistry` (the v1
 // manual seam). Alias it so its role here is unambiguous.
-import { ruleRegistry as strictnessRules } from "@ts-fix/rules-core-effect";
+import { ruleRegistry as strictnessRules } from "@tsnuke/rules-core-effect";
 
 // The per-category SYN/TYP rule slices, each exporting its own `ReadonlyArray<Rule>`.
-import { typePerformanceRules } from "@ts-fix/rules-type-performance-effect";
-import { declarationApiRules } from "@ts-fix/rules-declaration-api-effect";
-import { securityRules } from "@ts-fix/rules-security-effect";
-import { namingIdiomsRules } from "@ts-fix/rules-naming-idioms-effect";
-import { genericsRules } from "@ts-fix/rules-generics-effect";
-import { typeAssertionsRules } from "@ts-fix/rules-type-assertions-effect";
-import { asyncRules } from "@ts-fix/rules-async-effect";
-import { errorHandlingRules } from "@ts-fix/rules-error-handling-effect";
-import { typeSafetyRules } from "@ts-fix/rules-type-safety-effect";
-import { exhaustivenessRules } from "@ts-fix/rules-exhaustiveness-effect";
-import { moduleBoundariesRules } from "@ts-fix/rules-module-boundaries-effect";
+import { typePerformanceRules } from "@tsnuke/rules-type-performance-effect";
+import { declarationApiRules } from "@tsnuke/rules-declaration-api-effect";
+import { securityRules } from "@tsnuke/rules-security-effect";
+import { namingIdiomsRules } from "@tsnuke/rules-naming-idioms-effect";
+import { genericsRules } from "@tsnuke/rules-generics-effect";
+import { typeAssertionsRules } from "@tsnuke/rules-type-assertions-effect";
+import { asyncRules } from "@tsnuke/rules-async-effect";
+import { errorHandlingRules } from "@tsnuke/rules-error-handling-effect";
+import { typeSafetyRules } from "@tsnuke/rules-type-safety-effect";
+import { exhaustivenessRules } from "@tsnuke/rules-exhaustiveness-effect";
+import { moduleBoundariesRules } from "@tsnuke/rules-module-boundaries-effect";
 
 // The GRAPH-tier slice — the only source of `graphRuleRegistry` entries.
-import { graphRules } from "@ts-fix/rules-graph-effect";
+import { graphRules } from "@tsnuke/rules-graph-effect";
 
 /**
  * The per-file rule registry the engine drives once per source file: all SYN/TYP rules

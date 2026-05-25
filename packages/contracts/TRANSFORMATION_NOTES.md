@@ -1,4 +1,4 @@
-# Transformation Notes — `@ts-fix/contracts-effect` (contract consolidation)
+# Transformation Notes — `@tsnuke/contracts-effect` (contract consolidation)
 
 A **consolidation slice**, not a behavioral rewrite. It creates the single canonical
 `effect/Schema` home for the cross-cutting domain contracts that several completed
@@ -7,9 +7,9 @@ this drift as the highest-value cross-cutting follow-up; the critic confirmed th
 duplicates are clean structural supersets (no semantic conflict). This package is
 **additive** — it introduces no edits to any existing slice.
 
-Sources (READ-ONLY): `legacy/ts-fix/packages/ts-fix-rules/src/types.ts`
+Sources (READ-ONLY): `legacy/tsnuke/packages/tsnuke-rules/src/types.ts`
 (`Diagnostic`/`Severity`/`Tier`/`FixKind`/`TextEdit`/`Fix`/`Capability`/`RuleMeta`) and
-`legacy/ts-fix/packages/core/src/types.ts` (`TsFixConfig` family).
+`legacy/tsnuke/packages/core/src/types.ts` (`TsNukeConfig` family).
 Target: `modernized/contracts/effect/`.
 
 **Result:** 40/40 compatibility/superset tests pass · `tsc --noEmit` clean under
@@ -33,7 +33,7 @@ The duplication census the critic produced:
 | `Diagnostic` (all fields) | score, filter-pipeline, build-report (×3+) | canonical (`Diagnostic.ts`) |
 | `Capability` (string token) | capabilities | canonical (`RuleMeta.ts`) |
 | `RuleMeta` | capabilities (activation **subset**) + legacy (**full**) | canonical = FULL (`RuleMeta.ts`) |
-| `TsFixConfig` family | config (full) / filter-pipeline (3-field subset) / security (bare `{plugins?}`) | canonical = FULL (`Config.ts`) |
+| `TsNukeConfig` family | config (full) / filter-pipeline (3-field subset) / security (bare `{plugins?}`) | canonical = FULL (`Config.ts`) |
 
 Each canonical Schema is authored as the **FULL legacy contract**, which is a structural
 superset of every vendored copy — so any slice can de-vendor by deleting its local copy
@@ -45,16 +45,16 @@ and importing from here, with no shape change at its call sites.
 
 | Legacy type | Legacy location | Canonical Schema |
 |-------------|-----------------|------------------|
-| `Severity` | `ts-fix-rules/types.ts:13` | `Diagnostic.ts` `Severity` |
-| `Tier` | `ts-fix-rules/types.ts:22` | `Diagnostic.ts` `Tier` |
-| `FixKind` | `ts-fix-rules/types.ts:25` | `Diagnostic.ts` `FixKind` |
-| `TextEdit` | `ts-fix-rules/types.ts:28-35` | `Diagnostic.ts` `TextEdit` |
-| `Fix` | `ts-fix-rules/types.ts:38-43` | `Diagnostic.ts` `Fix` |
-| `Diagnostic` | `ts-fix-rules/types.ts:46-66` | `Diagnostic.ts` `Diagnostic` |
-| `Capability` | `ts-fix-rules/types.ts:72` | `RuleMeta.ts` `Capability` |
-| `RuleMeta` (full) | `ts-fix-rules/types.ts:98-123` | `RuleMeta.ts` `RuleMeta` |
-| `TsFixConfig` | `core/types.ts:151-164` | `Config.ts` `TsFixConfig` |
-| `TsFixConfig.failOn` literal | `core/types.ts:158` | `Config.ts` `FailOn` |
+| `Severity` | `tsnuke-rules/types.ts:13` | `Diagnostic.ts` `Severity` |
+| `Tier` | `tsnuke-rules/types.ts:22` | `Diagnostic.ts` `Tier` |
+| `FixKind` | `tsnuke-rules/types.ts:25` | `Diagnostic.ts` `FixKind` |
+| `TextEdit` | `tsnuke-rules/types.ts:28-35` | `Diagnostic.ts` `TextEdit` |
+| `Fix` | `tsnuke-rules/types.ts:38-43` | `Diagnostic.ts` `Fix` |
+| `Diagnostic` | `tsnuke-rules/types.ts:46-66` | `Diagnostic.ts` `Diagnostic` |
+| `Capability` | `tsnuke-rules/types.ts:72` | `RuleMeta.ts` `Capability` |
+| `RuleMeta` (full) | `tsnuke-rules/types.ts:98-123` | `RuleMeta.ts` `RuleMeta` |
+| `TsNukeConfig` | `core/types.ts:151-164` | `Config.ts` `TsNukeConfig` |
+| `TsNukeConfig.failOn` literal | `core/types.ts:158` | `Config.ts` `FailOn` |
 | `rules`/`categories` value literal | `core/types.ts:162-163` | `Config.ts` `ConfigSeverity` |
 | `ignore` shape | `core/types.ts:152-157` | `Config.ts` `IgnoreConfig` |
 | `ignore.overrides[]` shape | `core/types.ts:156` | `Config.ts` `IgnoreOverride` |
@@ -104,13 +104,13 @@ SUPERSET of the legacy type AND of every vendored copy, so de-vendoring is prova
      Effect's default decode ignores excess keys).
    - `RuleMeta`: the capabilities **subset** shape (no `fixKind`/`message`/`recommendation`)
      decodes valid under the FULL canonical RuleMeta.
-   - `TsFixConfig`: the empty `{}`, the FULL 6-field shape, the filter-pipeline 3-field
+   - `TsNukeConfig`: the empty `{}`, the FULL 6-field shape, the filter-pipeline 3-field
      subset, AND the security bare `{plugins?}` — all decode valid under the full config.
 2. **Rejection of out-of-contract values.** e.g. `Severity` rejects `"info"`/`"warn"`/`"off"`;
    `Tier` rejects `"LINT"`; `Diagnostic` rejects `severity:"info"`, non-int `line`, missing
    required fields; `ConfigSeverity` rejects `"warning"`; `FailOn` rejects `"warn"`.
 3. **Round-trip** `decode(encode(x)) === x` for a representative + minimal `Diagnostic`,
-   `RuleMeta`, and `TsFixConfig` (`toStrictEqual`).
+   `RuleMeta`, and `TsNukeConfig` (`toStrictEqual`).
 
 Sample values are constructed **inline** (we do NOT import the vendored packages): the
 point is to PIN the structural-superset property, so the de-vendor later is mechanical.
@@ -135,22 +135,22 @@ point is to PIN the structural-superset property, so the de-vendor later is mech
 This task is **additive only**: it creates the package and its proofs. It does **not**
 edit any existing slice (that would be the mass cross-cutting churn the brief explicitly
 defers). When each slice is next touched, replace its local copy with an import from
-`@ts-fix/contracts-effect`. The canonical version is a proven superset, so call sites
+`@tsnuke/contracts-effect`. The canonical version is a proven superset, so call sites
 do not change shape.
 
 | Slice | Local file to delete | Symbols to import from here | Notes |
 |-------|----------------------|------------------------------|-------|
 | `score` | `src/main/Diagnostic.ts` | `Diagnostic`, `Severity` (re-export the same narrow barrel it has today) | score reads only `plugin`/`rule`/`severity`; its barrel intentionally re-exports only `Diagnostic`+`Severity` — keep that public surface. |
-| `filter-pipeline` | `src/main/Diagnostic.ts` + the 3 contract types in `src/main/Config.ts` | `Diagnostic`, `Severity`, `ConfigSeverity`, `IgnoreConfig`, `IgnoreOverride`, `TsFixConfig` | KEEP `DiagnosticWithTags` locally (engine-only carry over the canonical `Diagnostic`); KEEP `normalizeConfigSeverity` (its D1 normalization logic, not a contract). filter-pipeline's `IgnoreConfig` omitted `tags`; the canonical adds it (superset) — no call-site change. |
+| `filter-pipeline` | `src/main/Diagnostic.ts` + the 3 contract types in `src/main/Config.ts` | `Diagnostic`, `Severity`, `ConfigSeverity`, `IgnoreConfig`, `IgnoreOverride`, `TsNukeConfig` | KEEP `DiagnosticWithTags` locally (engine-only carry over the canonical `Diagnostic`); KEEP `normalizeConfigSeverity` (its D1 normalization logic, not a contract). filter-pipeline's `IgnoreConfig` omitted `tags`; the canonical adds it (superset) — no call-site change. |
 | `build-report` | `src/main/Diagnostic.ts` | `Diagnostic`, `Severity` (+ whatever its barrel currently re-exports) | build-report reads only `severity`/`filePath`; carries the rest verbatim. |
 | `capabilities` | the contract types in `src/main/RuleMeta.ts` | `RuleMeta`, `Severity`, `Capability`, `Tier` | KEEP `decodeRuleMeta` re-export if convenient (also exported here). capabilities vendored the activation SUBSET; the canonical is the FULL RuleMeta (superset) — `shouldActivate`/`resolveSeverity` read only the subset fields, so no logic change. KEEP `resolveSeverity`/`shouldActivate` (predicates, not contracts). |
-| `security` | the `TsFixConfig` interface in `src/main/Config.ts` | `TsFixConfig` | security vendored the bare `{plugins?}`; the canonical full config has `plugins?` as a superset — `loadConfigPlugins` reads only `plugins`, unchanged. |
-| `config` | (none yet) | — | config slice authored the FULL `TsFixConfig` already; it can either re-export from here or stay the de-facto source. Recommend it import from here too, so there is exactly ONE canonical Schema. Lowest priority since it is already the full shape. |
+| `security` | the `TsNukeConfig` interface in `src/main/Config.ts` | `TsNukeConfig` | security vendored the bare `{plugins?}`; the canonical full config has `plugins?` as a superset — `loadConfigPlugins` reads only `plugins`, unchanged. |
+| `config` | (none yet) | — | config slice authored the FULL `TsNukeConfig` already; it can either re-export from here or stay the de-facto source. Recommend it import from here too, so there is exactly ONE canonical Schema. Lowest priority since it is already the full shape. |
 
 ### First NEW consumer: the engine slice
 The **engine** slice (next to land) is the first consumer to import from here INSTEAD of
-vendoring: `Diagnostic`, `RuleMeta`, `Capability`, `TsFixConfig` (and `Severity`/`Tier`/
-`FixKind` as needed). It should add `@ts-fix/contracts-effect` as a dependency and
+vendoring: `Diagnostic`, `RuleMeta`, `Capability`, `TsNukeConfig` (and `Severity`/`Tier`/
+`FixKind` as needed). It should add `@tsnuke/contracts-effect` as a dependency and
 import the canonical Schemas directly — no new vendored copy is created.
 
 ### Sequencing note

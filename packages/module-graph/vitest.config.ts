@@ -3,7 +3,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     include: ["src/test/**/*.test.ts"],
-    // `@ts-fix/rules-core-effect` (and, transitively, `@ts-fix/contracts-effect`)
+    // `@tsnuke/rules-core-effect` (and, transitively, `@tsnuke/contracts-effect`)
     // are `file:` links whose entry point is a `.ts` file (`exports: "./src/main/index.ts"`).
     // We only import the `ModuleGraph` TYPE from rules-core (`import type` — erased at
     // runtime under verbatimModuleSyntax), so Vitest never actually loads its JS. The
@@ -12,7 +12,7 @@ export default defineConfig({
     // compiles it at test time rather than failing to parse it as a pre-built dependency.
     server: {
       deps: {
-        inline: ["@ts-fix/rules-core-effect", "@ts-fix/contracts-effect"],
+        inline: ["@tsnuke/rules-core-effect", "@tsnuke/contracts-effect"],
       },
     },
   },

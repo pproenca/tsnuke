@@ -3,7 +3,7 @@
  *
  * THE LOAD-BEARING SECURITY INVARIANT. react-doctor auto-`require`d plugins
  * declared in a SCANNED repo's config — a CWE-94 arbitrary-code-execution path.
- * ts-fix v1 ships a first-party catalog ONLY: `loadConfigPlugins` NEVER
+ * tsnuke v1 ships a first-party catalog ONLY: `loadConfigPlugins` NEVER
  * resolves / requires / imports / executes anything. It ALWAYS returns
  * `{ plugins: [], ignored, warnings }`:
  *   - `plugins`  is always `[]`

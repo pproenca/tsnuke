@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-fix/rules-core-effect";
+import { runRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/no-eval-or-function-constructor.js";
 
 describe("no-eval-or-function-constructor (SYN)", () => {
@@ -26,7 +26,7 @@ describe("no-eval-or-function-constructor (SYN)", () => {
     expect(diags).toHaveLength(1);
     const d = diags[0]!;
     expect(d.rule).toBe("no-eval-or-function-constructor");
-    expect(d.plugin).toBe("ts-fix");
+    expect(d.plugin).toBe("tsnuke");
     expect(d.severity).toBe("error");
     expect(d.category).toBe("Security");
     expect(d.message).toBe("`new Function` / `eval` execute arbitrary code.");

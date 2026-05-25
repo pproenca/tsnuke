@@ -1,9 +1,9 @@
 # Transformation Notes — `exit-code` → Effect-TS
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix exit-code effect`.
-Source (READ-ONLY): `legacy/ts-fix/packages/ts-fix/src/exit-code.ts` (60 lines)
-(+ the `FailOn` literal from `packages/ts-fix/src/flags.ts:14` and `Severity` from
-`packages/ts-fix-rules/src/types.ts:13`). Target: `modernized/exit-code/effect/`.
+Strangler-fig slice produced by `/code-modernization:modernize-transform tsnuke exit-code effect`.
+Source (READ-ONLY): `legacy/tsnuke/packages/tsnuke/src/exit-code.ts` (60 lines)
+(+ the `FailOn` literal from `packages/tsnuke/src/flags.ts:14` and `Severity` from
+`packages/tsnuke-rules/src/types.ts:13`). Target: `modernized/exit-code/effect/`.
 
 Implements **RULE-030** (process exit-code resolution / `--fail-on` gate) and
 **RULE-031** (severity vocabulary — `error | warning`, no `info`). Verified by 25
@@ -104,7 +104,7 @@ its default from the contract instead of re-stating the string. No behavior chan
   `ReadonlyArray<{ severity: Severity }>` (`Pick<Diagnostic, "severity">` per the
   spec). Pulling in the whole `Diagnostic`/`Fix`/`TextEdit` contract would be
   unjustified surface for a one-field reader; the `score` slice owns that contract and
-  it migrates to `@ts-fix/rules` (its Follow-up #3).
+  it migrates to `@tsnuke/rules` (its Follow-up #3).
 
 ---
 
@@ -126,7 +126,7 @@ they are consumer-wiring decisions.
 
 2. **F2 — `config.failOn` is currently inert (consumer-wiring).** `config.failOn` is
    parsed and validated (RULE-024, `load-config.ts`) but the inspect path reads only
-   the CLI `--fail-on` flag, so a `failOn` set in `tsfix.config.json` never reaches
+   the CLI `--fail-on` flag, so a `failOn` set in `tsnuke.config.json` never reaches
    this resolver. **Decision for the CLI slice:** resolve the effective `failOn` as
    `cliFlag ?? config.failOn ?? DEFAULT_FAIL_ON` before calling `resolveExitCode`, then
    pass the single resolved value in. `DEFAULT_FAIL_ON` is exported (D4) to support
@@ -140,7 +140,7 @@ they are consumer-wiring decisions.
 
 4. **F4 — de-duplicate `Severity` / `FailOn` ownership.** `Severity` is vendored both
    here (`FailOn.ts:51`) and in the `score` slice (`Diagnostic.ts:21`). When the
-   `@ts-fix/rules` Effect slice lands (the `score` slice's Follow-up #3), both
+   `@tsnuke/rules` Effect slice lands (the `score` slice's Follow-up #3), both
    should import `Severity` from it. `FailOn` ownership belongs to the CLI/flags slice
    (`flags.ts:14`); when that lands, import `FailOn` from there and delete the local
    `Schema.Literal`.

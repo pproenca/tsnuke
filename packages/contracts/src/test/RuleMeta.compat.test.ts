@@ -4,7 +4,7 @@
  *
  * The capabilities slice vendors a MINIMAL RuleMeta (id/severity/category/tier +
  * the four gate fields requires?/disabledBy?/tags?/defaultEnabled?). The legacy full
- * `RuleMeta` (`ts-fix-rules/src/types.ts:98-123`) ALSO carries fixKind?/message?/
+ * `RuleMeta` (`tsnuke-rules/src/types.ts:98-123`) ALSO carries fixKind?/message?/
  * recommendation?. The canonical RuleMeta here is the FULL legacy contract.
  *
  * These tests PIN that the canonical RuleMeta accepts every shape the capabilities

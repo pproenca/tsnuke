@@ -35,8 +35,8 @@ describe("makeSeverityStage — RULE-023 Stage 2 (rules: off drops)", () => {
   });
 
   it("config.rules 'off' drops via namespaced plugin/rule id", () => {
-    const stage = makeSeverityStage({ rules: { "ts-fix/off-me": "off" } });
-    expect(stage(diag({ plugin: "ts-fix", rule: "off-me" }))).toBeNull();
+    const stage = makeSeverityStage({ rules: { "tsnuke/off-me": "off" } });
+    expect(stage(diag({ plugin: "tsnuke", rule: "off-me" }))).toBeNull();
   });
 });
 

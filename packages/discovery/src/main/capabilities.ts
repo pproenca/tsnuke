@@ -1,6 +1,6 @@
 /**
  * Capability-token computation (RULE-021: capability token earning). Source of truth
- * (READ-ONLY): `legacy/ts-fix/packages/core/src/discover-ts-project.ts:391-442`
+ * (READ-ONLY): `legacy/tsnuke/packages/core/src/discover-ts-project.ts:391-442`
  * (`moduleResolutionToken` + `computeCapabilities`).
  *
  * `computeCapabilities` turns a discovered {@link ProjectInfo} into the `Set<Capability>`
@@ -16,14 +16,14 @@
  * recorded `true` in `info.strictFlags` add a token.
  */
 
-import type { Capability } from "@ts-fix/contracts-effect";
+import type { Capability } from "@tsnuke/contracts-effect";
 import type { ProjectInfo } from "./ProjectInfo.js";
 
 /**
  * A capability token. DE-VENDORED: this slice used to alias `type Capability = string`
- * locally (matching legacy `@ts-fix/rules` `Capability = string`,
- * `packages/ts-fix-rules/src/types.ts:72`); it now re-exports the canonical
- * `Capability` from `@ts-fix/contracts-effect` (where it is `Schema.String`, whose
+ * locally (matching legacy `@tsnuke/rules` `Capability = string`,
+ * `packages/tsnuke-rules/src/types.ts:72`); it now re-exports the canonical
+ * `Capability` from `@tsnuke/contracts-effect` (where it is `Schema.String`, whose
  * `.Type` is `string` — structurally identical, an open vocabulary, not a closed union).
  * Imported as a TYPE only (this slice never decodes; `verbatimModuleSyntax` `import type`).
  */

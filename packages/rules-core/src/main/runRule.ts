@@ -1,5 +1,5 @@
 /**
- * The AST rule drivers — port of legacy `ts-fix-rules/src/test-utils.ts`.
+ * The AST rule drivers — port of legacy `tsnuke-rules/src/test-utils.ts`.
  *
  *  - {@link runRule}: Tier-1 (SYN) — parse a snippet, walk, dispatch by `SyntaxKind`.
  *  - {@link runTypeAwareRule}: Tier-2 (TYP) — build a one-file `ts.Program` (real default
@@ -14,7 +14,7 @@
 
 import { resolve } from "node:path";
 import ts from "typescript";
-import type { Diagnostic } from "@ts-fix/contracts-effect";
+import type { Diagnostic } from "@tsnuke/contracts-effect";
 import { createGraphRuleContext, createRuleContext } from "./defineRule.js";
 import type { GraphRule, Rule } from "./defineRule.js";
 import type { ModuleGraph } from "./ModuleGraph.js";

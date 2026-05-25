@@ -1,13 +1,13 @@
 # Transformation Notes — `type-performance` rule category → Effect-TS
 
 Strangler-fig slice produced by
-`/code-modernization:modernize-transform ts-fix rules-type-performance effect`.
+`/code-modernization:modernize-transform tsnuke rules-type-performance effect`.
 
-Source (READ-ONLY): `legacy/ts-fix/packages/ts-fix-rules/src/rules/type-performance/`
+Source (READ-ONLY): `legacy/tsnuke/packages/tsnuke-rules/src/rules/type-performance/`
 (+ the `Diagnostic`/`RuleMeta` contracts and the `defineRule`/`runRule` substrate, now
-owned by `@ts-fix/contracts-effect` and `@ts-fix/rules-core-effect` respectively).
+owned by `@tsnuke/contracts-effect` and `@tsnuke/rules-core-effect` respectively).
 Target: `modernized/rules-type-performance/effect/` (package
-`@ts-fix/rules-type-performance-effect`).
+`@tsnuke/rules-type-performance-effect`).
 
 Implements **RULE-008** (large union > 12 members), **RULE-009** (large intersection
 > 5 members), **RULE-010** (large object-literal type alias > 12 members → prefer an
@@ -27,7 +27,7 @@ Implements **RULE-008** (large union > 12 members), **RULE-009** (large intersec
 | `no-large-intersection-type` | RULE-009 (intersection > 5) | `…/type-performance/no-large-intersection-type.ts` | `src/main/no-large-intersection-type.ts` |
 | `prefer-interface-for-large-object-type` | RULE-010 (object alias > 12) | `…/type-performance/prefer-interface-for-large-object-type.ts` | `src/main/prefer-interface-for-large-object-type.ts` |
 | category barrel + `typePerformanceRules` registry | — (v1 manual codegen seam) | (codegen would fold into the global registry) | `src/main/index.ts` |
-| `runRule` test driver | legacy `ts-fix-rules/src/test-utils.ts` | imported from `@ts-fix/rules-core-effect` (not vendored) | `src/test/*.test.ts` |
+| `runRule` test driver | legacy `tsnuke-rules/src/test-utils.ts` | imported from `@tsnuke/rules-core-effect` (not vendored) | `src/test/*.test.ts` |
 | legacy `*.test.ts` vectors | the behavioral spec | `…/type-performance/*.test.ts` | ported into `src/test/*.test.ts` |
 
 Each predicate was ported **VERBATIM** — same threshold constants
@@ -48,16 +48,16 @@ are structural / dependency-routing:
 
 ### D1 — Import the substrate, do NOT re-vendor it
 - `defineRule` (and the `Rule` / `RuleContext` types) are imported from
-  `@ts-fix/rules-core-effect` instead of the legacy relative `../../define-rule.js`.
+  `@tsnuke/rules-core-effect` instead of the legacy relative `../../define-rule.js`.
 - `runRule` (the SYN AST driver, legacy `test-utils.ts`) is imported from
-  `@ts-fix/rules-core-effect` in the tests — the engine drives these rules through the
+  `@tsnuke/rules-core-effect` in the tests — the engine drives these rules through the
   *same* walk/dispatch, so the tests exercise the real production driver, not a copy.
-- `Diagnostic` / `RuleMeta` come from `@ts-fix/contracts-effect` transitively (rules
+- `Diagnostic` / `RuleMeta` come from `@tsnuke/contracts-effect` transitively (rules
   never name them directly here; they flow through `defineRule`/`ctx.report`). This slice
   does not re-vendor any contract or substrate symbol.
 
 ### D2 — Two `file:` deps + double inline (consumption pattern)
-`package.json` adds `@ts-fix/rules-core-effect` **and** `@ts-fix/contracts-effect`
+`package.json` adds `@tsnuke/rules-core-effect` **and** `@tsnuke/contracts-effect`
 as `file:` deps, plus `typescript` as a real **dependency** (not devDependency): the rules
 call `ts.SyntaxKind` / `ts.is*` / `getLineAndCharacterOfPosition` at **runtime**, so the
 compiler API is a production dependency, not a build-only tool. `vitest.config.ts` inlines

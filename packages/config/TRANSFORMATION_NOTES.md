@@ -1,11 +1,11 @@
 # Transformation Notes — `config` (sanitization + FS loader) → Effect-TS
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix config effect`.
-Source (READ-ONLY): `legacy/ts-fix/packages/core/src/load-config.ts:22-196` — the
+Strangler-fig slice produced by `/code-modernization:modernize-transform tsnuke config effect`.
+Source (READ-ONLY): `legacy/tsnuke/packages/core/src/load-config.ts:22-196` — the
 PURE `sanitizeConfig` + helpers (`:22-154`) AND the effectful loader
 `tryParseJson`/`loadConfig`/`loadConfigWithWarnings` (`:156-196`) — plus the
-`TsFixConfig` type (`packages/core/src/types.ts:151-164`). Target:
-`modernized/config/effect/` (package `@ts-fix/config-effect`).
+`TsNukeConfig` type (`packages/core/src/types.ts:151-164`). Target:
+`modernized/config/effect/` (package `@tsnuke/config-effect`).
 
 Implements **RULE-024** (lenient config loading, drop-not-throw) **END-TO-END** over
 the **RULE-040** severity-vocabulary contract, with **RULE-039** (`plugins`
@@ -35,7 +35,7 @@ against an OS temp dir (added in review).
 
 | Behavior | Legacy `load-config.ts` | Target |
 |----------|-------------------------|--------|
-| `TsFixConfig` contract (RULE-040 vocab) | `types.ts:151-164` (`interface`) | `src/main/Config.ts` (`effect/Schema`: `TsFixConfig`, `IgnoreConfig`, `IgnoreOverride`) |
+| `TsNukeConfig` contract (RULE-040 vocab) | `types.ts:151-164` (`interface`) | `src/main/Config.ts` (`effect/Schema`: `TsNukeConfig`, `IgnoreConfig`, `IgnoreOverride`) |
 | Config severity vocab `error`/`warn`/`off` (RULE-040) | `:30` `SEVERITY_WORDS` | `src/main/Config.ts:36` `ConfigSeverity` (`Schema.Literal`) |
 | `failOn` engine vocab `error`/`warning`/`none` (RULE-040 quirk) | `:120-122` inline `===` | `src/main/Config.ts:46` `FailOn` (`Schema.Literal`) |
 | `isObject` guard | `:22-24` | `src/main/sanitize.ts` `isObject` (kept hand-rolled — see D2) |
@@ -53,8 +53,8 @@ against an OS temp dir (added in review).
 | production fs wiring | (ambient `node:fs`/`node:path`) | `NodeContext = Layer.merge(NodeFileSystem.layer, NodePath.layer)` + `loadConfig{,WithWarnings}Node` runnable helpers |
 
 The legacy `sanitizeConfig`/`loadConfigWithWarnings` returned
-`{ config: TsFixConfig; warnings: string[] }`; the target returns
-`{ config: TsFixConfig; warnings: ReadonlyArray<string> }` (`SanitizeResult`).
+`{ config: TsNukeConfig; warnings: string[] }`; the target returns
+`{ config: TsNukeConfig; warnings: ReadonlyArray<string> }` (`SanitizeResult`).
 
 ---
 
@@ -103,17 +103,17 @@ oracle passes.
 
 ### D4 — `sanitizeConfig` stays a PURE synchronous function (NOT `Effect`-wrapped)
 Deliberate, matching the established pure-slice pattern (`score`, `filter-pipeline`):
-the Effect ecosystem appears in the **contract** (`Schema`, `TsFixConfig`) and the
+the Effect ecosystem appears in the **contract** (`Schema`, `TsNukeConfig`) and the
 **decode helpers**, not by wrapping the validation in a fiber. `sanitizeConfig` does
 no I/O, so there is no effect to model — wrapping it would buy nothing.
 
-### D5 — `TsFixConfig` is the FULL legacy contract (Schema), superseding the vendored subset
+### D5 — `TsNukeConfig` is the FULL legacy contract (Schema), superseding the vendored subset
 `Config.ts` models all six legacy fields (`ignore`/`failOn`/`customRulesOnly`/
 `plugins`/`rules`/`categories`). The `filter-pipeline` slice vendored a 3-field
 subset (`Config.ts` there: `ignore`/`rules`/`categories`). This slice is the
 intended owner of the full contract; the filter-pipeline subset should de-vendor
 onto it (Follow-up #2). Naming is kept consistent with that slice (`ConfigSeverity`,
-`TsFixConfig`, `IgnoreConfig`, `IgnoreOverride`) to make the de-vendor mechanical.
+`TsNukeConfig`, `IgnoreConfig`, `IgnoreOverride`) to make the de-vendor mechanical.
 
 ---
 
@@ -121,7 +121,7 @@ onto it (Follow-up #2). Naming is kept consistent with that slice (`ConfigSeveri
 
 Legacy `loadConfig` / `loadConfigWithWarnings` / `tryParseJson`
 (`load-config.ts:156-196`) read from disk (`existsSync` + `readFileSync` +
-`JSON.parse`, trying `tsfix.config.json` then `package.json#tsFix`). The pure
+`JSON.parse`, trying `tsnuke.config.json` then `package.json#tsNuke`). The pure
 slice (previous pass) deferred this; **it is now implemented** in
 `src/main/loadConfig.ts` and completes RULE-024 end-to-end. This is the FIRST slice
 that returns an `Effect<...>` rather than a plain value — `score`, `filter-pipeline`,
@@ -182,7 +182,7 @@ The loader is wired to a concrete filesystem ONLY at the edge, via a `Layer`:
 
 ### 3.4 What is verified
 16 characterization cases (config-present valid/malformed/unparseable/non-object;
-package.json fallback present/absent/non-object/unparseable/malformed-tsFix; neither
+package.json fallback present/absent/non-object/unparseable/malformed-tsNuke; neither
 present; config.json-over-package.json precedence incl. unparseable-still-wins;
 `loadConfig` config-only projection; `PlatformError`→fallback for both `exists` and
 `readFileString`) + a 16-fixture **differential equivalence proof**: a frozen vendored
@@ -213,12 +213,12 @@ preserved verbatim.
    reuse `NodeContext` itself) for their own file reads rather than re-introducing
    `node:fs`/`node:path`.
 
-2. **De-vendor `TsFixConfig` (D5).** The `filter-pipeline` Effect slice
+2. **De-vendor `TsNukeConfig` (D5).** The `filter-pipeline` Effect slice
    (`modernized/filter-pipeline/effect/src/main/Config.ts`) vendored a 3-field
    subset and its own TRANSFORMATION_NOTES Follow-up #2 says to de-vendor onto the
    core config slice. When both slices share a workspace, delete that subset and
-   import `TsFixConfig` / `ConfigSeverity` / `IgnoreConfig` / `IgnoreOverride`
-   from `@ts-fix/config-effect`. (Naming is already aligned to make this
+   import `TsNukeConfig` / `ConfigSeverity` / `IgnoreConfig` / `IgnoreOverride`
+   from `@tsnuke/config-effect`. (Naming is already aligned to make this
    mechanical.) Note: the filter-pipeline subset omits `ignore.tags`; the full
    contract here includes it, so the de-vendor is a superset — safe.
 
@@ -297,12 +297,12 @@ warning messages/order.
   "byte-for-byte" claim is qualified.
 
 **Recorded (cross-cutting consolidation — the highest-value follow-up):**
-- **Contract drift across slices (MEDIUM).** `TsFixConfig` now exists in 3 forms
+- **Contract drift across slices (MEDIUM).** `TsNukeConfig` now exists in 3 forms
   (this full Schema; the `filter-pipeline` 3-field subset; a bare `{plugins?}` interface
   in `security`), plus `Severity` (×5) and `Diagnostic`/`Tier`/`FixKind` (×3) copies.
   The critic confirmed they are clean structural supersets (no semantic conflict), so
   de-vendoring is mechanical — but the copy count is growing. **Recommendation:** land a
-  shared `@ts-fix/contracts-effect` package (or designate `config-effect` +
+  shared `@tsnuke/contracts-effect` package (or designate `config-effect` +
   `score-effect` as canonical homes) and have future slices import rather than vendor,
   before more copies accrue. Tracked in Follow-up #2.
 

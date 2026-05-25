@@ -1,8 +1,8 @@
 {
-  "name": "@ts-fix/engine-plan-effect",
+  "name": "@tsnuke/engine-plan-effect",
   "private": true,
   "version": "0.1.0",
-  "description": "Effect-native rewrite of ts-fix's PURE two-tier engine planner (RULE-018 — the partial-honesty contract, P0). Strangler-fig slice — consumes @ts-fix/capabilities-effect for shouldActivate/resolveSeverity (RULE-019/020) and the RuleMeta/Severity/Capability/Tier contract. Plain synchronous pure planner; Effect ecosystem in the contract/types only.",
+  "description": "Effect-native rewrite of tsnuke's PURE two-tier engine planner (RULE-018 — the partial-honesty contract, P0). Strangler-fig slice — consumes @tsnuke/capabilities-effect for shouldActivate/resolveSeverity (RULE-019/020) and the RuleMeta/Severity/Capability/Tier contract. Plain synchronous pure planner; Effect ecosystem in the contract/types only.",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ts-fix/capabilities-effect": "workspace:*",
+    "@tsnuke/capabilities-effect": "workspace:*",
     "effect": "^3.21.2"
   },
   "devDependencies": {

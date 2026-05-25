@@ -77,13 +77,13 @@ const runLoad = (
 // POSIX join semantics (the test platform). `dir` is chosen so joined paths are
 // stable keys for the in-memory map.
 const DIR = "/proj";
-const CONFIG_PATH = "/proj/tsfix.config.json";
+const CONFIG_PATH = "/proj/tsnuke.config.json";
 const PKG_PATH = "/proj/package.json";
 
 // ===========================================================================
-// 1. tsfix.config.json present
+// 1. tsnuke.config.json present
 // ===========================================================================
-describe("loadConfigWithWarnings — tsfix.config.json", () => {
+describe("loadConfigWithWarnings — tsnuke.config.json", () => {
   it("valid config.json → sanitized, no warnings", async () => {
     const result = await runLoad(DIR, {
       [CONFIG_PATH]: JSON.stringify({ failOn: "error", customRulesOnly: true }),
@@ -131,12 +131,12 @@ describe("loadConfigWithWarnings — tsfix.config.json", () => {
 // ===========================================================================
 // 2. package.json fallback (only when config.json is absent)
 // ===========================================================================
-describe("loadConfigWithWarnings — package.json#tsFix fallback", () => {
-  it("package.json with tsFix present → sanitized", async () => {
+describe("loadConfigWithWarnings — package.json#tsNuke fallback", () => {
+  it("package.json with tsNuke present → sanitized", async () => {
     const result = await runLoad(DIR, {
       [PKG_PATH]: JSON.stringify({
         name: "x",
-        tsFix: { failOn: "warning", rules: { "no-any": "error" } },
+        tsNuke: { failOn: "warning", rules: { "no-any": "error" } },
       }),
     });
     expect(result).toEqual({
@@ -145,7 +145,7 @@ describe("loadConfigWithWarnings — package.json#tsFix fallback", () => {
     });
   });
 
-  it("package.json WITHOUT a tsFix key → empty config, no warnings (falls through)", async () => {
+  it("package.json WITHOUT a tsNuke key → empty config, no warnings (falls through)", async () => {
     const result = await runLoad(DIR, {
       [PKG_PATH]: JSON.stringify({ name: "x", version: "1.0.0" }),
     });
@@ -166,9 +166,9 @@ describe("loadConfigWithWarnings — package.json#tsFix fallback", () => {
     expect(result).toEqual({ config: {}, warnings: [] });
   });
 
-  it("package.json#tsFix that is malformed → sanitizeConfig drops fields with warnings", async () => {
+  it("package.json#tsNuke that is malformed → sanitizeConfig drops fields with warnings", async () => {
     const result = await runLoad(DIR, {
-      [PKG_PATH]: JSON.stringify({ tsFix: { plugins: "not-an-array" } }),
+      [PKG_PATH]: JSON.stringify({ tsNuke: { plugins: "not-an-array" } }),
     });
     expect(result).toEqual({
       config: {},
@@ -194,7 +194,7 @@ describe("loadConfigWithWarnings — precedence", () => {
   it("config.json takes precedence over package.json (package.json NOT read)", async () => {
     const result = await runLoad(DIR, {
       [CONFIG_PATH]: JSON.stringify({ failOn: "none" }),
-      [PKG_PATH]: JSON.stringify({ tsFix: { failOn: "error" } }),
+      [PKG_PATH]: JSON.stringify({ tsNuke: { failOn: "error" } }),
     });
     expect(result).toEqual({ config: { failOn: "none" }, warnings: [] });
   });
@@ -202,7 +202,7 @@ describe("loadConfigWithWarnings — precedence", () => {
   it("unparseable config.json wins (its warning, NOT the package.json fallback)", async () => {
     const result = await runLoad(DIR, {
       [CONFIG_PATH]: "{ broken",
-      [PKG_PATH]: JSON.stringify({ tsFix: { failOn: "error" } }),
+      [PKG_PATH]: JSON.stringify({ tsNuke: { failOn: "error" } }),
     });
     expect(result).toEqual({
       config: {},
@@ -340,7 +340,7 @@ const legacyOracle = (
     typeof v === "object" && v !== null && !Array.isArray(v);
 
   // --- verbatim legacy loadConfigWithWarnings (load-config.ts:174-196) ---
-  const configPath = posixJoin(dir, "tsfix.config.json");
+  const configPath = posixJoin(dir, "tsnuke.config.json");
   if (existsSync(configPath)) {
     const raw = tryParseJson(configPath);
     if (raw === undefined) {
@@ -355,8 +355,8 @@ const legacyOracle = (
   const pkgPath = posixJoin(dir, "package.json");
   if (existsSync(pkgPath)) {
     const pkg = tryParseJson(pkgPath);
-    if (isObject(pkg) && pkg["tsFix"] !== undefined) {
-      return sanitizeConfig(pkg["tsFix"]);
+    if (isObject(pkg) && pkg["tsNuke"] !== undefined) {
+      return sanitizeConfig(pkg["tsNuke"]);
     }
   }
 
@@ -402,19 +402,19 @@ describe("EQUIVALENCE — modern loader (stub FS) deep-equals frozen legacy orac
       files: { [CONFIG_PATH]: JSON.stringify("hello") },
     },
     {
-      name: "package.json with tsFix",
+      name: "package.json with tsNuke",
       files: {
-        [PKG_PATH]: JSON.stringify({ name: "x", tsFix: { failOn: "warning" } }),
+        [PKG_PATH]: JSON.stringify({ name: "x", tsNuke: { failOn: "warning" } }),
       },
     },
     {
-      name: "package.json with malformed tsFix",
+      name: "package.json with malformed tsNuke",
       files: {
-        [PKG_PATH]: JSON.stringify({ tsFix: { plugins: 1, rules: { x: "bad" } } }),
+        [PKG_PATH]: JSON.stringify({ tsNuke: { plugins: 1, rules: { x: "bad" } } }),
       },
     },
     {
-      name: "package.json without tsFix",
+      name: "package.json without tsNuke",
       files: { [PKG_PATH]: JSON.stringify({ name: "x" }) },
     },
     {
@@ -426,28 +426,28 @@ describe("EQUIVALENCE — modern loader (stub FS) deep-equals frozen legacy orac
       files: { [PKG_PATH]: "{ broken" },
     },
     {
-      name: "package.json#tsFix explicitly null (key present, value null)",
-      files: { [PKG_PATH]: JSON.stringify({ tsFix: null }) },
+      name: "package.json#tsNuke explicitly null (key present, value null)",
+      files: { [PKG_PATH]: JSON.stringify({ tsNuke: null }) },
     },
     {
       name: "BOTH present — config.json wins",
       files: {
         [CONFIG_PATH]: JSON.stringify({ failOn: "none" }),
-        [PKG_PATH]: JSON.stringify({ tsFix: { failOn: "error" } }),
+        [PKG_PATH]: JSON.stringify({ tsNuke: { failOn: "error" } }),
       },
     },
     {
       name: "BOTH present, config.json unparseable — config.json STILL wins (warning, no fallback)",
       files: {
         [CONFIG_PATH]: "broken",
-        [PKG_PATH]: JSON.stringify({ tsFix: { failOn: "error" } }),
+        [PKG_PATH]: JSON.stringify({ tsNuke: { failOn: "error" } }),
       },
     },
     {
       name: "BOTH present, config.json non-object — config.json branch taken (no pkg fallback)",
       files: {
         [CONFIG_PATH]: JSON.stringify([1]),
-        [PKG_PATH]: JSON.stringify({ tsFix: { failOn: "error" } }),
+        [PKG_PATH]: JSON.stringify({ tsNuke: { failOn: "error" } }),
       },
     },
   ];
@@ -456,7 +456,7 @@ describe("EQUIVALENCE — modern loader (stub FS) deep-equals frozen legacy orac
   // probes via the real `Path.join` (else both sides could agree on a WRONG key and the
   // parity assertions would pass vacuously). Pins the oracle's path math (architecture review).
   it("posixJoin reproduces the loader's probed paths (oracle path-math guard)", () => {
-    expect(posixJoin(DIR, "tsfix.config.json")).toBe(CONFIG_PATH);
+    expect(posixJoin(DIR, "tsnuke.config.json")).toBe(CONFIG_PATH);
     expect(posixJoin(DIR, "package.json")).toBe(PKG_PATH);
   });
 
@@ -475,11 +475,11 @@ describe("PRODUCTION Layer — loadConfigWithWarningsNode reads a REAL temp dir 
   // (NodeFileSystem + NodePath layers) actually reads disk and never rejects — the
   // template every later effectful slice copies (architecture review HIGH). Uses an
   // OS temp dir (never the repo) and cleans up in `finally`.
-  it("reads + sanitizes a real tsfix.config.json", async () => {
-    const dir = mkdtempSync(nodeJoin(tmpdir(), "tsfix-cfg-"));
+  it("reads + sanitizes a real tsnuke.config.json", async () => {
+    const dir = mkdtempSync(nodeJoin(tmpdir(), "tsnuke-cfg-"));
     try {
       writeFileSync(
-        nodeJoin(dir, "tsfix.config.json"),
+        nodeJoin(dir, "tsnuke.config.json"),
         JSON.stringify({ failOn: "warning", rules: { "no-any": "off" } }),
       );
       const result = await loadConfigWithWarningsNode(dir);
@@ -492,7 +492,7 @@ describe("PRODUCTION Layer — loadConfigWithWarningsNode reads a REAL temp dir 
   });
 
   it("returns empty and NEVER rejects for a dir with no config", async () => {
-    const dir = mkdtempSync(nodeJoin(tmpdir(), "tsfix-cfg-"));
+    const dir = mkdtempSync(nodeJoin(tmpdir(), "tsnuke-cfg-"));
     try {
       const result = await loadConfigWithWarningsNode(dir);
       expect(result).toStrictEqual({ config: {}, warnings: [] });

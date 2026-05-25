@@ -2,7 +2,7 @@
  * Versioned JSON report builder (RULE-004 summary rollup, RULE-034 schema & ok).
  *
  * THE STRANGLER-FIG POINT: this module CONSUMES the already-completed `score`
- * slice (`@ts-fix/score-effect`) for the monorepo MIN score (RULE-003) and the
+ * slice (`@tsnuke/score-effect`) for the monorepo MIN score (RULE-003) and the
  * band label (RULE-002) — it does not re-derive them. A legacy `number | null`
  * per-project score is bridged into the score slice's `Option<Score>` API at the
  * trust boundary via `Option.fromNullable(n).pipe(Option.flatMap(decodeScore))`.
@@ -25,8 +25,8 @@ import {
   scoreLabel,
   summarizeMonorepoScore,
   type Score,
-} from "@ts-fix/score-effect";
-import type { Diagnostic } from "@ts-fix/contracts-effect";
+} from "@tsnuke/score-effect";
+import type { Diagnostic } from "@tsnuke/contracts-effect";
 import {
   JSON_REPORT_SCHEMA_VERSION,
   type JsonReportDiffInfo,

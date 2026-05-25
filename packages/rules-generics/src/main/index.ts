@@ -1,8 +1,8 @@
 /**
- * `@ts-fix/rules-generics-effect` — the `generics` ("Generics & Type-Level
+ * `@tsnuke/rules-generics-effect` — the `generics` ("Generics & Type-Level
  * Complexity") rule category: 4 SYN + 1 TYP.
  *
- * Five predicates that plug into the `@ts-fix/rules-core-effect` substrate
+ * Five predicates that plug into the `@tsnuke/rules-core-effect` substrate
  * (`defineRule` + the per-file `SyntaxKind → visitor` shape). The engine drives the
  * SYN rules via the SAME walk/dispatch as `runRule`, and the single TYP rule via the
  * checker-carrying `runTypeAwareRule` path:
@@ -17,14 +17,14 @@
  *     `any` parameter that flows to an `any` return; uses `ctx.checker`.
  *
  * The substrate (`defineRule`/`runRule`/`runTypeAwareRule`/`Rule`/`RuleContext`) is
- * imported from `@ts-fix/rules-core-effect`; the data contracts
- * (`Diagnostic`/`RuleMeta`) live in `@ts-fix/contracts-effect`. This slice does NOT
+ * imported from `@tsnuke/rules-core-effect`; the data contracts
+ * (`Diagnostic`/`RuleMeta`) live in `@tsnuke/contracts-effect`. This slice does NOT
  * re-export either's symbols (barrel hygiene — it publishes only what it owns: the five
  * rules + the category registry). See TRANSFORMATION_NOTES.md for the legacy → target
  * mapping.
  */
 
-import type { Rule } from "@ts-fix/rules-core-effect";
+import type { Rule } from "@tsnuke/rules-core-effect";
 
 import { rule as genericNameConvention } from "./generic-name-convention.js";
 import { rule as genericParamCountBudget } from "./generic-param-count-budget.js";
@@ -55,6 +55,6 @@ export const genericsRules: ReadonlyArray<Rule> = [
   preferGenericOverAnyPassthrough,
 ];
 
-// Self-barrel: `import { RulesGenerics } from "@ts-fix/rules-generics-effect"`
+// Self-barrel: `import { RulesGenerics } from "@tsnuke/rules-generics-effect"`
 // resolves to this module's namespace (additive — the named exports above stay stable).
 export * as RulesGenerics from ".";

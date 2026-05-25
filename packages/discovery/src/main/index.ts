@@ -1,5 +1,5 @@
 /**
- * `@ts-fix/discovery-effect` — public surface of the Effect-TS discovery slice.
+ * `@tsnuke/discovery-effect` — public surface of the Effect-TS discovery slice.
  *
  * The biggest core module, modernized: FileSystem-based project discovery + capability
  * earning over the `@effect/platform` `FileSystem` + `Path` services, with typed errors
@@ -7,7 +7,7 @@
  *   - RULE-012 (source-file discovery caps): `countSourceFiles` (5000) / `collectSourceFiles`
  *     (10000) — EFFECTFUL fs walks over `FileSystem` (error channel `never`).
  *   - RULE-022 (project discovery validity): `discoverTsProject` — EFFECTFUL, fails with
- *     `TsconfigNotFoundError` / `NoTypeScriptProjectError` (from `@ts-fix/errors-effect`)
+ *     `TsconfigNotFoundError` / `NoTypeScriptProjectError` (from `@tsnuke/errors-effect`)
  *     on the error channel; broken `package.json` is non-fatal.
  *   - RULE-021 (capability token earning): `computeCapabilities` — a PURE synchronous
  *     derivation over `ProjectInfo` (NOT Effect-wrapped).
@@ -43,7 +43,7 @@ export {
 
 /**
  * Self-barrel: re-export this module's flat surface as a `Discovery` namespace, so
- * consumers can `import { Discovery } from "@ts-fix/discovery-effect"` and reach
+ * consumers can `import { Discovery } from "@tsnuke/discovery-effect"` and reach
  * `Discovery.discoverTsProject` / `Discovery.computeCapabilities` / etc. (self-barrel
  * module shape). The named re-exports above stay byte-stable — this is purely additive.
  */

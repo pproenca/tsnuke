@@ -14,7 +14,7 @@
  *
  * SHORT-CIRCUIT ORDER IS LOAD-BEARING (RULE-019). The five gates are evaluated in a
  * FIXED order, each able to short-circuit to `false`. The order is preserved exactly
- * from legacy (`packages/ts-fix-rules/src/capabilities.ts:23-57`):
+ * from legacy (`packages/tsnuke-rules/src/capabilities.ts:23-57`):
  *   1. `explicit === "off"`                              → false (off wins outright)
  *   2. every `requires` token ∈ `caps`, else            → false (AND-gate)
  *   3. any `disabledBy` token ∈ `caps`                   → false (inverted gating, RULE-020)

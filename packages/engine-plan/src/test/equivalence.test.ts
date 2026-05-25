@@ -24,7 +24,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { shouldActivate } from "@ts-fix/capabilities-effect";
+import { shouldActivate } from "@tsnuke/capabilities-effect";
 import { planEngineRun } from "../main/index.js";
 import type {
   ActivatePredicate,
@@ -38,7 +38,7 @@ import type {
 type Tier = RuleMeta["tier"];
 
 // ===========================================================================
-// ORACLE — frozen copy of legacy/ts-fix/packages/core/src/engine-plan.ts.
+// ORACLE — frozen copy of legacy/tsnuke/packages/core/src/engine-plan.ts.
 // planEngineRun (:82-141) + its PRIVATE resolveSeverity (:59-65) + the two
 // constants (:20-29). For differential testing ONLY — do not refactor or "fix" it.
 // ===========================================================================

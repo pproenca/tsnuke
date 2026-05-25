@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-fix/rules-core-effect";
+import { runRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/no-unnecessary-type-constraint.js";
 
 describe("SYN rule — no-unnecessary-type-constraint", () => {
@@ -39,7 +39,7 @@ describe("SYN rule — no-unnecessary-type-constraint", () => {
     expect(d.tier).toBe("SYN");
     expect(d.severity).toBe("warning");
     expect(d.category).toBe("Generics & Type-Level Complexity");
-    expect(d.plugin).toBe("ts-fix");
+    expect(d.plugin).toBe("tsnuke");
     expect(d.message).toBe(
       "Unnecessary type constraint: `extends any` is a no-op.",
     );

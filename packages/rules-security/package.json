@@ -1,8 +1,8 @@
 {
-  "name": "@ts-fix/rules-security-effect",
+  "name": "@tsnuke/rules-security-effect",
   "private": true,
   "version": "0.1.0",
-  "description": "Effect-native rewrite of ts-fix's `security` rule category (RULE-025): 5 SYN AST/regex predicates (no-eval-or-function-constructor, no-implied-eval, no-insecure-url, no-new-buffer, no-secrets-in-source). Vendor-anchored regex scanning only (AWS/GitHub/Stripe key shapes, no entropy heuristic). Strangler-fig slice — consumes @ts-fix/rules-core-effect for the rule substrate (defineRule/runRule/Rule/RuleContext) and @ts-fix/contracts-effect for the Diagnostic/RuleMeta contracts. Plain-TS AST/regex predicates wrapping the TS compiler API — NOT Effect-wrapped (visitors are sync).",
+  "description": "Effect-native rewrite of tsnuke's `security` rule category (RULE-025): 5 SYN AST/regex predicates (no-eval-or-function-constructor, no-implied-eval, no-insecure-url, no-new-buffer, no-secrets-in-source). Vendor-anchored regex scanning only (AWS/GitHub/Stripe key shapes, no entropy heuristic). Strangler-fig slice — consumes @tsnuke/rules-core-effect for the rule substrate (defineRule/runRule/Rule/RuleContext) and @tsnuke/contracts-effect for the Diagnostic/RuleMeta contracts. Plain-TS AST/regex predicates wrapping the TS compiler API — NOT Effect-wrapped (visitors are sync).",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -14,8 +14,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ts-fix/contracts-effect": "workspace:*",
-    "@ts-fix/rules-core-effect": "workspace:*",
+    "@tsnuke/contracts-effect": "workspace:*",
+    "@tsnuke/rules-core-effect": "workspace:*",
     "typescript": "^5.8.0"
   },
   "devDependencies": {

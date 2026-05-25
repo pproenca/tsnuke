@@ -1,15 +1,15 @@
 # Transformation Notes — `cli` → `@effect/cli` (RE-IMAGINED)
 
-Adapter slice produced by `/code-modernization:modernize-transform ts-fix cli effect`.
-Sources (READ-ONLY): `legacy/ts-fix/packages/ts-fix/src/`
+Adapter slice produced by `/code-modernization:modernize-transform tsnuke cli effect`.
+Sources (READ-ONLY): `legacy/tsnuke/packages/tsnuke/src/`
 - `flags.ts` (323) — `parseInspectFlags`, `validateModeFlags` (RULE-028), `parseFileLine`
 - `commands/inspect.ts` (184) — `runInspect`, `buildJsonReport`, `findDiagnosticAt`, `InspectIo`
 - `cli.ts` (87) — the process edge (SIGINT/SIGTERM → 130, EPIPE → 0, uncaught → 1)
 - `commands/install.ts` (162) — `runInstall` (RULE-038 inert stubs)
 
-Target: `modernized/cli/effect/` (`ts-fix`). This is the user-facing
+Target: `modernized/cli/effect/` (`tsnuke`). This is the user-facing
 entry — it wires the finished engine + output + fix + exit-code slices into the
-`ts-fix` command on **`@effect/cli`**.
+`tsnuke` command on **`@effect/cli`**.
 
 **This is a RE-IMAGINING, not a verbatim port.** The hand-rolled argv `switch`
 (`parseInspectFlags`, CCN 64) and the `validateModeFlags` gate are REPLACED by
@@ -46,7 +46,7 @@ and vitest-inline cleanly.
 | `inspect.ts` `InspectIo` seam | testable IO | `inspectHandler.ts:38-62` (`InspectIo`: stdout/stderr + injectable `diagnose`/`applyFixes` + `ruleCatalog`) |
 | `cli.ts` SIGINT/SIGTERM → 130 | process edge | `bin.ts:28-34` (explicit handlers; pins exact codes) |
 | `cli.ts` stdout EPIPE → 0 | process edge | `bin.ts:36-38` |
-| `cli.ts` uncaught → 1 + `ts-fix: <msg>` | process edge | `bin.ts:48-72` (`Effect.catchAllCause`, terse message, `disableErrorReporting`) |
+| `cli.ts` uncaught → 1 + `tsnuke: <msg>` | process edge | `bin.ts:48-72` (`Effect.catchAllCause`, terse message, `disableErrorReporting`) |
 | `cli.ts` install-vs-inspect dispatch | command routing | `cli.ts:21` (`Command.withSubcommands` — POSIX dispatcher) |
 | `cli.ts` `process.argv.slice(2)` | argv prep | **GONE** — `@effect/cli` strips the node/script prefix |
 | `install.ts` `runInstall` | RULE-038 install | `installHandler.ts:128-147` (over `@effect/platform` FileSystem) |
@@ -102,7 +102,7 @@ predicate AND the `ValidationError` path).
    `stdout`/`stderr` as distinct members so a future split is a one-line change.)
 5. **Terse error message preserved via `catchAllCause` + `disableErrorReporting`.**
    Effect's default is a pretty cause dump; `bin.ts` suppresses it and emits the legacy
-   `ts-fix: <message>` instead, so the uncaught-error contract is byte-identical.
+   `tsnuke: <message>` instead, so the uncaught-error contract is byte-identical.
 6. **`buildJsonReport` → the build-report slice.** Legacy hand-built the report object;
    the CLI now assembles a single-project `BuildReportInput` and calls `buildReport`
    (RULE-004/034 owned by that slice). v1 is SINGLE-PROJECT (one `diagnose` wrapped in a
@@ -146,7 +146,7 @@ predicate AND the `ValidationError` path).
 ## 5. Follow-ups
 
 - **F1 — RULE-038 real hook install.** Replace the inert `pre-push` stub with a real,
-  non-blocking `npx ts-fix --diff --fail-on error` hook that RESPECTS an existing hook
+  non-blocking `npx tsnuke --diff --fail-on error` hook that RESPECTS an existing hook
   chain instead of clobbering it. (Confirmed defect; preserved here by mandate.)
 - **F2 — RULE-033 diff/staged file selection.** Wire git diff/staged → `includePaths`
   (the engine already accepts `includePaths`) so `--diff`/`--staged` actually narrow the

@@ -1,7 +1,7 @@
 /**
- * `@ts-fix/rules-type-performance-effect` — the `type-performance` SYN rule category.
+ * `@tsnuke/rules-type-performance-effect` — the `type-performance` SYN rule category.
  *
- * Three pure AST predicates that plug into the `@ts-fix/rules-core-effect` substrate
+ * Three pure AST predicates that plug into the `@tsnuke/rules-core-effect` substrate
  * (`defineRule` + the per-file `SyntaxKind → visitor` shape); the engine drives them via
  * the SAME walk/dispatch as `runRule`:
  *   - {@link noLargeUnionType} (RULE-008) — `type` alias whose RHS is a union of >12 members.
@@ -10,13 +10,13 @@
  *     literal with >12 members; recommend an `interface`.
  *
  * The substrate (`defineRule`/`runRule`/`Rule`/`RuleContext`) is imported from
- * `@ts-fix/rules-core-effect`; the data contracts (`Diagnostic`/`RuleMeta`) live in
- * `@ts-fix/contracts-effect`. This slice does NOT re-export either's symbols (barrel
+ * `@tsnuke/rules-core-effect`; the data contracts (`Diagnostic`/`RuleMeta`) live in
+ * `@tsnuke/contracts-effect`. This slice does NOT re-export either's symbols (barrel
  * hygiene — it publishes only what it owns: the three rules + the category registry).
  * See TRANSFORMATION_NOTES.md for the legacy → target mapping.
  */
 
-import type { Rule } from "@ts-fix/rules-core-effect";
+import type { Rule } from "@tsnuke/rules-core-effect";
 
 import { rule as noLargeUnionType } from "./no-large-union-type.js";
 import { rule as noLargeIntersectionType } from "./no-large-intersection-type.js";
@@ -41,6 +41,6 @@ export const typePerformanceRules: ReadonlyArray<Rule> = [
   preferInterfaceForLargeObjectType,
 ];
 
-// Self-barrel: `import { RulesTypePerformance } from "@ts-fix/rules-type-performance-effect"`
+// Self-barrel: `import { RulesTypePerformance } from "@tsnuke/rules-type-performance-effect"`
 // resolves to this module's namespace. Additive — the named exports above stay the surface.
 export * as RulesTypePerformance from "./index.js";

@@ -53,5 +53,5 @@ export const installCommand = Command.make(
   // `runInstall` requires `Path`; provide it here (the FileSystem comes from the runtime
   // Layer at the entry). `Path.layer` is the pure platform-agnostic path service.
   Command.provide(Path.layer),
-  Command.withDescription("Install the ts-fix agent skill + a (stub) git pre-push hook."),
+  Command.withDescription("Install the tsnuke agent skill + a (stub) git pre-push hook."),
 );

@@ -1,13 +1,13 @@
 # Characterization tests — `errors` module (Effect-TS target)
 
-These tests **define "done"** for the Effect-TS rewrite of `ts-fix`'s tagged
+These tests **define "done"** for the Effect-TS rewrite of `tsnuke`'s tagged
 discovery error classes. They were written *before* the implementation. The
 implementation lives at `src/main/index.ts` (imported as `../main/index.js` —
 `.js` on relative specifiers, per the legacy convention; the `Bundler`
 moduleResolution in `tsconfig.json` resolves `.js` to `.ts`). Until that module
 exists the suite is **RED**, and that is the correct starting state.
 
-The legacy module is the oracle (`legacy/ts-fix/packages/core/src/errors.ts`,
+The legacy module is the oracle (`legacy/tsnuke/packages/core/src/errors.ts`,
 read-only). Legacy deliberately moved AWAY from Effect tagged errors to plain
 `Error` subclasses with a `_tag` discriminant. The target stack is Effect, so we
 move BACK to idiomatic `effect/Data` tagged errors (`Data.TaggedError`) — while
@@ -17,7 +17,7 @@ preserving the exact observable contract a downstream consumer depends on.
 
 | Rule | What | File |
 |------|------|------|
-| RULE-037 | Tagged discovery error classes: five discriminant tags `{TsFixError, ProjectNotFoundError, NoTypeScriptProjectError, TsconfigNotFoundError, AmbiguousProjectError}` + `isTsFixError` guard; propagate to CLI exit 1 / `serializeError` (`report.ok=false`), which flattens the `.cause` chain root-last | `errors.test.ts`, `equivalence.test.ts` |
+| RULE-037 | Tagged discovery error classes: five discriminant tags `{TsNukeError, ProjectNotFoundError, NoTypeScriptProjectError, TsconfigNotFoundError, AmbiguousProjectError}` + `isTsNukeError` guard; propagate to CLI exit 1 / `serializeError` (`report.ok=false`), which flattens the `.cause` chain root-last | `errors.test.ts`, `equivalence.test.ts` |
 
 ## The downstream contract (why these tests are strict)
 
@@ -29,7 +29,7 @@ modern errors MUST therefore:
 1. be `instanceof Error` (Effect's `Data.TaggedError` extends `Error` — verified);
 2. carry the SAME `_tag` AND `name` strings as legacy (`"ProjectNotFoundError"`…);
 3. set `cause` on the NATIVE `.cause` property, retrievable for the walk;
-4. `isTsFixError` → true for all five tags, false otherwise;
+4. `isTsNukeError` → true for all five tags, false otherwise;
 5. each carry a `message`.
 
 All five are pinned in `errors.test.ts` and re-proven differentially against a
@@ -49,8 +49,8 @@ vendored legacy oracle in `equivalence.test.ts`.
 
 ### Where the representations legitimately differ (asserted, not hidden)
 
-- **Class identity / shared base.** Legacy had one base class `TsFixError` and
-  every subclass was `instanceof TsFixError`. The modern slice uses five
+- **Class identity / shared base.** Legacy had one base class `TsNukeError` and
+  every subclass was `instanceof TsNukeError`. The modern slice uses five
   **independent** `Data.TaggedError`s, because subclassing a single tagged base
   freezes `name` to the *base* tag (Effect derives `name` from the tag literal) —
   which would break contract #2. Cross-impl `instanceof` of the legacy base is
@@ -76,15 +76,15 @@ pass with zero changes to these files.
 
 ```ts
 import {
-  TsFixError,             // class, _tag = name = "TsFixError"
+  TsNukeError,             // class, _tag = name = "TsNukeError"
   ProjectNotFoundError,      // class, _tag = name = "ProjectNotFoundError"
   NoTypeScriptProjectError,  // class, _tag = name = "NoTypeScriptProjectError"
   TsconfigNotFoundError,     // class, _tag = name = "TsconfigNotFoundError"
   AmbiguousProjectError,     // class, _tag = name = "AmbiguousProjectError"
-  isTsFixError,           // (u: unknown) => u is AnyTsFixError  (by _tag membership)
-  TS_FIX_ERROR_TAGS,      // ReadonlySet<string> — the frozen 5-tag set the guard uses
+  isTsNukeError,           // (u: unknown) => u is AnyTsNukeError  (by _tag membership)
+  TSNUKE_ERROR_TAGS,      // ReadonlySet<string> — the frozen 5-tag set the guard uses
 } from "../main/index.js";
-import type { AnyTsFixError } from "../main/index.js";
+import type { AnyTsNukeError } from "../main/index.js";
 ```
 
 - Each class constructs as `new X(message: string, options?: { cause?: unknown })`

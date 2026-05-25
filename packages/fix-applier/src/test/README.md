@@ -1,8 +1,8 @@
 # Characterization tests — `fix-applier` (`--fix` convergence + source mutation, Effect-TS target)
 
-These tests **define "done"** for the Effect-TS rewrite of `ts-fix`'s `--fix`
+These tests **define "done"** for the Effect-TS rewrite of `tsnuke`'s `--fix`
 applier (RULE-005, P0). The legacy module is the oracle
-(`legacy/ts-fix/packages/ts-fix/src/fix-applier.ts`, read-only). No legacy
+(`legacy/tsnuke/packages/tsnuke/src/fix-applier.ts`, read-only). No legacy
 `fix-applier.test.ts` exists, so the vectors are DERIVED from the documented rule
 behaviour (BUSINESS_RULES.md RULE-005 / RULE-032) and pinned against a **frozen vendored
 copy** of legacy `applyFixes` / `groupFixesByFile`.

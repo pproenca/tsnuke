@@ -1,11 +1,11 @@
 # Transformation Notes — `engine-plan` → Effect-TS
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix engine-plan effect`.
-Source (READ-ONLY): `legacy/ts-fix/packages/core/src/engine-plan.ts` (142 lines).
+Strangler-fig slice produced by `/code-modernization:modernize-transform tsnuke engine-plan effect`.
+Source (READ-ONLY): `legacy/tsnuke/packages/core/src/engine-plan.ts` (142 lines).
 Target: `modernized/engine-plan/effect/`.
 
 This is a **true strangler-fig**: the slice CONSUMES the already-completed
-`capabilities` slice (`@ts-fix/capabilities-effect`) for the activation predicate
+`capabilities` slice (`@tsnuke/capabilities-effect`) for the activation predicate
 `shouldActivate` and severity resolution `resolveSeverity` (RULE-019/020), plus the
 `RuleMeta` / `Severity` / `Capability` contract — it does NOT re-vendor them. The
 `capabilities` slice is DONE and was NOT modified.
@@ -21,10 +21,10 @@ oracle.
 behavioral deviations** (0 divergence vs the legacy oracle).
 
 **`file:` dependency import path:** the `file:../../capabilities/effect`
-dependency imports cleanly via the package name `@ts-fix/capabilities-effect`
+dependency imports cleanly via the package name `@tsnuke/capabilities-effect`
 (`EnginePlan.ts`). Vitest transpiles the `.ts`-entry dependency at test time via
-`vitest.config.ts → test.server.deps.inline: ["@ts-fix/capabilities-effect"]`
-(exactly as build-report inlines `@ts-fix/score-effect`). No relative-import
+`vitest.config.ts → test.server.deps.inline: ["@tsnuke/capabilities-effect"]`
+(exactly as build-report inlines `@tsnuke/score-effect`). No relative-import
 fallback was needed.
 
 ---
@@ -40,12 +40,12 @@ fallback was needed.
 | `EnginePlan` result shape | `:32-45` (`interface`) | `src/main/EnginePlan.ts:85-101` |
 | `SeverityOverrides` (id → sev/off) | `:48` | `src/main/EnginePlan.ts:108` |
 | `ActivatePredicate` shape | `:51-56` | `src/main/EnginePlan.ts:116-121` |
-| `resolveSeverity` (off→null, override, default) | `:59-65` (**private copy**) | **consumed** from `@ts-fix/capabilities-effect` (see D1) |
+| `resolveSeverity` (off→null, override, default) | `:59-65` (**private copy**) | **consumed** from `@tsnuke/capabilities-effect` (see D1) |
 | `typecheckOk` / `tier2Enabled` gate | `:94-95` | `src/main/EnginePlan.ts:144-145` |
 | SYNTHETIC `capsForTyp` skip-accounting | `:97-104` | `src/main/EnginePlan.ts:153-156` |
 | per-rule tier dispatch + activate + sev gate | `:106-121` | `src/main/EnginePlan.ts:158-176` |
 | skip-reason accounting + `scorePartial` | `:123-140` | `src/main/EnginePlan.ts:178-196` |
-| `RuleMeta`/`Severity`/`Capability`/`Tier` types | `:13-18` (`import type` from `@ts-fix/rules`) | **consumed** from `@ts-fix/capabilities-effect` (`Tier` = `RuleMeta["tier"]`) |
+| `RuleMeta`/`Severity`/`Capability`/`Tier` types | `:13-18` (`import type` from `@tsnuke/rules`) | **consumed** from `@tsnuke/capabilities-effect` (`Tier` = `RuleMeta["tier"]`) |
 
 The behavior of `planEngineRun` is preserved EXACTLY — the loop, the synthetic
 `capsForTyp`, the reason precedence (`!typecheckOk` first), and `scorePartial =
@@ -63,16 +63,16 @@ trivial injected predicate. The half-even rounding deviation that exists in the
 
 ### D1 — consume capabilities' `resolveSeverity` instead of legacy's PRIVATE copy ⚠ (structural, not behavioral)
 Legacy `engine-plan.ts:59-65` defines its OWN private `resolveSeverity`, duplicating
-the one in `packages/ts-fix-rules/src/capabilities.ts`. The two are
+the one in `packages/tsnuke-rules/src/capabilities.ts`. The two are
 **byte-identical** (`if (explicit === "off") return null; return explicit ?? meta.severity;`).
 Rather than re-vendor a second copy, this slice IMPORTS `resolveSeverity` from
-`@ts-fix/capabilities-effect`. This removes the legacy duplication; it is
+`@tsnuke/capabilities-effect`. This removes the legacy duplication; it is
 behavior-preserving (the equivalence oracle keeps the frozen private copy and the
 modern path matches it in every cell). Brief-sanctioned ("prefer reusing the
 capabilities slice's `resolveSeverity` … verify it's identical first" — verified).
 
 ### D2 — `Tier` derived as `RuleMeta["tier"]` (no re-vendored copy)
-Legacy imports `Tier` from `@ts-fix/rules`. The capabilities slice OWNS the `Tier`
+Legacy imports `Tier` from `@tsnuke/rules`. The capabilities slice OWNS the `Tier`
 literal (`RuleMeta.tier`) but deliberately does NOT re-export it from its barrel
 (barrel hygiene). Re-declaring a parallel `Schema.Literal("SYN","TYP","GRAPH","CFG")`
 here would risk a conflicting copy, so `Tier` is derived as `RuleMeta["tier"]`
@@ -106,7 +106,7 @@ in the equivalence proof confirms the runtime objects are identical to legacy's.
 - **No dead code in `engine-plan.ts`** — every line is live; nothing was dropped. The
   only "removed" item is legacy's redundant private `resolveSeverity` (D1).
 - **`shouldActivate` / `resolveSeverity` were NOT re-exported** from this barrel —
-  import them from `@ts-fix/capabilities-effect` directly. This keeps the barrel's
+  import them from `@tsnuke/capabilities-effect` directly. This keeps the barrel's
   surface the planner's own and avoids re-publishing the consumed slice's API.
 
 ---
@@ -135,8 +135,8 @@ in the equivalence proof confirms the runtime objects are identical to legacy's.
    wraps it as `{ ...scoreResult, partial }` — see score TRANSFORMATION_NOTES
    Follow-up #4). Do NOT retrofit a `partial` field into the score type.
 5. **De-vendor the contract.** `RuleMeta`/`Severity`/`Capability` are re-exported from
-   `@ts-fix/capabilities-effect`, which itself vendors a subset pending the
-   `@ts-fix/rules` Effect slice (capabilities Follow-up #1). When `@ts-fix/rules`
+   `@tsnuke/capabilities-effect`, which itself vendors a subset pending the
+   `@tsnuke/rules` Effect slice (capabilities Follow-up #1). When `@tsnuke/rules`
    lands, both slices repoint to it; this slice's re-export stays a one-line change.
 
 ---
@@ -144,11 +144,11 @@ in the equivalence proof confirms the runtime objects are identical to legacy's.
 ## 5. Toolchain / housekeeping notes
 
 - **`file:` workspace dependency:** `package.json` declares
-  `"@ts-fix/capabilities-effect": "file:../../capabilities/effect"`. `pnpm install`
-  links it; the package-name import (`from "@ts-fix/capabilities-effect"`) resolves
+  `"@tsnuke/capabilities-effect": "file:../../capabilities/effect"`. `pnpm install`
+  links it; the package-name import (`from "@tsnuke/capabilities-effect"`) resolves
   to the capabilities slice's `src/main/index.ts` (its `exports` entry).
 - **Vitest `.ts`-dependency transpile:** `vitest.config.ts` sets
-  `test.server.deps.inline: ["@ts-fix/capabilities-effect"]` so esbuild compiles
+  `test.server.deps.inline: ["@tsnuke/capabilities-effect"]` so esbuild compiles
   the dependency's TypeScript at test time (otherwise Vitest tries to load the `.ts`
   entry as pre-built and fails to parse it). Identical pattern to build-report.
 - **`pnpm-workspace.yaml`** approves the `esbuild` build (vitest needs it), matching

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-fix/rules-core-effect";
+import { runRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/no-await-in-loop.js";
 
 describe("no-await-in-loop (SYN) — RULE-025 async", () => {
@@ -32,7 +32,7 @@ describe("no-await-in-loop (SYN) — RULE-025 async", () => {
     expect(diags).toHaveLength(1);
     const d = diags[0]!;
     expect(d.category).toBe("Async / Promises");
-    expect(d.plugin).toBe("ts-fix");
+    expect(d.plugin).toBe("tsnuke");
     expect(d.message).toBe(
       "`await` in a loop serializes iterations; consider `Promise.all`.",
     );

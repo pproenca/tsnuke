@@ -7,15 +7,15 @@
  * namespace/wildcard file exempt) and supplemented with the brief's explicit asks (a USED
  * name is not flagged, a re-export counts as used) plus full-shape assertions.
  *
- * Driven through the REAL `runGraphRule` from `@ts-fix/rules-core-effect`. NOTE: the meta
+ * Driven through the REAL `runGraphRule` from `@tsnuke/rules-core-effect`. NOTE: the meta
  * carries `requires:["app"]`, but activation gating is the engine / `shouldActivate`'s job
  * (RULE-019), NOT the rule's `analyze` body — so these tests run `analyze` directly with no
  * `app` capability and the rule still produces findings (gating happens upstream of analyze).
  */
 
 import { describe, expect, it } from "vitest";
-import { runGraphRule } from "@ts-fix/rules-core-effect";
-import type { ModuleGraph } from "@ts-fix/rules-core-effect";
+import { runGraphRule } from "@tsnuke/rules-core-effect";
+import type { ModuleGraph } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/no-unused-exports.js";
 
 describe("no-unused-exports (GRAPH) — RULE-025 (dead-code)", () => {
@@ -127,7 +127,7 @@ describe("no-unused-exports (GRAPH) — RULE-025 (dead-code)", () => {
     expect(d.tier).toBe("GRAPH");
     expect(d.severity).toBe("warning");
     expect(d.category).toBe("Dead Code & Unused Exports");
-    expect(d.plugin).toBe("ts-fix");
+    expect(d.plugin).toBe("tsnuke");
     expect(d.filePath).toBe("/util.ts");
     expect(d.message).toBe("Exported `unused` is never imported by another module.");
     expect(d.help).toBe(

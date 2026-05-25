@@ -1,5 +1,5 @@
 /**
- * `@ts-fix/rules-core-effect` — the RULE SUBSTRATE plus the AST-free `strictness`
+ * `@tsnuke/rules-core-effect` — the RULE SUBSTRATE plus the AST-free `strictness`
  * rule category (RULE-020) as the first proof-of-pattern.
  *
  * This is the foundation the ~88 rule predicates and the engine plug into:
@@ -12,7 +12,7 @@
  *
  * The data CONTRACTS (`Diagnostic`, `RuleMeta`, `Severity`, `Tier`, `FixKind`, `Fix`,
  * `TextEdit`, `Capability`) are NOT re-exported here — import them from
- * `@ts-fix/contracts-effect`. This slice is the first NEW consumer of contracts and
+ * `@tsnuke/contracts-effect`. This slice is the first NEW consumer of contracts and
  * deliberately does not re-publish symbols it does not own (barrel hygiene). See
  * TRANSFORMATION_NOTES.md for the legacy → target mapping.
  */
@@ -55,7 +55,7 @@ export { ruleRegistry } from "./registry.js";
 // `analyze` over a `ModuleGraph`).
 export { runRule, runTypeAwareRule, runGraphRule } from "./runRule.js";
 
-// Self-barrel: `import { RulesCore } from "@ts-fix/rules-core-effect"` resolves to the
+// Self-barrel: `import { RulesCore } from "@tsnuke/rules-core-effect"` resolves to the
 // namespace of this module (the self-barrel module shape). Additive — the named re-exports
 // above remain the canonical import surface the 14 consumers depend on.
 export * as RulesCore from "./index.js";

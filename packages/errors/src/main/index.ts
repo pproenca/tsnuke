@@ -1,8 +1,8 @@
 /**
- * `@ts-fix/errors-effect` — public surface of the Effect-TS tagged-errors slice.
+ * `@tsnuke/errors-effect` — public surface of the Effect-TS tagged-errors slice.
  *
  * Implements RULE-037 (tagged discovery error classes): five Effect-Schema tagged
- * errors plus the `isTsFixError` guard. See TRANSFORMATION_NOTES.md for the
+ * errors plus the `isTsNukeError` guard. See TRANSFORMATION_NOTES.md for the
  * legacy → target mapping and the (deliberate) plain-Error → Schema.TaggedError and
  * shared-base → independent-tagged-errors deviations.
  *
@@ -12,15 +12,15 @@
  */
 
 export {
-  TsFixError,
+  TsNukeError,
   ProjectNotFoundError,
   NoTypeScriptProjectError,
   TsconfigNotFoundError,
   AmbiguousProjectError,
-  TS_FIX_ERROR_TAGS,
-  isTsFixError,
-  type AnyTsFixError,
+  TSNUKE_ERROR_TAGS,
+  isTsNukeError,
+  type AnyTsNukeError,
 } from "./Errors.js";
 
-/** Self-barrel: `import { Errors } from "@ts-fix/errors-effect"` resolves to this module's namespace. */
+/** Self-barrel: `import { Errors } from "@tsnuke/errors-effect"` resolves to this module's namespace. */
 export * as Errors from "./index.js";

@@ -1,11 +1,11 @@
 # Characterization tests — `scale` module (Effect-TS target)
 
-These tests **define "done"** for the Effect-TS rewrite of `ts-fix`'s scale
+These tests **define "done"** for the Effect-TS rewrite of `tsnuke`'s scale
 guard. The implementation lives at `src/main/*` (imported as `../main/index.js` —
 `.js` on relative specifiers, per the legacy convention; the `Bundler`
 moduleResolution in `tsconfig.json` resolves `.js` to `.ts`).
 
-The legacy module is the oracle (`legacy/ts-fix/packages/core/src/scale.ts`,
+The legacy module is the oracle (`legacy/tsnuke/packages/core/src/scale.ts`,
 read-only). We prove *equivalence first*. Unlike the `score` slice, **Part A has
 NO deliberate behavioral deviation** — the memory formula is carried over verbatim
 with zero divergence. The one structural change is in Part B: the hand-rolled

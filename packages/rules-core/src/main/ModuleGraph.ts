@@ -1,7 +1,7 @@
 /**
  * The cross-file module graph that GRAPH-tier rules analyze.
  *
- * OWNED by the rules domain (this slice), NOT by `@ts-fix/contracts-effect`: it
+ * OWNED by the rules domain (this slice), NOT by `@tsnuke/contracts-effect`: it
  * is a single-site GRAPH-tier INPUT (built by core from resolved in-project edges)
  * consumed only by graph rules — there is no cross-slice duplication to consolidate,
  * so it stays here rather than in the shared contracts package (per the contracts
@@ -11,7 +11,7 @@
  * Modeled as a plain `interface` (not an `effect/Schema`): it is an in-memory
  * structure assembled by core, never decoded at a trust boundary, and its `Map`/`Set`
  * members are not naturally Schema-shaped. Faithful port of the `ModuleGraph` from
- * legacy `packages/ts-fix-rules/src/types.ts`. Structural (no checker).
+ * legacy `packages/tsnuke-rules/src/types.ts`. Structural (no checker).
  */
 export interface ModuleGraph {
   /** All analyzed file paths (absolute). */

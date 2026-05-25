@@ -1,8 +1,8 @@
 {
-  "name": "@ts-fix/fix-applier-effect",
+  "name": "@tsnuke/fix-applier-effect",
   "private": true,
   "version": "0.1.0",
-  "description": "Effect-native rewrite of ts-fix's --fix applier (RULE-005 ≤2-pass convergence + RULE-032 auto-fix-only taxonomy). Strangler-fig slice — the pure splicer (applyFixes/groupFixesByFile) stays a plain synchronous function; the file-writing shell (applyFixesToFiles) becomes an Effect over @effect/platform FileSystem + Path, curing CWE-59 (symlink/out-of-root reject) and the non-atomic write (temp-then-rename) over legacy's direct io.write.",
+  "description": "Effect-native rewrite of tsnuke's --fix applier (RULE-005 ≤2-pass convergence + RULE-032 auto-fix-only taxonomy). Strangler-fig slice — the pure splicer (applyFixes/groupFixesByFile) stays a plain synchronous function; the file-writing shell (applyFixesToFiles) becomes an Effect over @effect/platform FileSystem + Path, curing CWE-59 (symlink/out-of-root reject) and the non-atomic write (temp-then-rename) over legacy's direct io.write.",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ts-fix/contracts-effect": "workspace:*",
+    "@tsnuke/contracts-effect": "workspace:*",
     "@effect/platform": "^0.96.1",
     "@effect/platform-node": "^0.106.0",
     "effect": "^3.21.2"

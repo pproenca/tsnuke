@@ -23,7 +23,7 @@
 
 import { describe, expect, it } from "vitest";
 import type ts from "typescript";
-import type { Diagnostic, RuleMeta } from "@ts-fix/contracts-effect";
+import type { Diagnostic, RuleMeta } from "@tsnuke/contracts-effect";
 import {
   createRuleContext,
   diagnosticIdentity,
@@ -35,11 +35,11 @@ import {
 import type { ReportInput, Rule } from "../main/index.js";
 
 // ===========================================================================
-// ORACLE — frozen copy of legacy/ts-fix/packages/ts-fix-rules/src/define-rule.ts:54-93.
+// ORACLE — frozen copy of legacy/tsnuke/packages/tsnuke-rules/src/define-rule.ts:54-93.
 // createRuleContext.report auto-fill + the exactOptional conditional spread.
 // For differential testing ONLY — do not "fix" it; it defines legacy behavior.
 // ===========================================================================
-const LEGACY_PLUGIN_NAME = "ts-fix" as const;
+const LEGACY_PLUGIN_NAME = "tsnuke" as const;
 
 function legacyCreateReport(
   meta: RuleMeta,
@@ -252,7 +252,7 @@ describe("equivalence — diagnosticIdentity vs legacy oracle (BC-13)", () => {
   const DIAGS: ReadonlyArray<Diagnostic> = [
     {
       filePath: "src/foo.ts",
-      plugin: "ts-fix",
+      plugin: "tsnuke",
       rule: "no-explicit-any",
       severity: "warning",
       message: "m",
@@ -264,7 +264,7 @@ describe("equivalence — diagnosticIdentity vs legacy oracle (BC-13)", () => {
     },
     {
       filePath: "tsconfig.json",
-      plugin: "ts-fix",
+      plugin: "tsnuke",
       rule: "enable-strict",
       severity: "warning",
       message: "m",

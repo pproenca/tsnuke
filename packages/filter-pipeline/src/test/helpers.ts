@@ -16,7 +16,7 @@ export function diag(
 ): DiagnosticWithTags {
   return {
     filePath: over.filePath ?? "/x/a.ts",
-    plugin: "ts-fix",
+    plugin: "tsnuke",
     severity: "error",
     message: "m",
     help: "h",

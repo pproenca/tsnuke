@@ -3,7 +3,7 @@
  *
  * These tests DEFINE "done" for the Effect-TS rewrite: the implementation in
  * `../main/index.js` is written AFTER these tests and must make them pass. They
- * are written against the legacy oracle (`legacy/ts-fix/.../exit-code.ts:18-35`),
+ * are written against the legacy oracle (`legacy/tsnuke/.../exit-code.ts:18-35`),
  * which the modern module must match EXACTLY — there is no rounding subtlety here,
  * so 100% equality is expected (the differential proof lives in equivalence.test.ts).
  *

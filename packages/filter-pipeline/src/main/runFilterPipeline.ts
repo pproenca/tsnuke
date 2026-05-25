@@ -8,7 +8,7 @@
  *   1. auto-suppress       — drop diagnostics tagged as known test-noise
  *   2. severity override   — remap per config.rules / config.categories; "off" drops
  *   3. ignore              — drop by ignore.rules / ignore.files / ignore.overrides
- *   4. inline-disable      — honor `// ts-fix-disable-next-line <rule>` directives
+ *   4. inline-disable      — honor `// tsnuke-disable-next-line <rule>` directives
  *
  * Inline-disable (stage 4) only runs when `respectInlineDisables !== false` AND
  * source text was supplied. The engine-only `tags` field is STRIPPED before the
@@ -25,7 +25,7 @@
  * Source of truth: legacy `packages/core/src/filter-pipeline.ts:189-218` (READ-ONLY).
  */
 
-import type { TsFixConfig } from "./Config.js";
+import type { TsNukeConfig } from "./Config.js";
 import type { Diagnostic, DiagnosticWithTags } from "./Diagnostic.js";
 import {
   makeIgnoreStage,
@@ -53,7 +53,7 @@ export interface FilterPipelineOptions {
  */
 export function runFilterPipeline(
   diagnostics: readonly DiagnosticWithTags[],
-  config: TsFixConfig,
+  config: TsNukeConfig,
   options: FilterPipelineOptions = {},
 ): Diagnostic[] {
   const respectInline = options.respectInlineDisables !== false;

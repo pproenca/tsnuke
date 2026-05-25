@@ -4,7 +4,7 @@
  *
  * react-doctor auto-`require`d plugins declared in a SCANNED repo's config — a
  * CWE-94 arbitrary-code-execution path. There is nothing to "carry" here: the
- * legacy behavior IS the vulnerability. ts-fix v1 ships a FIRST-PARTY CATALOG
+ * legacy behavior IS the vulnerability. tsnuke v1 ships a FIRST-PARTY CATALOG
  * ONLY.
  *
  * `loadConfigPlugins` therefore NEVER loads, resolves, requires, imports, or
@@ -22,7 +22,7 @@
  * Plain synchronous pure function (Brief lines 25/91) — NOT `Effect`-wrapped.
  */
 
-import type { TsFixConfig } from "./Config.js";
+import type { TsNukeConfig } from "./Config.js";
 
 /** A loaded plugin. v1 produces NONE — the array element type is the future seam. */
 export type LoadedPlugin = never;
@@ -45,13 +45,13 @@ export interface LoadConfigPluginsResult {
  * resolved, required, imported, or executed. This is the by-construction RCE fix.
  */
 export function loadConfigPlugins(
-  config: TsFixConfig,
+  config: TsNukeConfig,
 ): LoadConfigPluginsResult {
   const declared = Array.isArray(config.plugins) ? config.plugins : [];
   const ignored = declared.filter((p): p is string => typeof p === "string");
   const warnings = ignored.map(
     (name) =>
-      `Ignoring config plugin "${name}": ts-fix v1 never loads plugins from a scanned repo (BC-18).`,
+      `Ignoring config plugin "${name}": tsnuke v1 never loads plugins from a scanned repo (BC-18).`,
   );
   // NOTE: there is deliberately no dynamic-code / module-resolution call anywhere
   // here. `plugins` is unconditionally `[]` — the RCE class is gone by construction.

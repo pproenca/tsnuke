@@ -1,6 +1,6 @@
-# `@ts-fix/format-effect` — Transformation Notes
+# `@tsnuke/format-effect` — Transformation Notes
 
-Effect-TS strangler-fig slice for ts-fix's **output formatters**: the three PURE
+Effect-TS strangler-fig slice for tsnuke's **output formatters**: the three PURE
 formatting functions that turn structural inputs (diagnostics, a score summary, a rule
 registry) into the strings/objects the CLI and MCP server emit. All three are plain pure
 functions — **NOT Effect-wrapped** — because they do no IO (just string/object assembly).
@@ -10,15 +10,15 @@ functions — **NOT Effect-wrapped** — because they do no IO (just string/obje
 | Legacy source | Symbols | Target file |
 |---|---|---|
 | `legacy/.../packages/core/src/format-agent.ts` (170 lines) | `formatAgentReport`, `AgentOccurrence`, `AgentRuleEntry`, `AgentCategoryGroup`, `AgentReport` | `src/main/format-agent.ts` |
-| `legacy/.../packages/ts-fix/src/render.ts` (69 lines) | `renderScoreLine`, `renderPretty` | `src/main/render.ts` |
+| `legacy/.../packages/tsnuke/src/render.ts` (69 lines) | `renderScoreLine`, `renderPretty` | `src/main/render.ts` |
 | `legacy/.../packages/core/src/explain.ts` (78 lines) | `asRuleLookup`, `explain`, `explainDiagnostic`, `RuleLookup`, `ExplainContext` | `src/main/explain.ts` |
-| `legacy/.../packages/ts-fix/src/explain.ts` (7 lines) | thin re-export wrapper | folded into the barrel `src/main/index.ts` |
+| `legacy/.../packages/tsnuke/src/explain.ts` (7 lines) | thin re-export wrapper | folded into the barrel `src/main/index.ts` |
 
 Public barrel (`src/main/index.ts`): `formatAgentReport` + `Agent*` types (incl. the new
 local `AgentScoreInput`), `renderScoreLine`/`renderPretty` + `RenderScoreResult`,
 `asRuleLookup`/`explain`/`explainDiagnostic` + `RuleLookup`/`ExplainContext`. **No
 contracts symbols are re-exported** — `Diagnostic`/`RuleMeta` stay owned by
-`@ts-fix/contracts-effect`.
+`@tsnuke/contracts-effect`.
 
 ## Business rule covered
 
@@ -32,15 +32,15 @@ contracts symbols are re-exported** — `Diagnostic`/`RuleMeta` stay owned by
 
 ## Deviations from legacy (all plumbing, NOT behavior)
 
-1. **Consumes `@ts-fix/contracts-effect`** for `Diagnostic` / `RuleMeta` / `FixKind` /
-   `Tier` (`file:` dep), instead of legacy `@ts-fix/rules`. The canonical contracts
-   Schema types are a faithful structural match of the legacy `@ts-fix/rules` types
+1. **Consumes `@tsnuke/contracts-effect`** for `Diagnostic` / `RuleMeta` / `FixKind` /
+   `Tier` (`file:` dep), instead of legacy `@tsnuke/rules`. The canonical contracts
+   Schema types are a faithful structural match of the legacy `@tsnuke/rules` types
    (`Severity`/`Tier`/`FixKind` literal unions, `Diagnostic`/`RuleMeta` shapes), so the
    ported functions type-check and behave identically. Nothing is re-vendored.
 
 2. **`render` keeps the LEGACY structural `ScoreResult` shape** `{ score; label; partial }`
    (legacy `core/types.ts`) as its input — exposed here as the local `RenderScoreResult`
-   interface. The modern score slice (`@ts-fix/score-effect`) renamed the band field to
+   interface. The modern score slice (`@tsnuke/score-effect`) renamed the band field to
    `band`; **render does not depend on the engine/score slices** — it is a pure consumer of
    a structural input, and the **CLI maps the engine's `band` → `label`** when building this
    input. `renderScoreLine` reads only `.score` and `.label`; the `partial` flag arrives via
@@ -94,9 +94,9 @@ files, all green.**
 
 ## Scaffolding
 
-- `package.json` `@ts-fix/format-effect` — deps `@ts-fix/contracts-effect` (`file:`) +
+- `package.json` `@tsnuke/format-effect` — deps `@tsnuke/contracts-effect` (`file:`) +
   `effect`; devDeps `typescript`, `vitest`, `@types/node`. `exports: "./src/main/index.ts"`.
-- `vitest.config.ts` — `server.deps.inline: ["@ts-fix/contracts-effect"]` so Vitest's
+- `vitest.config.ts` — `server.deps.inline: ["@tsnuke/contracts-effect"]` so Vitest's
   esbuild compiles the `.ts`-entry `file:` dep at test time (the established slice pattern).
 - `tsconfig.json` — copied verbatim from the score/build-report slices (strict,
   `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, bundler resolution).
@@ -110,7 +110,7 @@ files, all green.**
   per `--format pretty|json|agent`: it maps the engine's score result into render's structural
   `{ score, label, partial }` input (`band` → `label`) and into `formatAgentReport`'s
   `{ score, label }`. The `--json` surface (versioned report) is a separate slice
-  (`@ts-fix/build-report-effect`).
+  (`@tsnuke/build-report-effect`).
 - The **MCP server** consumes `explain` / `explainDiagnostic` for its offline `--explain`/
   `--why` tool, and `formatAgentReport` for the agent projection.
 - `asRuleLookup` will be fed the real rule registry from the `rules-registry` slice (kept

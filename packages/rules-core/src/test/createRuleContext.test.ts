@@ -4,7 +4,7 @@
  * auto-fill logic is independent of the parsed AST, so no real parse is needed.
  *
  * Pins (legacy `define-rule.ts:54-93`):
- *   - `plugin` is FORCED to "ts-fix" (BC-18) — not present in ReportInput.
+ *   - `plugin` is FORCED to "tsnuke" (BC-18) — not present in ReportInput.
  *   - `rule`/`tier`/`category`/`severity` DEFAULT from meta, each OVERRIDABLE.
  *   - required passthrough: filePath/message/help/line/column.
  *   - `url`/`fix`/`suppressionHint` only set WHEN PRESENT (exactOptional spread):
@@ -13,7 +13,7 @@
 
 import { describe, expect, it } from "vitest";
 import type ts from "typescript";
-import type { Diagnostic, RuleMeta } from "@ts-fix/contracts-effect";
+import type { Diagnostic, RuleMeta } from "@tsnuke/contracts-effect";
 import { createRuleContext } from "../main/index.js";
 import type { ReportInput } from "../main/index.js";
 
@@ -49,8 +49,8 @@ const MINIMAL: ReportInput = {
 };
 
 describe("createRuleContext.report — plugin (BC-18)", () => {
-  it("forces plugin to 'ts-fix'", () => {
-    expect(capture(MINIMAL).plugin).toBe("ts-fix");
+  it("forces plugin to 'tsnuke'", () => {
+    expect(capture(MINIMAL).plugin).toBe("tsnuke");
   });
 });
 

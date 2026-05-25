@@ -9,12 +9,12 @@
  * ── Effect-TS slice port ──────────────────────────────────────────────────────
  * Ported VERBATIM from `legacy/.../packages/core/src/explain.ts`. The only
  * deviation is plumbing, NOT behavior: `Diagnostic`/`RuleMeta` are imported from
- * `@ts-fix/contracts-effect` (the canonical de-vendored Schema types) instead
- * of the legacy `@ts-fix/rules`. `asRuleLookup` stays GENERIC over a plain
+ * `@tsnuke/contracts-effect` (the canonical de-vendored Schema types) instead
+ * of the legacy `@tsnuke/rules`. `asRuleLookup` stays GENERIC over a plain
  * `Record<string, RuleMeta>` (the rule-registry shape) — it does NOT depend on
  * the rules-registry slice. The offline text is preserved byte-for-byte.
  */
-import type { Diagnostic, RuleMeta } from "@ts-fix/contracts-effect";
+import type { Diagnostic, RuleMeta } from "@tsnuke/contracts-effect";
 
 /** A lookup from rule id to its static metadata. */
 export interface RuleLookup {
@@ -48,7 +48,7 @@ export function explain(
 ): string {
   const meta = registry.get(ruleId);
   if (meta === undefined) {
-    return `Unknown rule "${ruleId}". No such rule in the ts-fix catalog.`;
+    return `Unknown rule "${ruleId}". No such rule in the tsnuke catalog.`;
   }
 
   const lines: string[] = [];

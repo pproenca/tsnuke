@@ -1,6 +1,6 @@
 import ts from "typescript";
-import { defineRule } from "@ts-fix/rules-core-effect";
-import type { RuleContext } from "@ts-fix/rules-core-effect";
+import { defineRule } from "@tsnuke/rules-core-effect";
+import type { RuleContext } from "@tsnuke/rules-core-effect";
 
 /**
  * Conservative credential shapes. Each is anchored on a vendor-specific prefix
@@ -8,7 +8,7 @@ import type { RuleContext } from "@ts-fix/rules-core-effect";
  * deliberately avoid generic high-entropy heuristics (false-positive prone).
  *
  * FROZEN vendor-anchored patterns (RULE-025) — preserved VERBATIM from legacy
- * `packages/ts-fix-rules/src/rules/security/no-secrets-in-source.ts`. Do not
+ * `packages/tsnuke-rules/src/rules/security/no-secrets-in-source.ts`. Do not
  * "improve" these; they are the equivalence anchor.
  */
 const SECRET_PATTERNS: readonly RegExp[] = [

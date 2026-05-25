@@ -1,6 +1,6 @@
 import ts from "typescript";
-import { defineRule } from "@ts-fix/rules-core-effect";
-import type { RuleContext } from "@ts-fix/rules-core-effect";
+import { defineRule } from "@tsnuke/rules-core-effect";
+import type { RuleContext } from "@tsnuke/rules-core-effect";
 
 /**
  * SYN — flag `export default`.
@@ -13,9 +13,9 @@ import type { RuleContext } from "@ts-fix/rules-core-effect";
  * both the `export` and `default` modifiers (e.g. `export default function f(){}`).
  *
  * Ported verbatim from legacy
- * `packages/ts-fix-rules/src/rules/module-boundaries/no-default-export.ts`;
+ * `packages/tsnuke-rules/src/rules/module-boundaries/no-default-export.ts`;
  * the only change is importing `defineRule` / `RuleContext` from the
- * `@ts-fix/rules-core-effect` substrate rather than the legacy `../../define-rule.js`.
+ * `@tsnuke/rules-core-effect` substrate rather than the legacy `../../define-rule.js`.
  */
 export const rule = defineRule(
   {

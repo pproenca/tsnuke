@@ -1,4 +1,4 @@
-import { defineGraphRule } from "@ts-fix/rules-core-effect";
+import { defineGraphRule } from "@tsnuke/rules-core-effect";
 
 /**
  * GRAPH — flag an exported name that no other in-project module imports (RULE-025,
@@ -15,8 +15,8 @@ import { defineGraphRule } from "@ts-fix/rules-core-effect";
  *   - a name is flagged only when NO importer imports it by name.
  *
  * Ported VERBATIM from legacy
- * `packages/ts-fix-rules/src/rules/dead-code/no-unused-exports.ts`; the only change is
- * importing `defineGraphRule` from the `@ts-fix/rules-core-effect` substrate rather than
+ * `packages/tsnuke-rules/src/rules/dead-code/no-unused-exports.ts`; the only change is
+ * importing `defineGraphRule` from the `@tsnuke/rules-core-effect` substrate rather than
  * the legacy `../../define-rule.js`. The referenced/wildcard/usedExports conservative
  * logic, the META (`requires:["app"]`), and the message/help text are unchanged.
  */

@@ -1,5 +1,5 @@
 /**
- * `ts-fix install` (RULE-038) — re-imagined over `@effect/platform` `FileSystem`.
+ * `tsnuke install` (RULE-038) — re-imagined over `@effect/platform` `FileSystem`.
  *
  * PRESERVED-DEFECT NOTICE (RULE-038, confirmed): the git `pre-push` hook this writes is
  * INERT — its body is `# TODO …\nexit 0`, so a user who runs `install` gets a hook that
@@ -46,7 +46,7 @@ export interface PlannedWrite {
 export function buildSkillMarkdown(): string {
   return [
     "---",
-    "name: ts-fix",
+    "name: tsnuke",
     "description: >-",
     "  Run a TypeScript health check before finishing a change. Surfaces type-safety,",
     "  async, module-boundary, and strictness issues with machine-applicable fixes.",
@@ -56,24 +56,24 @@ export function buildSkillMarkdown(): string {
     "  - when asked to 'check types' or 'audit the TypeScript'",
     "---",
     "",
-    "# ts-fix",
+    "# tsnuke",
     "",
-    "Run ts-fix in agent mode for a deduplicated, fix-sorted report:",
+    "Run tsnuke in agent mode for a deduplicated, fix-sorted report:",
     "",
     "```sh",
-    "npx ts-fix --format agent",
+    "npx tsnuke --format agent",
     "```",
     "",
     "Regression-check only what changed (diff against the base branch):",
     "",
     "```sh",
-    "npx ts-fix --diff",
+    "npx tsnuke --diff",
     "```",
     "",
     "Apply the safe auto-fixes, then re-scan and loop until the score stops improving:",
     "",
     "```sh",
-    "npx ts-fix --fix --format agent",
+    "npx tsnuke --fix --format agent",
     "```",
     "",
     "Notes:",
@@ -92,7 +92,7 @@ export function buildSkillMarkdown(): string {
 export function planInstall(flags: InstallFlags): PlannedWrite[] {
   const writes: PlannedWrite[] = [
     {
-      path: `${flags.cwd}/.agent/skills/ts-fix/SKILL.md`,
+      path: `${flags.cwd}/.agent/skills/tsnuke/SKILL.md`,
       contents: buildSkillMarkdown(),
       description: "agent skill (trigger spec + command recipe)",
     },
@@ -102,14 +102,14 @@ export function planInstall(flags: InstallFlags): PlannedWrite[] {
   // non-blocking, hook-chain-respecting install — see TRANSFORMATION_NOTES Follow-up.
   writes.push({
     path: `${flags.cwd}/.git/hooks/pre-push`,
-    contents: "#!/bin/sh\n# TODO(P1): non-blocking ts-fix pre-push check\nexit 0\n",
+    contents: "#!/bin/sh\n# TODO(P1): non-blocking tsnuke pre-push check\nexit 0\n",
     description: "git pre-push hook (STUB — non-blocking)",
   });
 
   // TODO(P1): when --agent-hooks, emit Claude Code / Cursor native hook configs.
   if (flags.agentHooks) {
     writes.push({
-      path: `${flags.cwd}/.claude/hooks/ts-fix.json`,
+      path: `${flags.cwd}/.claude/hooks/tsnuke.json`,
       contents: "{}\n",
       description: "native agent hook config (STUB)",
     });

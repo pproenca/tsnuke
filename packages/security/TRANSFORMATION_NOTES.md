@@ -1,9 +1,9 @@
 # Transformation Notes — `security` → Effect-TS
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix security effect`.
-Source (READ-ONLY): `legacy/ts-fix/packages/core/src/security/{index,glob,git-revision,env,staged-files,plugins}.ts`
-(+ the `plugins` field of the `TsFixConfig` contract from `packages/core/src/types.ts:151-164`).
-Target: `modernized/security/effect/` (package `@ts-fix/security-effect`).
+Strangler-fig slice produced by `/code-modernization:modernize-transform tsnuke security effect`.
+Source (READ-ONLY): `legacy/tsnuke/packages/core/src/security/{index,glob,git-revision,env,staged-files,plugins}.ts`
+(+ the `plugins` field of the `TsNukeConfig` contract from `packages/core/src/types.ts:151-164`).
+Target: `modernized/security/effect/` (package `@tsnuke/security-effect`).
 
 Implements **RULE-014** (glob ReDoS caps), **RULE-027** (the five dormant guards),
 and **RULE-039** (config `plugins` never loaded — the P0 RCE-by-construction
@@ -33,7 +33,7 @@ call. Enforced behaviorally AND by a static source-scan test over all of `src/ma
 | `isInsideTempDir` (RULE-027/BC-16) | `staged-files.ts:12-37` | `src/main/StagedFiles.ts:21-39` (verbatim) |
 | `loadConfigPlugins` (RULE-039/BC-18) | `plugins.ts:41-52` | `src/main/Plugins.ts:50-61` (verbatim, no load path) |
 | `LoadConfigPluginsResult` / `LoadedPlugin` | `plugins.ts:22-32` | `src/main/Plugins.ts:30-38` (fields made `readonly`) |
-| `TsFixConfig.plugins` (BC-22) | `types.ts:151-164` (full struct) | `src/main/Config.ts` (re-exports canonical `TsFixConfig` from `@ts-fix/contracts-effect`; bare local interface DELETED) — see **D3** |
+| `TsNukeConfig.plugins` (BC-22) | `types.ts:151-164` (full struct) | `src/main/Config.ts` (re-exports canonical `TsNukeConfig` from `@tsnuke/contracts-effect`; bare local interface DELETED) — see **D3** |
 
 Four of the five guards (`isSafeGitRevision`, `sanitizeEnv`, `isInsideTempDir`,
 `loadConfigPlugins`) are copied **verbatim** — they are domain-agnostic and
@@ -65,16 +65,16 @@ manual `_tag` field, `this.name = …`, and `Object.setPrototypeOf`. This module
 
 ### D2 — result types narrowed to `readonly` (type tightening, no behavior change)
 `LoadConfigPluginsResult` fields are `ReadonlyArray<…>` (legacy used mutable arrays),
-and `TsFixConfig.plugins` is `readonly string[]`. Values are identical; this only
+and `TsNukeConfig.plugins` is `readonly string[]`. Values are identical; this only
 prevents accidental downstream mutation of the guard's output.
 
-### D3 — `TsFixConfig` DE-VENDORED to `@ts-fix/contracts-effect`
-The legacy `TsFixConfig` (`types.ts:151-164`) is a large struct; the only field any
+### D3 — `TsNukeConfig` DE-VENDORED to `@tsnuke/contracts-effect`
+The legacy `TsNukeConfig` (`types.ts:151-164`) is a large struct; the only field any
 guard in this slice reads is `plugins`. This slice previously vendored a bare
 `interface { plugins?: readonly string[] }`; that local interface is now DELETED and
-`Config.ts` re-exports the canonical `TsFixConfig` from `@ts-fix/contracts-effect`.
+`Config.ts` re-exports the canonical `TsNukeConfig` from `@tsnuke/contracts-effect`.
 The canonical struct is a structural SUPERSET that includes
-`plugins?: readonly string[]`, so `loadConfigPlugins(config: TsFixConfig)` reads
+`plugins?: readonly string[]`, so `loadConfigPlugins(config: TsNukeConfig)` reads
 `config.plugins` byte-identically — RULE-039 behavior unchanged (still returns
 `{ plugins: [], ignored, warnings }`, never loads anything).
 
@@ -92,8 +92,8 @@ The canonical struct is a structural SUPERSET that includes
   plumbing in `InvalidGlobPatternError` is the only thing "removed", replaced per D1.
 - **No plugin-loading path was added (and never must be).** RULE-039 is the *absence*
   of behavior; there is deliberately nothing to migrate INTO. See Follow-up #4.
-- **The full `TsFixConfig` struct** is no longer vendored at all — `Config.ts` now
-  re-exports the canonical `TsFixConfig` from `@ts-fix/contracts-effect` (D3).
+- **The full `TsNukeConfig` struct** is no longer vendored at all — `Config.ts` now
+  re-exports the canonical `TsNukeConfig` from `@tsnuke/contracts-effect` (D3).
   This slice still reads only the `plugins` field; the other fields (`ignore`, `failOn`,
   `rules`, …) are simply present-but-unread.
 - **Sinks were not touched** (out of scope for this surgical slice): the guards are
@@ -116,11 +116,11 @@ The canonical struct is a structural SUPERSET that includes
    - `sanitizeEnv` → every subprocess spawn (pass the sanitized env, array-arg, no shell).
    - `loadConfigPlugins` → config load (call it, surface `warnings`, and — see #4 —
      keep `plugins` always `[]`).
-2. **De-vendor `TsFixConfig` (D3) — DONE.** The bare local
+2. **De-vendor `TsNukeConfig` (D3) — DONE.** The bare local
    `interface { plugins?: readonly string[] }` in `Config.ts` was DELETED; the file now
-   re-exports the canonical `TsFixConfig` from `@ts-fix/contracts-effect` (a proven
+   re-exports the canonical `TsNukeConfig` from `@tsnuke/contracts-effect` (a proven
    structural superset that keeps `plugins?: readonly string[]` "present only so it can be
-   warned about", BC-22). Added the `@ts-fix/contracts-effect": file:../../contracts/effect`
+   warned about", BC-22). Added the `@tsnuke/contracts-effect": file:../../contracts/effect`
    dep + `vitest.config.ts` `server.deps.inline` entry. `loadConfigPlugins` reads only
    `config.plugins`; RULE-039 behavior is byte-identical. Suite stayed green (70/70,
    incl. the by-construction source-scan over `Config.ts`) with no assertion change.

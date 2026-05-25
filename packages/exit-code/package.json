@@ -1,8 +1,8 @@
 {
-  "name": "@ts-fix/exit-code-effect",
+  "name": "@tsnuke/exit-code-effect",
   "private": true,
   "version": "0.1.0",
-  "description": "Effect-native rewrite of ts-fix's exit-code gate (RULE-030/031). Strangler-fig slice — pure synchronous functions on the Effect ecosystem (Schema literals/branded types).",
+  "description": "Effect-native rewrite of tsnuke's exit-code gate (RULE-030/031). Strangler-fig slice — pure synchronous functions on the Effect ecosystem (Schema literals/branded types).",
   "license": "MIT",
   "type": "module",
   "exports": {

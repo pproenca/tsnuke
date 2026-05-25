@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-fix/rules-core-effect";
+import { runRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/default-case-last.js";
 
 describe("default-case-last (SYN)", () => {
@@ -43,7 +43,7 @@ describe("default-case-last (SYN)", () => {
     );
     expect(diags[0]!.category).toBe("Exhaustiveness & Narrowing");
     expect(diags[0]!.tier).toBe("SYN");
-    expect(diags[0]!.plugin).toBe("ts-fix");
+    expect(diags[0]!.plugin).toBe("tsnuke");
   });
 
   it("reports 1-based line/column at the misplaced default clause", () => {

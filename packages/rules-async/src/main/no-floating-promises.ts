@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { defineRule } from "@ts-fix/rules-core-effect";
+import { defineRule } from "@tsnuke/rules-core-effect";
 
 /**
  * TYP (Tier-2, type-aware) — flag a Promise-valued expression statement that is
@@ -13,14 +13,14 @@ import { defineRule } from "@ts-fix/rules-core-effect";
  * which is why `runRule` (no checker) still yields nothing.
  *
  * ⚠️ THE ONE REAL FIX IN THE CATALOG (RULE-025 / RULE-032). This is the only rule
- * in the entire ts-fix catalog that attaches a real `fix` payload: `kind:
+ * in the entire tsnuke catalog that attaches a real `fix` payload: `kind:
  * "auto-fix"` plus a single zero-width `TextEdit` that inserts `void ` before the
  * floating expression, carrying the checker-inferred promise type as
  * `inferredType` (BC-14). Ported VERBATIM from legacy
- * `packages/ts-fix-rules/src/rules/async/no-floating-promises.ts` — the fix
+ * `packages/tsnuke-rules/src/rules/async/no-floating-promises.ts` — the fix
  * `kind`, the `edits` offsets (`{ start, end: start, replacement: "void " }`), and
  * `inferredType` are byte-for-byte the legacy payload. The only change is importing
- * `defineRule` from `@ts-fix/rules-core-effect`.
+ * `defineRule` from `@tsnuke/rules-core-effect`.
  */
 
 /** True iff `type` (or any union constituent) has a callable `then` member. */

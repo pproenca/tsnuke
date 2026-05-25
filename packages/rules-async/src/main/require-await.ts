@@ -1,14 +1,14 @@
 import ts from "typescript";
-import { defineRule } from "@ts-fix/rules-core-effect";
-import type { RuleContext } from "@ts-fix/rules-core-effect";
+import { defineRule } from "@tsnuke/rules-core-effect";
+import type { RuleContext } from "@tsnuke/rules-core-effect";
 
 /**
  * SYN — an `async` function with no `await` in its own body doesn't need to be
  * `async` (the wrapper allocates a Promise and obscures intent).
  *
  * Ported VERBATIM from legacy
- * `packages/ts-fix-rules/src/rules/async/require-await.ts`; the only change is
- * importing `defineRule`/`RuleContext` from `@ts-fix/rules-core-effect`.
+ * `packages/tsnuke-rules/src/rules/async/require-await.ts`; the only change is
+ * importing `defineRule`/`RuleContext` from `@tsnuke/rules-core-effect`.
  */
 
 /** True iff the node carries the `async` modifier. */

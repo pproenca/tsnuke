@@ -10,10 +10,10 @@ importers:
 
   packages/build-report:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/score-effect':
+      '@tsnuke/score-effect':
         specifier: workspace:*
         version: link:../score
       effect:
@@ -32,7 +32,7 @@ importers:
 
   packages/capabilities:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
       effect:
@@ -73,25 +73,25 @@ importers:
       '@effect/vitest':
         specifier: ^0.29.0
         version: 0.29.0(effect@3.21.2)(vitest@3.2.4(@types/node@22.19.19)(yaml@2.9.0))
-      '@ts-fix/build-report-effect':
+      '@tsnuke/build-report-effect':
         specifier: workspace:*
         version: link:../build-report
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/engine-effect':
+      '@tsnuke/engine-effect':
         specifier: workspace:*
         version: link:../engine
-      '@ts-fix/exit-code-effect':
+      '@tsnuke/exit-code-effect':
         specifier: workspace:*
         version: link:../exit-code
-      '@ts-fix/fix-applier-effect':
+      '@tsnuke/fix-applier-effect':
         specifier: workspace:*
         version: link:../fix-applier
-      '@ts-fix/format-effect':
+      '@tsnuke/format-effect':
         specifier: workspace:*
         version: link:../format
-      '@ts-fix/rules-registry-effect':
+      '@tsnuke/rules-registry-effect':
         specifier: workspace:*
         version: link:../rules-registry
       '@types/node':
@@ -153,10 +153,10 @@ importers:
       '@effect/platform-node':
         specifier: ^0.106.0
         version: 0.106.0(@effect/cluster@0.58.2(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/sql@0.51.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/workflow@0.18.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/sql@0.51.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(effect@3.21.2)
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/errors-effect':
+      '@tsnuke/errors-effect':
         specifier: workspace:*
         version: link:../errors
       effect:
@@ -184,40 +184,40 @@ importers:
       '@effect/platform-node':
         specifier: ^0.106.0
         version: 0.106.0(@effect/cluster@0.58.2(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/sql@0.51.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/workflow@0.18.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/sql@0.51.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(effect@3.21.2)
-      '@ts-fix/capabilities-effect':
+      '@tsnuke/capabilities-effect':
         specifier: workspace:*
         version: link:../capabilities
-      '@ts-fix/config-effect':
+      '@tsnuke/config-effect':
         specifier: workspace:*
         version: link:../config
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/discovery-effect':
+      '@tsnuke/discovery-effect':
         specifier: workspace:*
         version: link:../discovery
-      '@ts-fix/engine-plan-effect':
+      '@tsnuke/engine-plan-effect':
         specifier: workspace:*
         version: link:../engine-plan
-      '@ts-fix/errors-effect':
+      '@tsnuke/errors-effect':
         specifier: workspace:*
         version: link:../errors
-      '@ts-fix/filter-pipeline-effect':
+      '@tsnuke/filter-pipeline-effect':
         specifier: workspace:*
         version: link:../filter-pipeline
-      '@ts-fix/module-graph-effect':
+      '@tsnuke/module-graph-effect':
         specifier: workspace:*
         version: link:../module-graph
-      '@ts-fix/rules-core-effect':
+      '@tsnuke/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
-      '@ts-fix/rules-registry-effect':
+      '@tsnuke/rules-registry-effect':
         specifier: workspace:*
         version: link:../rules-registry
-      '@ts-fix/scale-effect':
+      '@tsnuke/scale-effect':
         specifier: workspace:*
         version: link:../scale
-      '@ts-fix/score-effect':
+      '@tsnuke/score-effect':
         specifier: workspace:*
         version: link:../score
       effect:
@@ -239,7 +239,7 @@ importers:
 
   packages/engine-plan:
     dependencies:
-      '@ts-fix/capabilities-effect':
+      '@tsnuke/capabilities-effect':
         specifier: workspace:*
         version: link:../capabilities
       effect:
@@ -290,7 +290,7 @@ importers:
 
   packages/filter-pipeline:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
       effect:
@@ -315,7 +315,7 @@ importers:
       '@effect/platform-node':
         specifier: ^0.106.0
         version: 0.106.0(@effect/cluster@0.58.2(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/sql@0.51.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/workflow@0.18.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/sql@0.51.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(effect@3.21.2)
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
       effect:
@@ -334,7 +334,7 @@ importers:
 
   packages/format:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
       effect:
@@ -359,16 +359,16 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@4.4.3)
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/engine-effect':
+      '@tsnuke/engine-effect':
         specifier: workspace:*
         version: link:../engine
-      '@ts-fix/format-effect':
+      '@tsnuke/format-effect':
         specifier: workspace:*
         version: link:../format
-      '@ts-fix/rules-registry-effect':
+      '@tsnuke/rules-registry-effect':
         specifier: workspace:*
         version: link:../rules-registry
       effect:
@@ -393,7 +393,7 @@ importers:
 
   packages/module-graph:
     dependencies:
-      '@ts-fix/rules-core-effect':
+      '@tsnuke/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -409,10 +409,10 @@ importers:
 
   packages/rules-async:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/rules-core-effect':
+      '@tsnuke/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -428,7 +428,7 @@ importers:
 
   packages/rules-core:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
       effect:
@@ -447,10 +447,10 @@ importers:
 
   packages/rules-declaration-api:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/rules-core-effect':
+      '@tsnuke/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -466,10 +466,10 @@ importers:
 
   packages/rules-error-handling:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/rules-core-effect':
+      '@tsnuke/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -485,10 +485,10 @@ importers:
 
   packages/rules-exhaustiveness:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/rules-core-effect':
+      '@tsnuke/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -504,10 +504,10 @@ importers:
 
   packages/rules-generics:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/rules-core-effect':
+      '@tsnuke/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -523,10 +523,10 @@ importers:
 
   packages/rules-graph:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/rules-core-effect':
+      '@tsnuke/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
     devDependencies:
@@ -542,10 +542,10 @@ importers:
 
   packages/rules-module-boundaries:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/rules-core-effect':
+      '@tsnuke/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -561,10 +561,10 @@ importers:
 
   packages/rules-naming-idioms:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/rules-core-effect':
+      '@tsnuke/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -580,46 +580,46 @@ importers:
 
   packages/rules-registry:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/rules-async-effect':
+      '@tsnuke/rules-async-effect':
         specifier: workspace:*
         version: link:../rules-async
-      '@ts-fix/rules-core-effect':
+      '@tsnuke/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
-      '@ts-fix/rules-declaration-api-effect':
+      '@tsnuke/rules-declaration-api-effect':
         specifier: workspace:*
         version: link:../rules-declaration-api
-      '@ts-fix/rules-error-handling-effect':
+      '@tsnuke/rules-error-handling-effect':
         specifier: workspace:*
         version: link:../rules-error-handling
-      '@ts-fix/rules-exhaustiveness-effect':
+      '@tsnuke/rules-exhaustiveness-effect':
         specifier: workspace:*
         version: link:../rules-exhaustiveness
-      '@ts-fix/rules-generics-effect':
+      '@tsnuke/rules-generics-effect':
         specifier: workspace:*
         version: link:../rules-generics
-      '@ts-fix/rules-graph-effect':
+      '@tsnuke/rules-graph-effect':
         specifier: workspace:*
         version: link:../rules-graph
-      '@ts-fix/rules-module-boundaries-effect':
+      '@tsnuke/rules-module-boundaries-effect':
         specifier: workspace:*
         version: link:../rules-module-boundaries
-      '@ts-fix/rules-naming-idioms-effect':
+      '@tsnuke/rules-naming-idioms-effect':
         specifier: workspace:*
         version: link:../rules-naming-idioms
-      '@ts-fix/rules-security-effect':
+      '@tsnuke/rules-security-effect':
         specifier: workspace:*
         version: link:../rules-security
-      '@ts-fix/rules-type-assertions-effect':
+      '@tsnuke/rules-type-assertions-effect':
         specifier: workspace:*
         version: link:../rules-type-assertions
-      '@ts-fix/rules-type-performance-effect':
+      '@tsnuke/rules-type-performance-effect':
         specifier: workspace:*
         version: link:../rules-type-performance
-      '@ts-fix/rules-type-safety-effect':
+      '@tsnuke/rules-type-safety-effect':
         specifier: workspace:*
         version: link:../rules-type-safety
       effect:
@@ -638,10 +638,10 @@ importers:
 
   packages/rules-security:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/rules-core-effect':
+      '@tsnuke/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -657,10 +657,10 @@ importers:
 
   packages/rules-type-assertions:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/rules-core-effect':
+      '@tsnuke/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -676,10 +676,10 @@ importers:
 
   packages/rules-type-performance:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/rules-core-effect':
+      '@tsnuke/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -695,10 +695,10 @@ importers:
 
   packages/rules-type-safety:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
-      '@ts-fix/rules-core-effect':
+      '@tsnuke/rules-core-effect':
         specifier: workspace:*
         version: link:../rules-core
       typescript:
@@ -733,7 +733,7 @@ importers:
 
   packages/score:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
       effect:
@@ -752,7 +752,7 @@ importers:
 
   packages/security:
     dependencies:
-      '@ts-fix/contracts-effect':
+      '@tsnuke/contracts-effect':
         specifier: workspace:*
         version: link:../contracts
       effect:

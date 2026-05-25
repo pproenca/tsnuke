@@ -20,10 +20,10 @@
 
 import { dirname, resolve } from "node:path";
 import ts from "typescript";
-// The `ModuleGraph` TYPE is OWNED by the rules domain (`@ts-fix/rules-core-effect`).
+// The `ModuleGraph` TYPE is OWNED by the rules domain (`@tsnuke/rules-core-effect`).
 // `import type` is erased at runtime under `verbatimModuleSyntax`, so this introduces no
 // runtime dependency on rules-core — only a compile-time type link.
-import type { ModuleGraph } from "@ts-fix/rules-core-effect";
+import type { ModuleGraph } from "@tsnuke/rules-core-effect";
 
 /** A file to include in the graph: absolute path + contents. */
 export interface GraphFileInput {

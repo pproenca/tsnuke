@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * ts-fix MCP server (stdio) — exposes the linter to coding agents.
+ * tsnuke MCP server (stdio) — exposes the linter to coding agents.
  *
  * Tools:
- *   - ts_fix_diagnose(directory, deep?)  → agent-tuned report + score
- *   - ts_fix_explain(rule)               → offline rule explanation
- *   - ts_fix_list_rules()                → the rule catalog
+ *   - tsnuke_diagnose(directory, deep?)  → agent-tuned report + score
+ *   - tsnuke_explain(rule)               → offline rule explanation
+ *   - tsnuke_list_rules()                → the rule catalog
  *
  * All analysis logic lives in `./tools.ts` (SDK-free, unit-tested); this module
- * is the thin protocol adapter. Run: `ts-fix-mcp` (stdio).
+ * is the thin protocol adapter. Run: `tsnuke-mcp` (stdio).
  *
  * ── Effect-TS slice port (RULE-029 deviation) ─────────────────────────────────
  * Legacy registered each tool with `server.tool(name, desc, ZOD_SHAPE, handler)`,
@@ -47,24 +47,24 @@ import { diagnoseTool, explainTool, listRulesTool } from "./tools.js";
 const DIAGNOSE_DESCRIPTION =
   "Lint and score a TypeScript project. Returns a deterministic 0–100 health score and a rule-deduplicated, tier-sorted report of findings (SYN/TYP/CFG/GRAPH).";
 const EXPLAIN_DESCRIPTION =
-  "Explain a ts-fix rule by id (offline, deterministic): its category, tier, severity, recommendation, and fix kind.";
+  "Explain a tsnuke rule by id (offline, deterministic): its category, tier, severity, recommendation, and fix kind.";
 const LIST_RULES_DESCRIPTION =
-  "List the full ts-fix rule catalog (id, category, tier, severity) for rule discovery.";
+  "List the full tsnuke rule catalog (id, category, tier, severity) for rule discovery.";
 
 /** The `tools/list` payload — JSON Schemas derived from the `effect/Schema` args. */
 const TOOL_DEFINITIONS = [
   {
-    name: "ts_fix_diagnose",
+    name: "tsnuke_diagnose",
     description: DIAGNOSE_DESCRIPTION,
     inputSchema: DiagnoseJsonSchema,
   },
   {
-    name: "ts_fix_explain",
+    name: "tsnuke_explain",
     description: EXPLAIN_DESCRIPTION,
     inputSchema: ExplainJsonSchema,
   },
   {
-    name: "ts_fix_list_rules",
+    name: "tsnuke_list_rules",
     description: LIST_RULES_DESCRIPTION,
     inputSchema: ListRulesJsonSchema,
   },
@@ -77,7 +77,7 @@ const TOOL_DEFINITIONS = [
  * tests + reuse; `main()` connects it to stdio.
  */
 export function createServer(): McpServer {
-  const server = new McpServer({ name: "ts-fix", version: "0.0.0" });
+  const server = new McpServer({ name: "tsnuke", version: "0.0.0" });
 
   // Declare the `tools` capability. The SDK's `McpServer.tool()` would do this implicitly,
   // but we register the raw `tools/list` + `tools/call` protocol handlers ourselves (so the
@@ -98,7 +98,7 @@ export function createServer(): McpServer {
       const args = rawArgs ?? {};
 
       switch (name) {
-        case "ts_fix_diagnose": {
+        case "tsnuke_diagnose": {
           const decoded = decodeDiagnoseArgs(args);
           if (Either.isLeft(decoded)) throw invalidParams(name, decoded.left);
           const { directory, deep } = decoded.right;
@@ -113,14 +113,14 @@ export function createServer(): McpServer {
             ],
           };
         }
-        case "ts_fix_explain": {
+        case "tsnuke_explain": {
           const decoded = decodeExplainArgs(args);
           if (Either.isLeft(decoded)) throw invalidParams(name, decoded.left);
           return {
             content: [{ type: "text", text: explainTool(decoded.right) }],
           };
         }
-        case "ts_fix_list_rules": {
+        case "tsnuke_list_rules": {
           const decoded = decodeListRulesArgs(args);
           if (Either.isLeft(decoded)) throw invalidParams(name, decoded.left);
           return {
@@ -144,7 +144,7 @@ function invalidParams(tool: string, error: ParseResult.ParseError): McpError {
   );
 }
 
-/** Connect the server to stdio. The runnable entry point (`ts-fix-mcp`). */
+/** Connect the server to stdio. The runnable entry point (`tsnuke-mcp`). */
 export async function main(): Promise<void> {
   const server = createServer();
   const transport = new StdioServerTransport();

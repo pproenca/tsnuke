@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { defineRule } from "@ts-fix/rules-core-effect";
+import { defineRule } from "@tsnuke/rules-core-effect";
 
 /**
  * SYN — a `Promise` executor (the function passed to `new Promise(...)`) must not
@@ -8,8 +8,8 @@ import { defineRule } from "@ts-fix/rules-core-effect";
  * the constructed promise — a silent error-loss bug.
  *
  * Ported VERBATIM from legacy
- * `packages/ts-fix-rules/src/rules/async/no-async-promise-executor.ts`; the only
- * change is importing `defineRule` from the `@ts-fix/rules-core-effect` substrate
+ * `packages/tsnuke-rules/src/rules/async/no-async-promise-executor.ts`; the only
+ * change is importing `defineRule` from the `@tsnuke/rules-core-effect` substrate
  * rather than the legacy `../../define-rule.js`.
  */
 export const rule = defineRule(

@@ -1,8 +1,8 @@
 {
-  "name": "@ts-fix/discovery-effect",
+  "name": "@tsnuke/discovery-effect",
   "private": true,
   "version": "0.1.0",
-  "description": "Effect-native rewrite of ts-fix's project discovery + capability earning (RULE-012 file caps, RULE-021 capability earning, RULE-022 discovery validity). The biggest core module — an EFFECTFUL strangler-fig slice: filesystem discovery over @effect/platform FileSystem + Path with Node/in-memory Layers, typed errors on the Effect error channel (from @ts-fix/errors-effect), plus the PURE computeCapabilities derivation.",
+  "description": "Effect-native rewrite of tsnuke's project discovery + capability earning (RULE-012 file caps, RULE-021 capability earning, RULE-022 discovery validity). The biggest core module — an EFFECTFUL strangler-fig slice: filesystem discovery over @effect/platform FileSystem + Path with Node/in-memory Layers, typed errors on the Effect error channel (from @tsnuke/errors-effect), plus the PURE computeCapabilities derivation.",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -16,8 +16,8 @@
   "dependencies": {
     "@effect/platform": "^0.96.1",
     "@effect/platform-node": "^0.106.0",
-    "@ts-fix/contracts-effect": "workspace:*",
-    "@ts-fix/errors-effect": "workspace:*",
+    "@tsnuke/contracts-effect": "workspace:*",
+    "@tsnuke/errors-effect": "workspace:*",
     "effect": "^3.21.2"
   },
   "devDependencies": {

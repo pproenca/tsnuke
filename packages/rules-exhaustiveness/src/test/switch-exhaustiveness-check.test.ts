@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule, runTypeAwareRule } from "@ts-fix/rules-core-effect";
+import { runRule, runTypeAwareRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/switch-exhaustiveness-check.js";
 
 describe("switch-exhaustiveness-check (TYP / BC-10 / RULE-025 false-negative bias)", () => {

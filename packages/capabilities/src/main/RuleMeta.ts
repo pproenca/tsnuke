@@ -3,7 +3,7 @@
  *
  * DE-VENDORED: the `Severity` / `Capability` / `Tier` / `RuleMeta` Schemas that this
  * slice used to vendor (the activation-relevant subset) now live canonically in
- * `@ts-fix/contracts-effect` and are re-exported from here. The canonical `RuleMeta`
+ * `@tsnuke/contracts-effect` and are re-exported from here. The canonical `RuleMeta`
  * is the FULL legacy contract — a proven structural SUPERSET of the activation subset
  * this slice gated on, so `shouldActivate` / `resolveSeverity` (which read only
  * `requires` / `disabledBy` / `tags` / `defaultEnabled` / `severity`) are unaffected.
@@ -19,4 +19,4 @@ export {
   Severity,
   Tier,
   decodeRuleMeta,
-} from "@ts-fix/contracts-effect";
+} from "@tsnuke/contracts-effect";

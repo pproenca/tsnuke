@@ -12,7 +12,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { NoTypeScriptProjectError } from "@ts-fix/errors-effect";
+import { NoTypeScriptProjectError } from "@tsnuke/errors-effect";
 import { Effect, Either } from "effect";
 import { describe, expect, it } from "vitest";
 import { computeCapabilities } from "../main/capabilities.js";
@@ -27,7 +27,7 @@ import {
 
 describe("PRODUCTION Layer — discoverTsProjectNode reads a REAL temp dir via NodeContext", () => {
   it("discovers a real TS project and computes capabilities end-to-end", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "tsfix-disc-"));
+    const dir = mkdtempSync(join(tmpdir(), "tsnuke-disc-"));
     try {
       writeFileSync(
         join(dir, "tsconfig.json"),
@@ -68,7 +68,7 @@ describe("PRODUCTION Layer — discoverTsProjectNode reads a REAL temp dir via N
   });
 
   it("FAILS with NoTypeScriptProjectError on the error channel for a tsconfig-only dir (real NodeContext)", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "tsfix-disc-"));
+    const dir = mkdtempSync(join(tmpdir(), "tsnuke-disc-"));
     try {
       writeFileSync(join(dir, "tsconfig.json"), "{}");
       // Exercise the REAL NodeContext (NodeFileSystem + NodePath), but capture the typed
@@ -89,7 +89,7 @@ describe("PRODUCTION Layer — discoverTsProjectNode reads a REAL temp dir via N
   });
 
   it("discoverTsProjectNode (rejecting prod runnable) rejects when not a TS project", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "tsfix-disc-"));
+    const dir = mkdtempSync(join(tmpdir(), "tsnuke-disc-"));
     try {
       writeFileSync(join(dir, "tsconfig.json"), "{}");
       // The rejecting runnable wraps the typed failure in a FiberFailure: its `.name`
@@ -108,7 +108,7 @@ describe("PRODUCTION Layer — discoverTsProjectNode reads a REAL temp dir via N
   });
 
   it("countSourceFilesNode / collectSourceFilesNode walk a real temp tree (never reject)", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "tsfix-disc-"));
+    const dir = mkdtempSync(join(tmpdir(), "tsnuke-disc-"));
     try {
       mkdirSync(join(dir, "src"));
       mkdirSync(join(dir, "node_modules"));
@@ -133,7 +133,7 @@ describe("PRODUCTION Layer — discoverTsProjectNode reads a REAL temp dir via N
     // NodeFileSystem readdir (not the in-memory stub's insertion order) — closing the
     // architecture-review H1 gap. Uses the cap-taking Effect directly (the *Node runnables
     // hardcode the default 5000/10000 caps, impractical to hit on disk).
-    const dir = mkdtempSync(join(tmpdir(), "tsfix-disc-"));
+    const dir = mkdtempSync(join(tmpdir(), "tsnuke-disc-"));
     try {
       writeFileSync(join(dir, "a.ts"), "");
       writeFileSync(join(dir, "b.ts"), "");

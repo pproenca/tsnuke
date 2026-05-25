@@ -1,4 +1,4 @@
-# ts-fix
+# tsnuke
 
 A code-health linter and 0–100 scorer for **TypeScript** projects — the
 AI-native reimagining of [`react-doctor`](../../legacy/react-doctor) for the
@@ -17,29 +17,29 @@ deterministically** — no network round-trip — so an agent can loop on it off
 > including an **anti-slop family** (`ts-idiom`) that catches LLM-generated TypeScript
 > delegating to runtime/boilerplate what types, native methods, and modern idioms
 > should carry — try `node packages/cli/dist/cli.js examples/slop-demo`.
-> The authoritative rule list lives in `@ts-fix/rules-registry-effect`.
+> The authoritative rule list lives in `@tsnuke/rules-registry-effect`.
 
 ## Quick start
 
 Once published, run it with no install:
 
 ```bash
-npx ts-fix ./path/to/project          # pretty report + score
-npx ts-fix . --score                  # just the 0–100 score
-npx ts-fix . --format agent           # agent-tuned JSON (for coding agents)
+npx tsnuke ./path/to/project          # pretty report + score
+npx tsnuke . --score                  # just the 0–100 score
+npx tsnuke . --format agent           # agent-tuned JSON (for coding agents)
 ```
 
 Or install it:
 
 ```bash
-npm i -D ts-fix && npx ts-fix .
+npm i -D tsnuke && npx tsnuke .
 ```
 
 ### From source (this monorepo)
 
 ```bash
 pnpm install
-pnpm --filter ts-fix run build         # bundle the CLI → packages/cli/dist/cli.js
+pnpm --filter tsnuke run build         # bundle the CLI → packages/cli/dist/cli.js
 node packages/cli/dist/cli.js ./path/to/project
 ```
 
@@ -65,7 +65,7 @@ Module Boundaries & Architecture:
 ## CLI
 
 ```
-ts-fix [directory]               # default = inspect; directory default "."
+tsnuke [directory]               # default = inspect; directory default "."
   --score                        # print only the score (exit 0)
   --json [--json-compact]        # emit the versioned JsonReportV1
   --format agent                 # rule-deduplicated, tier+fix sorted, agent-tuned JSON
@@ -74,7 +74,7 @@ ts-fix [directory]               # default = inspect; directory default "."
   --fail-on <error|warning|none> # exit-code gate (default error)
   --diff [base] | --staged       # scan only changed / staged files
   --explain <file:line>          # offline, deterministic "why did this fire" + fix guidance
-ts-fix install                   # install the agent skill + git hooks (stub)
+tsnuke install                   # install the agent skill + git hooks (stub)
 ```
 
 Exit codes: `0` ok · `1` gate tripped or error · `130` interrupted.
@@ -83,11 +83,11 @@ It analyzes **TypeScript projects** — point it at a directory with a `tsconfig
 
 ## Programmatic API
 
-`@ts-fix/engine-effect` exposes the `diagnose()` boundary. `diagnoseNode` is the
+`@tsnuke/engine-effect` exposes the `diagnose()` boundary. `diagnoseNode` is the
 Node runnable (provides `NodeContext` + a scoped `ts.Program`) and resolves a Promise:
 
 ```ts
-import { diagnoseNode } from "@ts-fix/engine-effect";
+import { diagnoseNode } from "@tsnuke/engine-effect";
 
 const result = await diagnoseNode("./my-project", {});
 console.log(result.score?.score, result.scorePartial, result.diagnostics.length);
@@ -98,11 +98,11 @@ When the project doesn't type-check, the type-aware tier is skipped and
 
 ## MCP server (for coding agents)
 
-ts-fix's primary AI-native surface is an [MCP](https://modelcontextprotocol.io)
+tsnuke's primary AI-native surface is an [MCP](https://modelcontextprotocol.io)
 server that exposes the linter to coding agents over stdio:
 
 ```bash
-pnpm --filter @ts-fix/mcp-effect run build
+pnpm --filter @tsnuke/mcp-effect run build
 node packages/mcp/dist/server.js          # speaks MCP over stdio
 ```
 
@@ -110,25 +110,25 @@ Tools:
 
 | Tool | Args | Returns |
 |---|---|---|
-| `ts_fix_diagnose` | `directory`, `deep?` | a one-line score summary + the agent-tuned report (rule-deduplicated, tier+fix sorted) |
-| `ts_fix_explain` | `rule` | offline, deterministic explanation of a rule (category, tier, severity, recommendation, fix kind) |
-| `ts_fix_list_rules` | — | the full rule catalog (id, category, tier, severity) for discovery |
+| `tsnuke_diagnose` | `directory`, `deep?` | a one-line score summary + the agent-tuned report (rule-deduplicated, tier+fix sorted) |
+| `tsnuke_explain` | `rule` | offline, deterministic explanation of a rule (category, tier, severity, recommendation, fix kind) |
+| `tsnuke_list_rules` | — | the full rule catalog (id, category, tier, severity) for discovery |
 
-Point your agent client at the `ts-fix-mcp` binary. Everything is local and
+Point your agent client at the `tsnuke-mcp` binary. Everything is local and
 deterministic — no network, so an agent can loop on the score offline.
 
 ## Packages
 
-An Effect-TS v3 strangler-fig monorepo — **32 packages** (`@ts-fix/<dir>-effect`,
+An Effect-TS v3 strangler-fig monorepo — **32 packages** (`@tsnuke/<dir>-effect`,
 each with a `src/main` + `src/test` layout), built with `pnpm` + `turbo`.
 
 | Package | Role |
 |---|---|
-| `@ts-fix/rules-*-effect` (13 slices) + `@ts-fix/rules-core-effect` | Rule catalog + activation substrate; `defineRule` / `defineGraphRule` |
-| `@ts-fix/rules-registry-effect` | The aggregated, authoritative rule catalog |
-| `@ts-fix/engine-effect` | Discovery → capabilities → two-tier engine → module graph → filter pipeline → local score → report; the `diagnose()` boundary |
-| `@ts-fix/mcp-effect` | MCP server (stdio) exposing ts-fix to coding agents (`ts-fix-mcp`) |
-| `ts-fix` | The published CLI (bundles the engine + rules into a self-contained binary) |
+| `@tsnuke/rules-*-effect` (13 slices) + `@tsnuke/rules-core-effect` | Rule catalog + activation substrate; `defineRule` / `defineGraphRule` |
+| `@tsnuke/rules-registry-effect` | The aggregated, authoritative rule catalog |
+| `@tsnuke/engine-effect` | Discovery → capabilities → two-tier engine → module graph → filter pipeline → local score → report; the `diagnose()` boundary |
+| `@tsnuke/mcp-effect` | MCP server (stdio) exposing tsnuke to coding agents (`tsnuke-mcp`) |
+| `tsnuke` | The published CLI (bundles the engine + rules into a self-contained binary) |
 
 Supporting slices: `contracts` · `config` · `errors` · `exit-code` · `scale` ·
 `discovery` · `capabilities` · `engine-plan` · `module-graph` · `filter-pipeline` ·
@@ -142,8 +142,8 @@ pnpm typecheck       # tsc --noEmit per package (strict + noUncheckedIndexedAcce
 ```
 
 **Adding a rule:** drop a `defineRule({...}, create)` (or `defineGraphRule` for
-module-graph rules) in the relevant `@ts-fix/rules-<category>-effect` slice with a
-colocated `*.test.ts`, then register it in `@ts-fix/rules-registry-effect`.
+module-graph rules) in the relevant `@tsnuke/rules-<category>-effect` slice with a
+colocated `*.test.ts`, then register it in `@tsnuke/rules-registry-effect`.
 
 See `CLAUDE.md` for the architecture and the four-tier engine. The full design
 lives in [`docs/AI_NATIVE_SPEC.md`](docs/AI_NATIVE_SPEC.md) and

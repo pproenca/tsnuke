@@ -17,9 +17,9 @@
  *     parameter contract. They are advisory metadata; the Schema decode is the gate.
  *
  * Field contract (frozen by RULE-029):
- *   - `ts_fix_diagnose`   : { directory: string, deep?: boolean }
- *   - `ts_fix_explain`    : { rule: string }
- *   - `ts_fix_list_rules` : {}
+ *   - `tsnuke_diagnose`   : { directory: string, deep?: boolean }
+ *   - `tsnuke_explain`    : { rule: string }
+ *   - `tsnuke_list_rules` : {}
  *
  * Field-level `.annotations({ description })` flow into the generated JSON Schema as
  * `description` metadata an agent reads in `tools/list` — additive only. A TOP-LEVEL
@@ -33,7 +33,7 @@
 import { JSONSchema, Schema } from "effect";
 
 // ---------------------------------------------------------------------------
-// ts_fix_diagnose — { directory: string, deep?: boolean }
+// tsnuke_diagnose — { directory: string, deep?: boolean }
 // ---------------------------------------------------------------------------
 
 export const DiagnoseArgs = Schema.Struct({
@@ -48,11 +48,11 @@ export const DiagnoseArgs = Schema.Struct({
 });
 export type DiagnoseArgs = typeof DiagnoseArgs.Type;
 
-/** Authoritative decode for `ts_fix_diagnose` args (RULE-029). Returns `Either`. */
+/** Authoritative decode for `tsnuke_diagnose` args (RULE-029). Returns `Either`. */
 export const decodeDiagnoseArgs = Schema.decodeUnknownEither(DiagnoseArgs);
 
 // ---------------------------------------------------------------------------
-// ts_fix_explain — { rule: string }
+// tsnuke_explain — { rule: string }
 // ---------------------------------------------------------------------------
 
 export const ExplainArgs = Schema.Struct({
@@ -62,26 +62,26 @@ export const ExplainArgs = Schema.Struct({
 });
 export type ExplainArgs = typeof ExplainArgs.Type;
 
-/** Authoritative decode for `ts_fix_explain` args (RULE-029). Returns `Either`. */
+/** Authoritative decode for `tsnuke_explain` args (RULE-029). Returns `Either`. */
 export const decodeExplainArgs = Schema.decodeUnknownEither(ExplainArgs);
 
 // ---------------------------------------------------------------------------
-// ts_fix_list_rules — {}
+// tsnuke_list_rules — {}
 // ---------------------------------------------------------------------------
 
 export const ListRulesArgs = Schema.Struct({});
 export type ListRulesArgs = typeof ListRulesArgs.Type;
 
-/** Authoritative decode for `ts_fix_list_rules` args (RULE-029). Returns `Either`. */
+/** Authoritative decode for `tsnuke_list_rules` args (RULE-029). Returns `Either`. */
 export const decodeListRulesArgs = Schema.decodeUnknownEither(ListRulesArgs);
 
 // ---------------------------------------------------------------------------
 // JSON Schemas derived from the SAME effect/Schema, for tool DISCOVERY only.
 // ---------------------------------------------------------------------------
 
-/** JSON Schema for `ts_fix_diagnose` (advisory `tools/list` metadata). */
+/** JSON Schema for `tsnuke_diagnose` (advisory `tools/list` metadata). */
 export const DiagnoseJsonSchema = JSONSchema.make(DiagnoseArgs);
-/** JSON Schema for `ts_fix_explain` (advisory `tools/list` metadata). */
+/** JSON Schema for `tsnuke_explain` (advisory `tools/list` metadata). */
 export const ExplainJsonSchema = JSONSchema.make(ExplainArgs);
-/** JSON Schema for `ts_fix_list_rules` (advisory `tools/list` metadata). */
+/** JSON Schema for `tsnuke_list_rules` (advisory `tools/list` metadata). */
 export const ListRulesJsonSchema = JSONSchema.make(ListRulesArgs);

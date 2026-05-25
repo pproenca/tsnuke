@@ -17,7 +17,7 @@ function diag(
   over: Partial<Diagnostic> & Pick<Diagnostic, "rule" | "severity" | "filePath">,
 ): Diagnostic {
   return {
-    plugin: "ts-fix",
+    plugin: "tsnuke",
     message: "m",
     help: "h",
     line: 1,

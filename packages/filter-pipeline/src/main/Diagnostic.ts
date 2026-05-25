@@ -3,7 +3,7 @@
  *
  * DE-VENDORED: the `Severity` / `Tier` / `FixKind` / `TextEdit` / `Fix` / `Diagnostic`
  * Schemas this slice used to vendor now live canonically in
- * `@ts-fix/contracts-effect` and are re-exported from here (so call sites that import
+ * `@tsnuke/contracts-effect` and are re-exported from here (so call sites that import
  * from `./Diagnostic.js` are unchanged). The canonical `Diagnostic` is the PUBLIC shape
  * the pipeline emits — a proven structural superset of the deleted local copy
  * (field-identical, incl. `Schema.Int`), so behavior is unchanged.
@@ -30,9 +30,9 @@ export {
   TextEdit,
   Fix,
   Diagnostic,
-} from "@ts-fix/contracts-effect";
+} from "@tsnuke/contracts-effect";
 
-import type { Diagnostic } from "@ts-fix/contracts-effect";
+import type { Diagnostic } from "@tsnuke/contracts-effect";
 
 /**
  * A diagnostic with the engine-only `tags` carry used by the auto-suppress stage

@@ -1,14 +1,14 @@
 /**
  * Project discovery over the `@effect/platform` `FileSystem` + `Path` services
  * (RULE-022: project discovery validity). Source of truth (READ-ONLY):
- * `legacy/ts-fix/packages/core/src/discover-ts-project.ts:24-388` (the strict-flag
+ * `legacy/tsnuke/packages/core/src/discover-ts-project.ts:24-388` (the strict-flag
  * family, JSON/`extends` helpers, version/module/build/kind detection, and
  * `discoverTsProject`).
  *
  * `discoverTsProject(dir)` reads `tsconfig.json` (resolving `extends` ONE level
  * shallow) and `package.json` to produce a {@link ProjectInfo}, refusing non-TS
  * projects. The legacy function `throw`s `TsconfigNotFoundError` / `NoTypeScriptProjectError`;
- * here those typed errors (imported from `@ts-fix/errors-effect`) move to the Effect
+ * here those typed errors (imported from `@tsnuke/errors-effect`) move to the Effect
  * ERROR CHANNEL — the idiomatic Effect replacement for `throw`. NON-fatal cases (a
  * broken/unreadable `package.json`) stay SUCCESSES with defaults, exactly as legacy
  * continued past its `try/catch`.
@@ -30,7 +30,7 @@ import { FileSystem, Path } from "@effect/platform";
 import {
   NoTypeScriptProjectError,
   TsconfigNotFoundError,
-} from "@ts-fix/errors-effect";
+} from "@tsnuke/errors-effect";
 import { Effect, Either } from "effect";
 import { countSourceFiles } from "./enumerate.js";
 import type { BuildTool, ModuleSystem, ProjectInfo, ProjectKind } from "./ProjectInfo.js";
@@ -343,7 +343,7 @@ export const discoverTsProject: (
   if (!(yield* safeExists(fs, tsconfigPath))) {
     return yield* Effect.fail(
       new TsconfigNotFoundError(
-        `No tsconfig.json found in ${root}. ts-fix analyzes TypeScript projects only.`,
+        `No tsconfig.json found in ${root}. tsnuke analyzes TypeScript projects only.`,
       ),
     );
   }

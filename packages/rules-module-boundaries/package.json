@@ -1,8 +1,8 @@
 {
-  "name": "@ts-fix/rules-module-boundaries-effect",
+  "name": "@tsnuke/rules-module-boundaries-effect",
   "private": true,
   "version": "0.1.0",
-  "description": "Effect-native rewrite of ts-fix's `module-boundaries` SYN rule category (RULE-011 deep relative import >=4 leading `..`, no-default-export, public-api-must-be-explicit). Three pure AST predicates on the @ts-fix/rules-core-effect substrate (defineRule/runRule), consuming the canonical Diagnostic/RuleMeta from @ts-fix/contracts-effect. Plain-TS visitors over the TS compiler API — NOT Effect-wrapped (sync AST walk). The GRAPH rule `no-import-cycles` is DEFERRED to the module-graph batch.",
+  "description": "Effect-native rewrite of tsnuke's `module-boundaries` SYN rule category (RULE-011 deep relative import >=4 leading `..`, no-default-export, public-api-must-be-explicit). Three pure AST predicates on the @tsnuke/rules-core-effect substrate (defineRule/runRule), consuming the canonical Diagnostic/RuleMeta from @tsnuke/contracts-effect. Plain-TS visitors over the TS compiler API — NOT Effect-wrapped (sync AST walk). The GRAPH rule `no-import-cycles` is DEFERRED to the module-graph batch.",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -14,8 +14,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ts-fix/contracts-effect": "workspace:*",
-    "@ts-fix/rules-core-effect": "workspace:*",
+    "@tsnuke/contracts-effect": "workspace:*",
+    "@tsnuke/rules-core-effect": "workspace:*",
     "typescript": "^5.8.0"
   },
   "devDependencies": {

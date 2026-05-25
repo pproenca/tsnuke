@@ -106,7 +106,7 @@ function legacyLoadConfigPlugins(config: { plugins?: string[] }): LegacyResult {
   const ignored = declared.filter((p): p is string => typeof p === "string");
   const warnings = ignored.map(
     (name) =>
-      `Ignoring config plugin "${name}": ts-fix v1 never loads plugins from a scanned repo (BC-18).`,
+      `Ignoring config plugin "${name}": tsnuke v1 never loads plugins from a scanned repo (BC-18).`,
   );
   return { plugins: [], ignored, warnings };
 }
@@ -235,7 +235,7 @@ describe("equivalence — sanitizeEnv: modern === legacy (BC-19)", () => {
 
 describe("equivalence — isInsideTempDir: modern === legacy (BC-16)", () => {
   it("agrees over enumerated tempDir/relPath pairs", () => {
-    const tmp = "/tmp/ts-fix-XYZ";
+    const tmp = "/tmp/tsnuke-XYZ";
     const pairs: ReadonlyArray<readonly [string, string]> = [
       [tmp, "a.ts"],
       [tmp, "nested/dir/a.ts"],

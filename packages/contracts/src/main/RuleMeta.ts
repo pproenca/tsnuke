@@ -1,6 +1,6 @@
 /**
  * The CANONICAL rule-metadata contract, as `effect/Schema` (Modernization Brief
- * line 94). This is the FULL legacy `RuleMeta` (`packages/ts-fix-rules/src/types.ts:98-123`)
+ * line 94). This is the FULL legacy `RuleMeta` (`packages/tsnuke-rules/src/types.ts:98-123`)
  * plus the `Capability` token — consolidating the SUBSET that the `capabilities` slice
  * vendors today (the activation-relevant fields only). The canonical version is a
  * structural SUPERSET of the capabilities subset, proven in `src/test/RuleMeta.compat.test.ts`,

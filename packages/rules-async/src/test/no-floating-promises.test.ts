@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule, runTypeAwareRule } from "@ts-fix/rules-core-effect";
+import { runRule, runTypeAwareRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/no-floating-promises.js";
 
 describe("no-floating-promises (TYP / BC-10) — RULE-025 / RULE-032 (the ONE real fix)", () => {
@@ -37,7 +37,7 @@ describe("no-floating-promises (TYP / BC-10) — RULE-025 / RULE-032 (the ONE re
   });
 
   // --- THE REAL FIX: assert the exact edit (kind + offsets + replacement) ---
-  // This is the ONLY rule in the entire ts-fix catalog that attaches a real
+  // This is the ONLY rule in the entire tsnuke catalog that attaches a real
   // `fix` payload (RULE-025 / RULE-032). The fix inserts `void ` (zero-width edit)
   // before the floating expression. For `Promise.resolve(1);\n` the expression
   // starts at offset 0, so the edit is `{ start: 0, end: 0, replacement: "void " }`.
@@ -81,7 +81,7 @@ describe("no-floating-promises (TYP / BC-10) — RULE-025 / RULE-032 (the ONE re
     expect(diags).toHaveLength(1);
     const d = diags[0]!;
     expect(d.category).toBe("Async / Promises");
-    expect(d.plugin).toBe("ts-fix");
+    expect(d.plugin).toBe("tsnuke");
     expect(d.message).toBe(
       "Floating promise: this Promise is never awaited or handled.",
     );

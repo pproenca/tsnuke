@@ -1,13 +1,13 @@
 # Transformation Notes — `async` rule category → Effect-TS
 
 Strangler-fig slice produced by
-`/code-modernization:modernize-transform ts-fix rules-async effect`.
+`/code-modernization:modernize-transform tsnuke rules-async effect`.
 
-Source (READ-ONLY): `legacy/ts-fix/packages/ts-fix-rules/src/rules/async/`
+Source (READ-ONLY): `legacy/tsnuke/packages/tsnuke-rules/src/rules/async/`
 (+ the `Diagnostic`/`RuleMeta`/`Fix`/`TextEdit` contracts and the
 `defineRule`/`runRule`/`runTypeAwareRule` substrate, now owned by
-`@ts-fix/contracts-effect` and `@ts-fix/rules-core-effect` respectively).
-Target: `modernized/rules-async/effect/` (package `@ts-fix/rules-async-effect`).
+`@tsnuke/contracts-effect` and `@tsnuke/rules-core-effect` respectively).
+Target: `modernized/rules-async/effect/` (package `@tsnuke/rules-async-effect`).
 
 Implements **RULE-025** (async row): the 7-rule async category, split **4 SYN + 3 TYP**.
 The async row of RULE-025 is special: it holds `no-floating-promises` — the **ONLY rule
@@ -34,7 +34,7 @@ as no-ops). Its fix was ported **VERBATIM** (see §2 D4).
 | `no-floating-promises` | TYP | RULE-025 / **RULE-032** (the real fix) | `…/async/no-floating-promises.ts` | `src/main/no-floating-promises.ts` |
 | `no-misused-promises` | TYP | RULE-025 (async, BC-10) | `…/async/no-misused-promises.ts` | `src/main/no-misused-promises.ts` |
 | category barrel + `asyncRules` registry | — | (v1 manual codegen seam) | (codegen would fold into the global registry) | `src/main/index.ts` |
-| `runRule` / `runTypeAwareRule` drivers | — | legacy `ts-fix-rules/src/test-utils.ts` | imported from `@ts-fix/rules-core-effect` (not vendored) | `src/test/*.test.ts` |
+| `runRule` / `runTypeAwareRule` drivers | — | legacy `tsnuke-rules/src/test-utils.ts` | imported from `@tsnuke/rules-core-effect` (not vendored) | `src/test/*.test.ts` |
 | legacy `*.test.ts` vectors | — | the behavioral spec | `…/async/*.test.ts` | ported into `src/test/*.test.ts` |
 
 Each predicate was ported **VERBATIM** — same META (id / severity / category / tier /
@@ -55,19 +55,19 @@ are structural / dependency-routing:
 
 ### D1 — Import the substrate, do NOT re-vendor it
 - `defineRule` (and the `RuleContext` type, used by `no-return-await`, `require-await`,
-  `no-misused-promises`) are imported from `@ts-fix/rules-core-effect` instead of the
+  `no-misused-promises`) are imported from `@tsnuke/rules-core-effect` instead of the
   legacy relative `../../define-rule.js`.
 - `runRule` (SYN driver) and `runTypeAwareRule` (TYP driver — builds a one-file
   `ts.Program` with a real default lib + a live `ts.TypeChecker`) are imported from
-  `@ts-fix/rules-core-effect` in the tests — the engine drives these rules through the
+  `@tsnuke/rules-core-effect` in the tests — the engine drives these rules through the
   *same* walk/dispatch, so the tests exercise the real production drivers, not a copy.
-- `Diagnostic` / `RuleMeta` / `Fix` / `TextEdit` come from `@ts-fix/contracts-effect`
+- `Diagnostic` / `RuleMeta` / `Fix` / `TextEdit` come from `@tsnuke/contracts-effect`
   transitively (the SYN rules never name them; the `fix` payload `no-floating-promises`
   emits flows through `ctx.report` and is type-checked against the contract `Fix`/`TextEdit`
   via `ReportInput`). This slice re-vendors no contract or substrate symbol.
 
 ### D2 — Two `file:` deps + double inline (consumption pattern)
-`package.json` adds `@ts-fix/rules-core-effect` **and** `@ts-fix/contracts-effect`
+`package.json` adds `@tsnuke/rules-core-effect` **and** `@tsnuke/contracts-effect`
 as `file:` deps, plus `typescript` as a real **dependency** (not devDependency): the rules
 call `ts.SyntaxKind` / `ts.is*` / `getLineAndCharacterOfPosition` / `checker.getTypeAtLocation`
 / `checker.typeToString` at **runtime**, so the compiler API is a production dependency.

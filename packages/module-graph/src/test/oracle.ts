@@ -1,6 +1,6 @@
 /**
  * THE FROZEN ORACLE — a vendored, byte-for-byte copy of the legacy
- * `legacy/ts-fix/packages/core/src/module-graph.ts` `buildModuleGraph`
+ * `legacy/tsnuke/packages/core/src/module-graph.ts` `buildModuleGraph`
  * (+ its helpers `candidatesFor` / `exportedNamesOfStatement`), used SOLELY as the
  * reference implementation for the differential equivalence proof.
  *
@@ -9,7 +9,7 @@
  * of the legacy algorithm itself. DO NOT edit this to track the modern impl — its whole
  * value is being an independent, frozen reference. The only intentional change from the
  * legacy file is structural: the `ModuleGraph` return type is declared LOCALLY here
- * (`OracleModuleGraph`, identical shape) rather than imported from `@ts-fix/rules`,
+ * (`OracleModuleGraph`, identical shape) rather than imported from `@tsnuke/rules`,
  * so the oracle is self-contained and unaffected by any change to the shared type.
  */
 

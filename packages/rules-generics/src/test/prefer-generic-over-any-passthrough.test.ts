@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule, runTypeAwareRule } from "@ts-fix/rules-core-effect";
+import { runRule, runTypeAwareRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/prefer-generic-over-any-passthrough.js";
 
 describe("prefer-generic-over-any-passthrough (TYP)", () => {
@@ -47,7 +47,7 @@ describe("prefer-generic-over-any-passthrough (TYP)", () => {
     expect(d.tier).toBe("TYP");
     expect(d.severity).toBe("warning");
     expect(d.category).toBe("Generics & Type-Level Complexity");
-    expect(d.plugin).toBe("ts-fix");
+    expect(d.plugin).toBe("tsnuke");
     expect(d.message).toBe(
       "`any` parameter flows to an `any` return, erasing the caller's type. Use a generic type parameter to preserve it.",
     );

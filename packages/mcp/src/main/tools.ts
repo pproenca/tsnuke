@@ -3,34 +3,34 @@
  *
  * Each function maps validated args → a plain result. Keeping these SDK-free
  * makes them unit-testable and keeps the protocol adapter thin. The MCP server
- * exposes ts-fix to coding agents (the primary consumer, per the AI-native
+ * exposes tsnuke to coding agents (the primary consumer, per the AI-native
  * design): diagnose a project, explain a rule, list the catalog.
  *
  * ── Effect-TS slice port ──────────────────────────────────────────────────────
  * Ported VERBATIM (behavior) from `legacy/.../packages/mcp/src/tools.ts`, rewired
  * onto the finished strangler-fig slices:
- *   - `diagnose` (legacy `@ts-fix/core`)  → `diagnoseNode` (`@ts-fix/engine-effect`),
+ *   - `diagnose` (legacy `@tsnuke/core`)  → `diagnoseNode` (`@tsnuke/engine-effect`),
  *     the prod runnable that provides `NodeContext` + bounds the Program `Scope`.
- *   - `formatAgentReport` / `explain` / `asRuleLookup` → `@ts-fix/format-effect`.
- *   - `ruleRegistry` / `graphRuleRegistry` (legacy `@ts-fix/rules`) →
- *     `@ts-fix/rules-registry-effect`. Each registry entry is a `Rule`/`GraphRule`,
+ *   - `formatAgentReport` / `explain` / `asRuleLookup` → `@tsnuke/format-effect`.
+ *   - `ruleRegistry` / `graphRuleRegistry` (legacy `@tsnuke/rules`) →
+ *     `@tsnuke/rules-registry-effect`. Each registry entry is a `Rule`/`GraphRule`,
  *     i.e. a `RuleMeta` SUPERSET, so `buildLookup` / the catalog projection read the
  *     same `id`/`category`/`tier`/`severity`/`recommendation`/`fixKind` fields as legacy.
- *   - `RuleMeta` is imported from `@ts-fix/contracts-effect` (the canonical de-vendored
- *     Schema type) instead of the legacy `@ts-fix/rules`.
+ *   - `RuleMeta` is imported from `@tsnuke/contracts-effect` (the canonical de-vendored
+ *     Schema type) instead of the legacy `@tsnuke/rules`.
  *
  * The output shapes/text are preserved BYTE-FOR-BYTE. `diagnoseTool` stays a `Promise`
  * (it runs the engine via `diagnoseNode`); `explainTool` / `listRulesTool` stay pure.
  */
-import type { RuleMeta } from "@ts-fix/contracts-effect";
-import { diagnoseNode } from "@ts-fix/engine-effect";
+import type { RuleMeta } from "@tsnuke/contracts-effect";
+import { diagnoseNode } from "@tsnuke/engine-effect";
 import {
   formatAgentReport,
   explain,
   asRuleLookup,
   type AgentReport,
-} from "@ts-fix/format-effect";
-import { ruleRegistry, graphRuleRegistry } from "@ts-fix/rules-registry-effect";
+} from "@tsnuke/format-effect";
+import { ruleRegistry, graphRuleRegistry } from "@tsnuke/rules-registry-effect";
 
 /** Build the rule-id → metadata lookup once from both registries. */
 function buildLookup(): ReturnType<typeof asRuleLookup> {
@@ -52,7 +52,7 @@ export interface DiagnoseToolResult {
   scorePartial: boolean;
 }
 
-/** `ts_fix_diagnose` — lint + score a TypeScript project for an agent. */
+/** `tsnuke_diagnose` — lint + score a TypeScript project for an agent. */
 export async function diagnoseTool(args: DiagnoseToolArgs): Promise<DiagnoseToolResult> {
   const result = await diagnoseNode(args.directory, {
     ...(args.deep !== undefined ? { deep: args.deep } : {}),
@@ -75,7 +75,7 @@ export interface ExplainToolArgs {
   rule: string;
 }
 
-/** `ts_fix_explain` — offline, deterministic explanation of a rule. */
+/** `tsnuke_explain` — offline, deterministic explanation of a rule. */
 export function explainTool(args: ExplainToolArgs): string {
   return explain(args.rule, buildLookup());
 }
@@ -87,7 +87,7 @@ export interface RuleCatalogEntry {
   severity: RuleMeta["severity"];
 }
 
-/** `ts_fix_list_rules` — the full catalog, for rule discovery. */
+/** `tsnuke_list_rules` — the full catalog, for rule discovery. */
 export function listRulesTool(): RuleCatalogEntry[] {
   const all: RuleMeta[] = [...ruleRegistry, ...graphRuleRegistry];
   return all

@@ -1,9 +1,9 @@
 # Transformation Notes — `naming-idioms` rule category → Effect-TS
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix naming-idioms effect`.
-Source (READ-ONLY): `legacy/ts-fix/packages/ts-fix-rules/src/rules/naming-idioms/**`
+Strangler-fig slice produced by `/code-modernization:modernize-transform tsnuke naming-idioms effect`.
+Source (READ-ONLY): `legacy/tsnuke/packages/tsnuke-rules/src/rules/naming-idioms/**`
 (14 SYN rules + their colocated `*.test.ts` behavioral specs). Target:
-`modernized/rules-naming-idioms/effect/` (package `@ts-fix/rules-naming-idioms-effect`).
+`modernized/rules-naming-idioms/effect/` (package `@tsnuke/rules-naming-idioms-effect`).
 
 Implements **RULE-025** (per-rule SYN detection predicates for the `naming-idioms`
 category — the LARGEST SYN category at 14 rules) and preserves **RULE-026** (4 of the
@@ -14,7 +14,7 @@ the rules-core substrate's own design).
 
 **Result:** 72/72 characterization tests pass across 15 files · `tsc --noEmit` clean
 under `strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes`. Both `file:`
-deps (`@ts-fix/rules-core-effect`, `@ts-fix/contracts-effect`) link and inline
+deps (`@tsnuke/rules-core-effect`, `@tsnuke/contracts-effect`) link and inline
 correctly under Vitest's esbuild transform.
 
 ---
@@ -47,7 +47,7 @@ recommendation) and the PREDICATE bodies were copied character-for-character (ev
 `ts.is*` guard, the exact conditions, 1-based `line + 1` / `column + 1`, message + help
 text). The ONLY edit applied to each rule file was the import rewrite:
 `import { defineRule } from "../../define-rule.js"` →
-`import { defineRule } from "@ts-fix/rules-core-effect"` (and likewise the
+`import { defineRule } from "@tsnuke/rules-core-effect"` (and likewise the
 `import type { RuleContext }` in `no-array-constructor`, `pascal-case-types`,
 `prefer-array-methods`).
 
@@ -60,14 +60,14 @@ diagnostics emitted are byte-identical (same rule id, severity, tier, category, 
 help, 1-based position). What changed is purely structural:
 
 - **D1 — Substrate is consumed, not vendored.** `defineRule` / `RuleContext` / `Rule` /
-  `runRule` come from `@ts-fix/rules-core-effect`; `Diagnostic` / `RuleMeta` come
-  (transitively, through rules-core) from `@ts-fix/contracts-effect`. The legacy rules
+  `runRule` come from `@tsnuke/rules-core-effect`; `Diagnostic` / `RuleMeta` come
+  (transitively, through rules-core) from `@tsnuke/contracts-effect`. The legacy rules
   imported a local `../../define-rule.js` and `../../test-utils.js` `runRule`. The
   rules-core `defineRule.ts` is a faithful port of the legacy `define-rule.ts` (identical
   `buildDiagnostic` shape, including the `exactOptionalPropertyTypes` conditional spreads
   that keep absent optionals ABSENT — so `fix` is genuinely missing, not `fix: undefined`).
 - **D2 — Tests driven by the shared `runRule`.** Each `src/test/<rule>.test.ts` imports
-  `runRule` from `@ts-fix/rules-core-effect` (the SAME walk/dispatch driver the engine
+  `runRule` from `@tsnuke/rules-core-effect` (the SAME walk/dispatch driver the engine
   uses), not a vendored test util. The ported legacy vectors ARE the equivalence proof:
   passing them = behavioral equivalence with legacy.
 - **D3 — Barrel hygiene.** `src/main/index.ts` re-exports the 14 rules by name +

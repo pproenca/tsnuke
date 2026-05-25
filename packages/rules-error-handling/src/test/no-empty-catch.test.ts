@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-fix/rules-core-effect";
+import { runRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/no-empty-catch.js";
 
 describe("no-empty-catch (SYN)", () => {
@@ -33,7 +33,7 @@ describe("no-empty-catch (SYN)", () => {
     expect(diags[0]!.severity).toBe("warning");
     expect(diags[0]!.category).toBe("Error Handling");
     expect(diags[0]!.tier).toBe("SYN");
-    expect(diags[0]!.plugin).toBe("ts-fix");
+    expect(diags[0]!.plugin).toBe("tsnuke");
   });
 
   it("reports 1-based line/column at the catch-clause start", () => {

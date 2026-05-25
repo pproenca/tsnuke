@@ -1,7 +1,7 @@
 /**
- * The PURE core of ts-fix's config loader — `sanitizeConfig` (RULE-024:
+ * The PURE core of tsnuke's config loader — `sanitizeConfig` (RULE-024:
  * lenient config validation, drop-not-throw). Source of truth (READ-ONLY):
- * `legacy/ts-fix/packages/core/src/load-config.ts:22-154`.
+ * `legacy/tsnuke/packages/core/src/load-config.ts:22-154`.
  *
  * CONTRACT (RULE-024): `sanitizeConfig(raw: unknown)` NEVER throws. A non-object
  * raw is ignored (with a warning unless `raw === undefined`); every malformed
@@ -17,7 +17,7 @@
  * RULE-040), wrapped so the per-field drop semantics + verbatim messages — the
  * actual contract — are reproduced exactly. `sanitizeConfig` itself is a PURE
  * synchronous function (NOT `Effect<...>`-wrapped); the Effect ecosystem appears in
- * the contract (Schema, `TsFixConfig`) and the decode helpers, matching the
+ * the contract (Schema, `TsNukeConfig`) and the decode helpers, matching the
  * established pure-slice pattern (cf. the `score`/`filter-pipeline` slices).
  *
  * NOTE on field order: `Schema.Struct` decode of the WHOLE config would not give us
@@ -33,12 +33,12 @@ import {
   FailOn,
   type IgnoreConfig,
   type IgnoreOverride,
-  type TsFixConfig,
+  type TsNukeConfig,
 } from "./Config.js";
 
 /** Outcome of a sanitize pass: the sanitized config + any warnings raised (RULE-024). */
 export interface SanitizeResult {
-  readonly config: TsFixConfig;
+  readonly config: TsNukeConfig;
   readonly warnings: ReadonlyArray<string>;
 }
 
@@ -154,7 +154,7 @@ function sanitizeSeverityMap(
 }
 
 /**
- * Sanitize an arbitrary parsed value into a {@link TsFixConfig} (RULE-024).
+ * Sanitize an arbitrary parsed value into a {@link TsNukeConfig} (RULE-024).
  *
  * PURE and total — never touches the filesystem and never throws. Use it to
  * validate an already-parsed value (the JSON-on-disk reading is DEFERRED to the
@@ -173,11 +173,11 @@ export function sanitizeConfig(raw: unknown): SanitizeResult {
     return { config: {}, warnings };
   }
 
-  // Build mutably, then return as the readonly `TsFixConfig`. Fields are
+  // Build mutably, then return as the readonly `TsNukeConfig`. Fields are
   // processed in the fixed legacy order so accumulated warnings come out in
   // that order (load-bearing — see equivalence proof).
   const config: {
-    -readonly [K in keyof TsFixConfig]: TsFixConfig[K];
+    -readonly [K in keyof TsNukeConfig]: TsNukeConfig[K];
   } = {};
 
   const ignore = sanitizeIgnore(raw["ignore"], warnings);

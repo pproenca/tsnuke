@@ -1,7 +1,7 @@
 /**
- * Orchestration types OWNED by `@ts-fix/engine-effect` — the `diagnose()`
+ * Orchestration types OWNED by `@tsnuke/engine-effect` — the `diagnose()`
  * options/result contract and the legacy `ScoreResult` shape. Faithful port of legacy
- * `legacy/ts-fix/packages/core/src/types.ts` (`DiagnoseOptions`, `DiagnoseResult`,
+ * `legacy/tsnuke/packages/core/src/types.ts` (`DiagnoseOptions`, `DiagnoseResult`,
  * `ScoreResult`); `ProjectInfo` is OWNED by — and imported from — the discovery slice,
  * so it is re-exported as a type rather than re-declared.
  *
@@ -14,8 +14,8 @@
  * is what carries `partial`. See TRANSFORMATION_NOTES.md.
  */
 
-import type { Diagnostic } from "@ts-fix/contracts-effect";
-import type { ProjectInfo } from "@ts-fix/discovery-effect";
+import type { Diagnostic } from "@tsnuke/contracts-effect";
+import type { ProjectInfo } from "@tsnuke/discovery-effect";
 
 export type { ProjectInfo };
 

@@ -30,7 +30,7 @@ import {
 import type { Diagnostic } from "../main/index.js";
 
 // ---------------------------------------------------------------------------
-// ORACLE: Frozen copy of legacy/ts-fix/packages/core/src/score.ts:49-69
+// ORACLE: Frozen copy of legacy/tsnuke/packages/core/src/score.ts:49-69
 // (half-UP via Math.round). For differential testing ONLY — do not "fix" it.
 // ---------------------------------------------------------------------------
 const LEGACY_ERROR_RULE_PENALTY = 1.5;
@@ -82,10 +82,10 @@ function roundHalfEven(x: number): number {
 function buildDiagnostics(e: number, w: number): Diagnostic[] {
   const out: Diagnostic[] = [];
   for (let i = 0; i < e; i++) {
-    out.push({ plugin: "ts-fix", rule: `err-${i}`, severity: "error" } as Diagnostic);
+    out.push({ plugin: "tsnuke", rule: `err-${i}`, severity: "error" } as Diagnostic);
   }
   for (let i = 0; i < w; i++) {
-    out.push({ plugin: "ts-fix", rule: `warn-${i}`, severity: "warning" } as Diagnostic);
+    out.push({ plugin: "tsnuke", rule: `warn-${i}`, severity: "warning" } as Diagnostic);
   }
   return out;
 }

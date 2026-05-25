@@ -1,9 +1,9 @@
 # Transformation Notes — `capabilities` → Effect-TS
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix capabilities effect`.
-Source (READ-ONLY): `legacy/ts-fix/packages/ts-fix-rules/src/capabilities.ts`
+Strangler-fig slice produced by `/code-modernization:modernize-transform tsnuke capabilities effect`.
+Source (READ-ONLY): `legacy/tsnuke/packages/tsnuke-rules/src/capabilities.ts`
 (72 lines; + the `RuleMeta`/`Severity`/`Capability` contract from
-`packages/ts-fix-rules/src/types.ts`). Target: `modernized/capabilities/effect/`.
+`packages/tsnuke-rules/src/types.ts`). Target: `modernized/capabilities/effect/`.
 
 Implements **RULE-019** (universal rule-activation predicate, P0) and **RULE-020**
 (inverted CFG gating). Verified by 54 characterization tests including an exhaustive
@@ -79,7 +79,7 @@ and in the equivalence grid, even though no live rule reaches it. **Do not drop 
   `severity` (resolution); `id` / `category` / `tier` are carried for a faithful
   contract. The non-activation `RuleMeta` fields (`fixKind`, `message`,
   `recommendation`) are **not** modeled here — this slice owns only what it gates
-  on. They belong to the full `@ts-fix/rules` contract (Follow-up #1).
+  on. They belong to the full `@tsnuke/rules` contract (Follow-up #1).
 - **`Tier` is defined but NOT re-exported** from the barrel — the predicate doesn't
   gate on it, and it is pre-committed to de-vendoring; publishing it would create a
   breaking removal later (barrel hygiene, mirrors the `score` slice's L2 finding).
@@ -96,13 +96,13 @@ and in the equivalence grid, even though no live rule reaches it. **Do not drop 
 
 1. **De-vendor `RuleMeta` — DONE.** Now imports the canonical
    `RuleMeta`/`Severity`/`Capability`/`Tier`/`decodeRuleMeta` from
-   `@ts-fix/contracts-effect` (the consolidation slice that owns the FULL contract).
+   `@tsnuke/contracts-effect` (the consolidation slice that owns the FULL contract).
    The local vendored Schema definitions in `RuleMeta.ts` were DELETED; the file now
    only re-exports the contracts symbols (so the barrel + `Capabilities.ts` call sites
    are unchanged). The canonical `RuleMeta` is the proven structural SUPERSET of the
    activation subset this slice gated on, so `shouldActivate` / `resolveSeverity`
    behavior is identical — full suite stayed green (54/54), as did the `engine-plan`
-   consumer (22/22). Dep `@ts-fix/contracts-effect": file:../../contracts/effect`
+   consumer (22/22). Dep `@tsnuke/contracts-effect": file:../../contracts/effect`
    added; `vitest.config.ts` inlines it (`.ts`-entry file dep).
 2. **Engine / registry consumer migration.** The caller that loops the rule catalog
    building the active set (`shouldActivate` per rule) and registering each at

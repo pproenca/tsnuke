@@ -1,8 +1,8 @@
 {
-  "name": "@ts-fix/module-graph-effect",
+  "name": "@tsnuke/module-graph-effect",
   "private": true,
   "version": "0.1.0",
-  "description": "Effect-native rewrite of ts-fix's GRAPH-tier module-graph builder (legacy packages/core/src/module-graph.ts). `buildModuleGraph(files)` is a PURE synchronous function: it takes file CONTENTS (not the filesystem), parses each via the TS compiler API, resolves RELATIVE import/export/dynamic-import specifiers against the in-project file set, and assembles the cross-file ModuleGraph (imports/exports/usedExports/wildcardUsed) that the GRAPH rules + engine consume. NOT Effect-wrapped (no I/O — reading files is the engine's FileSystem concern). Imports the ModuleGraph TYPE from @ts-fix/rules-core-effect; uses `typescript` + `node:path` at runtime.",
+  "description": "Effect-native rewrite of tsnuke's GRAPH-tier module-graph builder (legacy packages/core/src/module-graph.ts). `buildModuleGraph(files)` is a PURE synchronous function: it takes file CONTENTS (not the filesystem), parses each via the TS compiler API, resolves RELATIVE import/export/dynamic-import specifiers against the in-project file set, and assembles the cross-file ModuleGraph (imports/exports/usedExports/wildcardUsed) that the GRAPH rules + engine consume. NOT Effect-wrapped (no I/O — reading files is the engine's FileSystem concern). Imports the ModuleGraph TYPE from @tsnuke/rules-core-effect; uses `typescript` + `node:path` at runtime.",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ts-fix/rules-core-effect": "workspace:*",
+    "@tsnuke/rules-core-effect": "workspace:*",
     "typescript": "^5.8.0"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-fix/rules-core-effect";
+import { runRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/no-default-export.js";
 
 describe("no-default-export (SYN)", () => {
@@ -31,7 +31,7 @@ describe("no-default-export (SYN)", () => {
     expect(d.tier).toBe("SYN");
     expect(d.severity).toBe("warning");
     expect(d.category).toBe("Module Boundaries & Architecture");
-    expect(d.plugin).toBe("ts-fix");
+    expect(d.plugin).toBe("tsnuke");
     expect(d.message).toBe("`export default` found; prefer a named export.");
     expect(d.help).toBe(
       "Replace the default export with a named export for better refactoring, discoverability, and tree-shaking.",

@@ -1,4 +1,4 @@
-# ts-fix
+# tsnuke
 
 A code-health linter and **0–100 scorer** for **TypeScript** projects. It runs a
 **two-tier engine** over the in-process TypeScript compiler:
@@ -22,15 +22,15 @@ deterministically** — no network round-trip — so an agent can loop on it off
 Run it with no install:
 
 ```bash
-npx ts-fix ./path/to/project          # pretty report + score
-npx ts-fix . --score                  # just the 0–100 score
-npx ts-fix . --format agent           # agent-tuned JSON (for coding agents)
+npx tsnuke ./path/to/project          # pretty report + score
+npx tsnuke . --score                  # just the 0–100 score
+npx tsnuke . --format agent           # agent-tuned JSON (for coding agents)
 ```
 
 Or add it to a project:
 
 ```bash
-npm i -D ts-fix && npx ts-fix .
+npm i -D tsnuke && npx tsnuke .
 ```
 
 Point it at a directory containing a `tsconfig.json`. Example output:
@@ -51,7 +51,7 @@ Module Boundaries & Architecture:
 ## CLI
 
 ```
-ts-fix [directory]               # default = inspect; directory default "."
+tsnuke [directory]               # default = inspect; directory default "."
   --score                        # print only the score (exit 0)
   --json [--json-compact]        # emit the versioned JsonReportV1
   --format agent                 # rule-deduplicated, tier+fix sorted, agent-tuned JSON
@@ -60,7 +60,7 @@ ts-fix [directory]               # default = inspect; directory default "."
   --fail-on <error|warning|none> # exit-code gate (default error)
   --diff [base] | --staged       # scan only changed / staged files
   --explain <file:line>          # offline, deterministic "why did this fire" + fix guidance
-ts-fix install                   # install the agent skill + git hooks (stub)
+tsnuke install                   # install the agent skill + git hooks (stub)
 ```
 
 Exit codes: `0` ok · `1` gate tripped or error · `130` interrupted.
@@ -70,14 +70,14 @@ is flagged **partial** (computed on a different, not-directly-comparable scale).
 
 ## For coding agents (MCP)
 
-ts-fix also ships an [MCP](https://modelcontextprotocol.io) server (`ts-fix-mcp`)
-exposing the linter to coding agents over stdio — tools `ts_fix_diagnose`,
-`ts_fix_explain`, and `ts_fix_list_rules`. Everything is local and deterministic,
+tsnuke also ships an [MCP](https://modelcontextprotocol.io) server (`tsnuke-mcp`)
+exposing the linter to coding agents over stdio — tools `tsnuke_diagnose`,
+`tsnuke_explain`, and `tsnuke_list_rules`. Everything is local and deterministic,
 so an agent can loop on the score offline.
 
 ## Links
 
-- Source & full docs: <https://github.com/pproenca/ts-fix>
-- Issues: <https://github.com/pproenca/ts-fix/issues>
+- Source & full docs: <https://github.com/pproenca/tsnuke>
+- Issues: <https://github.com/pproenca/tsnuke/issues>
 
 MIT © Pedro Proença

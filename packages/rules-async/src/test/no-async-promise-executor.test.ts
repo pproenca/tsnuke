@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-fix/rules-core-effect";
+import { runRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/no-async-promise-executor.js";
 
 describe("no-async-promise-executor (SYN) — RULE-025 async", () => {
@@ -45,7 +45,7 @@ describe("no-async-promise-executor (SYN) — RULE-025 async", () => {
     expect(d.tier).toBe("SYN");
     expect(d.severity).toBe("error");
     expect(d.category).toBe("Async / Promises");
-    expect(d.plugin).toBe("ts-fix");
+    expect(d.plugin).toBe("tsnuke");
     expect(d.message).toBe(
       "a Promise executor must not be `async`: its rejections are swallowed",
     );

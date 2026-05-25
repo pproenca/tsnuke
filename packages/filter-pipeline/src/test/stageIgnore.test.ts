@@ -39,8 +39,8 @@ describe("makeIgnoreStage — RULE-023 Stage 3 (ignore.rules)", () => {
   });
 
   it("drops by namespaced plugin/rule id", () => {
-    const stage = makeIgnoreStage({ ignore: { rules: ["ts-fix/ignored"] } });
-    expect(stage(diag({ plugin: "ts-fix", rule: "ignored" }))).toBeNull();
+    const stage = makeIgnoreStage({ ignore: { rules: ["tsnuke/ignored"] } });
+    expect(stage(diag({ plugin: "tsnuke", rule: "ignored" }))).toBeNull();
   });
 
   it("keeps a rule not in the ignore list", () => {
@@ -98,9 +98,9 @@ describe("makeIgnoreStage — RULE-023 Stage 3 (ignore.overrides WITH rules)", (
 
   it("drops a scoped rule by namespaced plugin/rule id", () => {
     const stage = makeIgnoreStage({
-      ignore: { overrides: [{ files: ["c.ts"], rules: ["ts-fix/scoped"] }] },
+      ignore: { overrides: [{ files: ["c.ts"], rules: ["tsnuke/scoped"] }] },
     });
-    expect(stage(diag({ plugin: "ts-fix", rule: "scoped", filePath: "/x/c.ts" }))).toBeNull();
+    expect(stage(diag({ plugin: "tsnuke", rule: "scoped", filePath: "/x/c.ts" }))).toBeNull();
   });
 
   it("keeps a non-listed rule in a matched file", () => {

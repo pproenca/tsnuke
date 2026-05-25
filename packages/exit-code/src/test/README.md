@@ -1,13 +1,13 @@
 # Characterization tests — `exit-code` module (Effect-TS target)
 
-These tests **define "done"** for the Effect-TS rewrite of `ts-fix`'s exit-code
+These tests **define "done"** for the Effect-TS rewrite of `tsnuke`'s exit-code
 gate (the CI pass/fail contract). They were written *before* the implementation.
 The implementation lives at `src/main/index.ts` (imported as `../main/index.js` —
 `.js` on relative specifiers, per the legacy convention; the `Bundler`
 moduleResolution in `tsconfig.json` resolves `.js` to `.ts`). Until that module
 exists the suite is **RED**, and that is the correct starting state.
 
-The legacy module is the oracle (`legacy/ts-fix/packages/ts-fix/src/exit-code.ts`,
+The legacy module is the oracle (`legacy/tsnuke/packages/tsnuke/src/exit-code.ts`,
 read-only). Unlike the `score` slice, the exit-code logic is a finite, discrete
 decision with **no rounding subtleties**, so the proof asserts **100% equality**
 (zero deviations) across the whole input space.

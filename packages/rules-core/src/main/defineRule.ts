@@ -1,27 +1,27 @@
 /**
  * The RULE SUBSTRATE: `defineRule` + the rule context/visitor shape, plus the
  * GRAPH-tier variants. Faithful port of legacy
- * `packages/ts-fix-rules/src/define-rule.ts`.
+ * `packages/tsnuke-rules/src/define-rule.ts`.
  *
  * These are PLAIN TypeScript functions/types wrapping the TS compiler API — they are
  * NOT Effect-wrapped. Rule visitors are pure synchronous AST callbacks; a fiber buys
  * nothing for an in-memory `ts.forEachChild` walk. The data CONTRACTS (`Diagnostic`,
- * `RuleMeta`) are imported from `@ts-fix/contracts-effect` (the canonical
+ * `RuleMeta`) are imported from `@tsnuke/contracts-effect` (the canonical
  * `effect/Schema` home) — this slice is the FIRST new consumer of contracts and does
  * NOT re-vendor them. `ModuleGraph` (the GRAPH-tier input) is owned HERE (`ModuleGraph.ts`),
  * since it is single-site and not part of contracts.
  */
 
 import type ts from "typescript";
-import type { Diagnostic, RuleMeta } from "@ts-fix/contracts-effect";
+import type { Diagnostic, RuleMeta } from "@tsnuke/contracts-effect";
 import type { ModuleGraph } from "./ModuleGraph.js";
 
-/** The plugin name every ts-fix diagnostic carries (first-party catalog only — BC-18). */
-export const PLUGIN_NAME = "ts-fix" as const;
+/** The plugin name every tsnuke diagnostic carries (first-party catalog only — BC-18). */
+export const PLUGIN_NAME = "tsnuke" as const;
 
 /**
  * The fields a rule must (or may) supply to `report`. The context auto-fills
- * `plugin` (always `"ts-fix"`) and the rule's `rule`/`tier`/`category`/`severity`
+ * `plugin` (always `"tsnuke"`) and the rule's `rule`/`tier`/`category`/`severity`
  * from its meta, so a rule typically only provides position + message + help.
  * A rule may still override any auto-filled field (e.g. downgrade `severity`).
  */
@@ -43,7 +43,7 @@ export interface RuleContext {
   /** Absolute path of the file under analysis. */
   readonly filePath: string;
   /**
-   * Emit a diagnostic. `plugin` is forced to `"ts-fix"`; `rule`/`tier`/
+   * Emit a diagnostic. `plugin` is forced to `"tsnuke"`; `rule`/`tier`/
    * `category`/`severity` default from the rule's meta but may be overridden.
    */
   report(input: ReportInput): void;

@@ -1,6 +1,6 @@
 import ts from "typescript";
-import { defineRule } from "@ts-fix/rules-core-effect";
-import type { RuleContext } from "@ts-fix/rules-core-effect";
+import { defineRule } from "@tsnuke/rules-core-effect";
+import type { RuleContext } from "@tsnuke/rules-core-effect";
 
 /** True iff `node` is a literal whose truthiness is fixed at author time. */
 function isConstantConditionLiteral(node: ts.Node): boolean {

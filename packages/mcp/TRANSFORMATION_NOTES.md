@@ -1,6 +1,6 @@
-# `@ts-fix/mcp-effect` — Transformation Notes
+# `@tsnuke/mcp-effect` — Transformation Notes
 
-Effect-TS strangler-fig slice for ts-fix's **MCP (Model Context Protocol) server** —
+Effect-TS strangler-fig slice for tsnuke's **MCP (Model Context Protocol) server** —
 the stdio adapter that exposes the linter to coding agents (the primary consumer, per the
 AI-native design). It wires the finished **engine** + **format** + **rules-registry**
 slices behind three tools. The pure handlers are a **faithful behavioral port** of the
@@ -21,28 +21,28 @@ Public barrel: the 3 pure handlers + their arg/result types; the RULE-029 Schema
 
 ## What the 3 tools do (behavior preserved VERBATIM)
 
-- **`ts_fix_diagnose({ directory, deep? })`** → runs the engine and projects the
-  agent-tuned summary + report. Rewired: legacy `diagnose()` (`@ts-fix/core`) →
-  `diagnoseNode(directory, { deep })` (`@ts-fix/engine-effect`, the prod runnable that
+- **`tsnuke_diagnose({ directory, deep? })`** → runs the engine and projects the
+  agent-tuned summary + report. Rewired: legacy `diagnose()` (`@tsnuke/core`) →
+  `diagnoseNode(directory, { deep })` (`@tsnuke/engine-effect`, the prod runnable that
   provides `NodeContext` + bounds the `ts.Program` `Scope`). The report is built with
-  `formatAgentReport(diagnostics, score, project.rootDirectory)` (`@ts-fix/format-effect`),
+  `formatAgentReport(diagnostics, score, project.rootDirectory)` (`@tsnuke/format-effect`),
   and the one-line `summary` string is assembled byte-for-byte as legacy
   (`Score <n>/100[ (partial …)] — <r> rule(s) fired across <o> occurrence(s) in <dir>.`).
   Returns `{ summary, report, scorePartial }`. Stays a `Promise` (it runs the engine).
-- **`ts_fix_explain({ rule })`** → `explain(rule, buildLookup())`
-  (`@ts-fix/format-effect`). `buildLookup` is `asRuleLookup` over a `Record<id, RuleMeta>`
+- **`tsnuke_explain({ rule })`** → `explain(rule, buildLookup())`
+  (`@tsnuke/format-effect`). `buildLookup` is `asRuleLookup` over a `Record<id, RuleMeta>`
   built from the **rules-registry** catalog (`[...ruleRegistry, ...graphRuleRegistry]`). An
   unknown rule id is handled **inside `explain`** (returns `Unknown rule "…"`), NOT a thrown
   gate — exactly as legacy (and as RULE-029's edge-case note requires). Pure.
-- **`ts_fix_list_rules()`** → the catalog projection from the registry:
+- **`tsnuke_list_rules()`** → the catalog projection from the registry:
   `[...ruleRegistry, ...graphRuleRegistry].map({ id, category, tier, severity }).sort(by id)`.
   Pure.
 
 ## Business rule covered
 
 - **RULE-029 — MCP tool input validation.** The 3 tools' arg contracts are enforced
-  **before dispatch**: `ts_fix_diagnose` requires `directory: string` + optional
-  `deep: boolean`; `ts_fix_explain` requires `rule: string`; `ts_fix_list_rules`
+  **before dispatch**: `tsnuke_diagnose` requires `directory: string` + optional
+  `deep: boolean`; `tsnuke_explain` requires `rule: string`; `tsnuke_list_rules`
   takes `{}`. Legacy enforced this with **zod raw shapes** handed to the SDK's
   `server.tool(name, desc, shape, handler)`. This slice enforces it with **`effect/Schema`**
   (see Deviation 1). The handlers in `tools.ts` continue to assume already-validated args
@@ -93,7 +93,7 @@ behavior).
   `buildLookup` and the catalog projection read the same `id`/`category`/`tier`/`severity`/
   `recommendation`/`fixKind` fields as the legacy `RuleMeta[]`.
 - `RuleMeta` (the type) is imported from **contracts-effect** (the canonical de-vendored
-  Schema type) instead of legacy `@ts-fix/rules`.
+  Schema type) instead of legacy `@tsnuke/rules`.
 
 ### 3. SDK version + entry shape
 

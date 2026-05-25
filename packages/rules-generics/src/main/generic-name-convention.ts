@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { defineRule } from "@ts-fix/rules-core-effect";
+import { defineRule } from "@tsnuke/rules-core-effect";
 
 /**
  * SYN — flag a type parameter whose name does not start with an uppercase
@@ -8,8 +8,8 @@ import { defineRule } from "@ts-fix/rules-core-effect";
  * identifiers. AST-only: the parameter name is a syntactic `Identifier`.
  *
  * Ported VERBATIM from legacy
- * `packages/ts-fix-rules/src/rules/generics/generic-name-convention.ts`;
- * the only change is importing `defineRule` from the `@ts-fix/rules-core-effect`
+ * `packages/tsnuke-rules/src/rules/generics/generic-name-convention.ts`;
+ * the only change is importing `defineRule` from the `@tsnuke/rules-core-effect`
  * substrate rather than the legacy `../../define-rule.js`.
  */
 export const rule = defineRule(

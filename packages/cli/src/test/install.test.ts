@@ -22,7 +22,7 @@ let dir: string;
 const out: string[] = [];
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "tsfix-install-"));
+  dir = mkdtempSync(join(tmpdir(), "tsnuke-install-"));
   out.length = 0;
 });
 afterEach(() => {
@@ -43,7 +43,7 @@ describe("planInstall (pure) — RULE-038 plan", () => {
   it("plans SKILL.md + pre-push always; agent-hook only with --agent-hooks", () => {
     const base = planInstall({ cwd: "/x", yes: false, dryRun: false, agentHooks: false });
     expect(base.map((w) => w.path)).toEqual([
-      "/x/.agent/skills/ts-fix/SKILL.md",
+      "/x/.agent/skills/tsnuke/SKILL.md",
       "/x/.git/hooks/pre-push",
     ]);
     const withHooks = planInstall({
@@ -52,7 +52,7 @@ describe("planInstall (pure) — RULE-038 plan", () => {
       dryRun: false,
       agentHooks: true,
     });
-    expect(withHooks.map((w) => w.path)).toContain("/x/.claude/hooks/ts-fix.json");
+    expect(withHooks.map((w) => w.path)).toContain("/x/.claude/hooks/tsnuke.json");
   });
 
   it("the pre-push body is the INERT stub (preserved defect, verbatim)", () => {
@@ -63,14 +63,14 @@ describe("planInstall (pure) — RULE-038 plan", () => {
       agentHooks: false,
     }).find((w) => w.path.endsWith("pre-push"));
     expect(hook?.contents).toBe(
-      "#!/bin/sh\n# TODO(P1): non-blocking ts-fix pre-push check\nexit 0\n",
+      "#!/bin/sh\n# TODO(P1): non-blocking tsnuke pre-push check\nexit 0\n",
     );
   });
 
   it("buildSkillMarkdown is a real, deterministic SKILL.md", () => {
     const md = buildSkillMarkdown();
-    expect(md).toContain("name: ts-fix");
-    expect(md).toContain("npx ts-fix --format agent");
+    expect(md).toContain("name: tsnuke");
+    expect(md).toContain("npx tsnuke --format agent");
     expect(buildSkillMarkdown()).toBe(md); // deterministic
   });
 });
@@ -79,27 +79,27 @@ describe("runInstall over a real temp dir (Node FileSystem)", () => {
   it("writes the real SKILL.md + inert pre-push; returns 0", async () => {
     const code = await run({});
     expect(code).toBe(0);
-    const skill = join(dir, ".agent/skills/ts-fix/SKILL.md");
+    const skill = join(dir, ".agent/skills/tsnuke/SKILL.md");
     const hook = join(dir, ".git/hooks/pre-push");
     expect(existsSync(skill)).toBe(true);
-    expect(readFileSync(skill, "utf8")).toContain("name: ts-fix");
+    expect(readFileSync(skill, "utf8")).toContain("name: tsnuke");
     // PRESERVED DEFECT: the hook exists but is inert.
     expect(readFileSync(hook, "utf8")).toBe(
-      "#!/bin/sh\n# TODO(P1): non-blocking ts-fix pre-push check\nexit 0\n",
+      "#!/bin/sh\n# TODO(P1): non-blocking tsnuke pre-push check\nexit 0\n",
     );
     expect(out.join("")).toContain("wrote");
   });
 
   it("--agent-hooks also writes the {} hook config", async () => {
     await run({ agentHooks: true });
-    const cfg = join(dir, ".claude/hooks/ts-fix.json");
+    const cfg = join(dir, ".claude/hooks/tsnuke.json");
     expect(readFileSync(cfg, "utf8")).toBe("{}\n");
   });
 
   it("--dry-run writes NOTHING but describes the plan; returns 0", async () => {
     const code = await run({ dryRun: true });
     expect(code).toBe(0);
-    expect(existsSync(join(dir, ".agent/skills/ts-fix/SKILL.md"))).toBe(false);
+    expect(existsSync(join(dir, ".agent/skills/tsnuke/SKILL.md"))).toBe(false);
     expect(existsSync(join(dir, ".git/hooks/pre-push"))).toBe(false);
     expect(out.join("")).toContain("[dry-run] would write");
   });

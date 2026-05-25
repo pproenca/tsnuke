@@ -4,8 +4,8 @@
  * Modernization Brief: model `FailOn`/`Severity` as Schema literals where it adds
  * value, so untrusted CLI/config input has a single runtime decode gate).
  *
- * Mirrors `legacy/ts-fix/packages/ts-fix/src/flags.ts:14` (`FailOn`) and
- * `packages/ts-fix-rules/src/types.ts:13` (`Severity`). The literal *values*
+ * Mirrors `legacy/tsnuke/packages/tsnuke/src/flags.ts:14` (`FailOn`) and
+ * `packages/tsnuke-rules/src/types.ts:13` (`Severity`). The literal *values*
  * are preserved verbatim, so this is value- and wire-compatible with legacy.
  *
  * The gate/resolver functions in `./resolve.ts` accept already-typed values and do
@@ -42,7 +42,7 @@ export const DEFAULT_FAIL_ON: FailOn = "error";
 export const decodeFailOn = Schema.decodeUnknownOption(FailOn);
 
 /**
- * Diagnostic severity — ts-fix v1 has `error` and `warning` only, deliberately
+ * Diagnostic severity — tsnuke v1 has `error` and `warning` only, deliberately
  * no `info` level (RULE-031). Severity is the only field the exit-code gate reads
  * from a diagnostic.
  */

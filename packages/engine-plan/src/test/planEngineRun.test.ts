@@ -13,11 +13,11 @@
  * to `.ts`). Until that module exists the suite is RED — the correct start state.
  *
  * We exercise the planner with TWO activation predicates: a trivial always-on
- * `allOn`, and the REAL `shouldActivate` consumed from `@ts-fix/capabilities-effect`.
+ * `allOn`, and the REAL `shouldActivate` consumed from `@tsnuke/capabilities-effect`.
  */
 
 import { describe, expect, it } from "vitest";
-import { shouldActivate } from "@ts-fix/capabilities-effect";
+import { shouldActivate } from "@tsnuke/capabilities-effect";
 import {
   SKIP_REASON_NO_DEEP,
   SKIP_REASON_NO_TYPECHECK,

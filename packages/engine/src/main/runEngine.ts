@@ -1,7 +1,7 @@
 /**
  * The two-tier analysis orchestrator — the impure execution SHELL (RULE-018, P0;
  * RULE-036; RULE-013). Faithful Effect port of legacy
- * `legacy/ts-fix/packages/core/src/engine.ts:64-326` (READ-ONLY): `buildContext`,
+ * `legacy/tsnuke/packages/core/src/engine.ts:64-326` (READ-ONLY): `buildContext`,
  * `buildProgramFromFiles`, and `runEngine`.
  *
  *   Tier-1 (SYN / CFG / GRAPH) — ALWAYS runs. Parses each file (reusing the Program's
@@ -39,27 +39,27 @@
 import { resolve } from "node:path";
 import { Effect, type Scope } from "effect";
 import ts from "typescript";
-import { shouldActivate } from "@ts-fix/capabilities-effect";
-import type { Capability } from "@ts-fix/contracts-effect";
-import { buildModuleGraph } from "@ts-fix/module-graph-effect";
+import { shouldActivate } from "@tsnuke/capabilities-effect";
+import type { Capability } from "@tsnuke/contracts-effect";
+import { buildModuleGraph } from "@tsnuke/module-graph-effect";
 import {
   planEngineRun,
   SKIP_REASON_NO_DEEP,
   type SeverityOverrides,
-} from "@ts-fix/engine-plan-effect";
+} from "@tsnuke/engine-plan-effect";
 import {
   createGraphRuleContext,
   createRuleContext,
   type GraphRule,
   type Rule,
-} from "@ts-fix/rules-core-effect";
-import { graphRuleRegistry, ruleRegistry } from "@ts-fix/rules-registry-effect";
+} from "@tsnuke/rules-core-effect";
+import { graphRuleRegistry, ruleRegistry } from "@tsnuke/rules-registry-effect";
 import {
   DEFAULT_TIER2_MEMORY_CEILING_BYTES,
   scopedProgram,
   shouldSkipTier2ForMemory,
-} from "@ts-fix/scale-effect";
-import type { Diagnostic } from "@ts-fix/contracts-effect";
+} from "@tsnuke/scale-effect";
+import type { Diagnostic } from "@tsnuke/contracts-effect";
 
 export {
   planEngineRun,
@@ -68,10 +68,10 @@ export {
   type EnginePlan,
   type SeverityOverrides,
   type ActivatePredicate,
-} from "@ts-fix/engine-plan-effect";
+} from "@tsnuke/engine-plan-effect";
 
-/** The plugin name every ts-fix diagnostic carries (first-party catalog — BC-18). */
-export const PLUGIN_NAME = "ts-fix" as const;
+/** The plugin name every tsnuke diagnostic carries (first-party catalog — BC-18). */
+export const PLUGIN_NAME = "tsnuke" as const;
 
 /** A file to analyze: absolute path + its text contents. */
 export interface SourceFileInput {

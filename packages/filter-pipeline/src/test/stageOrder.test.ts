@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from "vitest";
 import { runFilterPipeline } from "../main/index.js";
-import type { TsFixConfig } from "../main/index.js";
+import type { TsNukeConfig } from "../main/index.js";
 import { diag } from "./helpers.js";
 
 describe("runFilterPipeline — RULE-023 stage order (BC-11)", () => {
@@ -21,20 +21,20 @@ describe("runFilterPipeline — RULE-023 stage order (BC-11)", () => {
   });
 
   it("severity 'off' at stage 2 drops a diagnostic before the ignore stage sees it", () => {
-    const config: TsFixConfig = { rules: { "off-me": "off" } };
+    const config: TsNukeConfig = { rules: { "off-me": "off" } };
     const ds = [diag({ rule: "off-me" })];
     expect(runFilterPipeline(ds, config)).toHaveLength(0);
   });
 
   it("severity override remaps a surviving diagnostic (warn -> warning)", () => {
-    const config: TsFixConfig = { rules: { downgraded: "warn" } };
+    const config: TsNukeConfig = { rules: { downgraded: "warn" } };
     const out = runFilterPipeline([diag({ rule: "downgraded" })], config);
     expect(out).toHaveLength(1);
     expect(out[0]?.severity).toBe("warning");
   });
 
   it("stage 3 ignore drops by rule, by file, and by override", () => {
-    const config: TsFixConfig = {
+    const config: TsNukeConfig = {
       ignore: {
         rules: ["ignored-rule"],
         files: ["b.ts"],
@@ -54,7 +54,7 @@ describe("runFilterPipeline — RULE-023 stage order (BC-11)", () => {
   it("stage 4 inline-disable suppresses the matching rule on the next line", () => {
     const source = [
       "const a = 1;",
-      "// ts-fix-disable-next-line no-magic",
+      "// tsnuke-disable-next-line no-magic",
       "const b: any = 2;",
     ].join("\n");
     const ds = [
@@ -69,7 +69,7 @@ describe("runFilterPipeline — RULE-023 stage order (BC-11)", () => {
     // A diagnostic that WOULD be ignored by file is first dropped by 'off' at
     // stage 2 — proving stage 3 never runs on it. We can't observe the order
     // directly, but a single config exercising both confirms no double-handling.
-    const config: TsFixConfig = {
+    const config: TsNukeConfig = {
       rules: { gone: "off" },
       ignore: { files: ["a.ts"] }, // would also catch it, but stage 2 already dropped it
     };
@@ -79,7 +79,7 @@ describe("runFilterPipeline — RULE-023 stage order (BC-11)", () => {
   it("a stage-2 severity remap is visible to a later (inline-disable) stage's pass-through", () => {
     // Remap to warning at stage 2; nothing else drops it; the emitted diag carries
     // the remapped severity (proving the remapped value flows downstream).
-    const config: TsFixConfig = { rules: { r: "warn" } };
+    const config: TsNukeConfig = { rules: { r: "warn" } };
     const source = ["// not a directive", "const x = 1;"].join("\n");
     const out = runFilterPipeline(
       [diag({ rule: "r", severity: "error", filePath: "/x/a.ts", line: 2 })],

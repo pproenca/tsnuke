@@ -1,11 +1,11 @@
 /**
- * Build the runnable `ts-fix` binary.
+ * Build the runnable `tsnuke` binary.
  *
  * The package sources export `src/main/*.ts` directly (scaffold convenience: typecheck +
  * vitest resolve from source with no prior build). That is NOT runnable as a real process:
  * the relative imports carry `.js` extensions that resolve to on-disk `.ts` files, and
  * Node's native type-stripping does not rewrite `.js`→`.ts`, so `node src/main/bin.ts`
- * fails with ERR_MODULE_NOT_FOUND. We therefore BUNDLE the CLI (entry + every `@ts-fix/*`
+ * fails with ERR_MODULE_NOT_FOUND. We therefore BUNDLE the CLI (entry + every `@tsnuke/*`
  * workspace slice + effect/@effect, resolved from source) into one self-contained ESM file.
  *
  * `typescript` stays EXTERNAL — it is the engine's analysis backend (~9 MB), declared as a
@@ -27,7 +27,7 @@ await build({
   external: ["typescript"],
   // Bake the real package version into the bundle so `--version` and the JSON report's
   // `version` field match what's published (source-mode/tests fall back to "0.0.0").
-  define: { "process.env.TSFIX_VERSION": JSON.stringify(version) },
+  define: { "process.env.TSNUKE_VERSION": JSON.stringify(version) },
   // ESM output needs a CJS-interop shim for any transitively-bundled CommonJS module that
   // reaches for `require`/`__dirname`. (The executable shebang is preserved from the entry
   // file `bin.ts` by esbuild and stays on line 1 — do NOT re-add it here or Node sees two.)

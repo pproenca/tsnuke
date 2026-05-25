@@ -1,8 +1,8 @@
 {
-  "name": "@ts-fix/rules-type-assertions-effect",
+  "name": "@tsnuke/rules-type-assertions-effect",
   "private": true,
   "version": "0.1.0",
-  "description": "Effect-native rewrite of ts-fix's `type-assertions` rule category (RULE-025): 12 SYN AST/comment predicates (no-angle-bracket-assertion, no-assertion-on-json-parse, no-cast-after-guard, no-cast-in-return, no-double-assertion, no-non-null-asserted-optional-chain, no-non-null-assertion, no-ts-ignore, no-ts-nocheck, no-unsafe-object-assertion, prefer-satisfies-over-as, ts-expect-error-requires-description) + 1 TYP type-aware predicate (no-unnecessary-non-null-assertion, which early-returns without ctx.checker). Strangler-fig slice — consumes @ts-fix/rules-core-effect for the rule substrate (defineRule/runRule/runTypeAwareRule/Rule/RuleContext) and @ts-fix/contracts-effect for the Diagnostic/RuleMeta contracts. Plain-TS AST predicates wrapping the TS compiler API — NOT Effect-wrapped (visitors are sync). The three comment-directive rules (no-ts-ignore, no-ts-nocheck, ts-expect-error-requires-description) scan SourceFile full text via a SourceFile-keyed visitor — mechanism ported verbatim.",
+  "description": "Effect-native rewrite of tsnuke's `type-assertions` rule category (RULE-025): 12 SYN AST/comment predicates (no-angle-bracket-assertion, no-assertion-on-json-parse, no-cast-after-guard, no-cast-in-return, no-double-assertion, no-non-null-asserted-optional-chain, no-non-null-assertion, no-ts-ignore, no-ts-nocheck, no-unsafe-object-assertion, prefer-satisfies-over-as, ts-expect-error-requires-description) + 1 TYP type-aware predicate (no-unnecessary-non-null-assertion, which early-returns without ctx.checker). Strangler-fig slice — consumes @tsnuke/rules-core-effect for the rule substrate (defineRule/runRule/runTypeAwareRule/Rule/RuleContext) and @tsnuke/contracts-effect for the Diagnostic/RuleMeta contracts. Plain-TS AST predicates wrapping the TS compiler API — NOT Effect-wrapped (visitors are sync). The three comment-directive rules (no-ts-ignore, no-ts-nocheck, ts-expect-error-requires-description) scan SourceFile full text via a SourceFile-keyed visitor — mechanism ported verbatim.",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -14,8 +14,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ts-fix/contracts-effect": "workspace:*",
-    "@ts-fix/rules-core-effect": "workspace:*",
+    "@tsnuke/contracts-effect": "workspace:*",
+    "@tsnuke/rules-core-effect": "workspace:*",
     "typescript": "^5.8.0"
   },
   "devDependencies": {

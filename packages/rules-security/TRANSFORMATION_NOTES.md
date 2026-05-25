@@ -1,17 +1,17 @@
 # Transformation Notes — `security` rule category → Effect-TS
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix
+Strangler-fig slice produced by `/code-modernization:modernize-transform tsnuke
 security effect`. Source (READ-ONLY):
-`legacy/ts-fix/packages/ts-fix-rules/src/rules/security/*.ts` (+ colocated
+`legacy/tsnuke/packages/tsnuke-rules/src/rules/security/*.ts` (+ colocated
 `*.test.ts`). Target: `modernized/rules-security/effect/`
-(`@ts-fix/rules-security-effect`).
+(`@tsnuke/rules-security-effect`).
 
 Implements the **security** half of **RULE-025** (per-rule detection predicates):
 the 5 SYN AST/regex rules. This slice is the SECOND consumer of the rule substrate
-(`@ts-fix/rules-core-effect`) after `rules-declaration-api`, and consumes the
-canonical contracts from `@ts-fix/contracts-effect` transitively (no re-vendor).
+(`@tsnuke/rules-core-effect`) after `rules-declaration-api`, and consumes the
+canonical contracts from `@tsnuke/contracts-effect` transitively (no re-vendor).
 
-> NOTE — DISTINCT from `@ts-fix/security-effect`. That slice is the 5 DORMANT
+> NOTE — DISTINCT from `@tsnuke/security-effect`. That slice is the 5 DORMANT
 > CORE GUARDS (glob/git/env/plugins/etc., RULE-027/RULE-039). THIS slice is the 5
 > RULE-CATALOG security LINT rules (RULE-025). Same English word, different layer.
 
@@ -54,7 +54,7 @@ hygiene — import those from their owning packages).
 
 The legacy colocated `*.test.ts` cases ARE the legacy behavioral spec; every one
 is ported VERBATIM and passes against the rewrite driven through the same
-`runRule` driver (`@ts-fix/rules-core-effect`, the de-vendored port of legacy
+`runRule` driver (`@tsnuke/rules-core-effect`, the de-vendored port of legacy
 `test-utils.ts`). On top of the ported vectors, ADDED negative cases prove the
 predicates are not too greedy:
 - identifier-name matching is exact (`evalThing`, `MyFunction`, `MyBuffer`,
@@ -77,14 +77,14 @@ message/help text, matched node kinds, and 1-based line/column are ported
 byte-for-byte. The only mechanical changes:
 
 - **D1 — import source.** `import { defineRule } from "../../define-rule.js"`
-  → `from "@ts-fix/rules-core-effect"` (same for the `RuleContext` type import
+  → `from "@tsnuke/rules-core-effect"` (same for the `RuleContext` type import
   in `no-insecure-url` / `no-secrets-in-source`). The slice CONSUMES the substrate
   + contracts rather than re-vendoring them — same posture as
   `rules-declaration-api`. The `Diagnostic`/`RuleMeta` contracts arrive
-  transitively from `@ts-fix/contracts-effect` (the canonical Schema home); no
+  transitively from `@tsnuke/contracts-effect` (the canonical Schema home); no
   copy lives here.
 - **D2 — test import + path.** Tests import `runRule` from
-  `@ts-fix/rules-core-effect` (not the legacy `../../test-utils.js`) and the
+  `@tsnuke/rules-core-effect` (not the legacy `../../test-utils.js`) and the
   rule from `../main/<id>.js`. Vectors unchanged.
 
 The predicates remain PLAIN-TS AST/regex callbacks — NOT Effect-wrapped. A fiber

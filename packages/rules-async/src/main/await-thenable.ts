@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { defineRule } from "@ts-fix/rules-core-effect";
+import { defineRule } from "@tsnuke/rules-core-effect";
 
 /**
  * TYP (Tier-2, type-aware) — flag an `await` whose operand is NOT thenable.
@@ -13,8 +13,8 @@ import { defineRule } from "@ts-fix/rules-core-effect";
  * project path) — which is why `runRule` (no checker) yields nothing.
  *
  * Ported VERBATIM from legacy
- * `packages/ts-fix-rules/src/rules/async/await-thenable.ts`; the only change is
- * importing `defineRule` from `@ts-fix/rules-core-effect`.
+ * `packages/tsnuke-rules/src/rules/async/await-thenable.ts`; the only change is
+ * importing `defineRule` from `@tsnuke/rules-core-effect`.
  */
 
 /** True iff `type` (or any union constituent) has a callable `then` member. */

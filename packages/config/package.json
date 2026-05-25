@@ -1,8 +1,8 @@
 {
-  "name": "@ts-fix/config-effect",
+  "name": "@tsnuke/config-effect",
   "private": true,
   "version": "0.1.0",
-  "description": "Effect-native rewrite of ts-fix's config loading (RULE-024 lenient drop-not-throw + RULE-040 severity vocabulary). Strangler-fig slice — pure decode-with-fallback on the Effect ecosystem (Schema) plus the effectful filesystem loader over @effect/platform FileSystem + Path with Node/in-memory Layers.",
+  "description": "Effect-native rewrite of tsnuke's config loading (RULE-024 lenient drop-not-throw + RULE-040 severity vocabulary). Strangler-fig slice — pure decode-with-fallback on the Effect ecosystem (Schema) plus the effectful filesystem loader over @effect/platform FileSystem + Path with Node/in-memory Layers.",
   "license": "MIT",
   "type": "module",
   "exports": {

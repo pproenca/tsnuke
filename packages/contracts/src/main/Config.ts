@@ -1,7 +1,7 @@
 /**
- * The CANONICAL user-config contract (`tsfix.config.json` / `package.json#tsFix`)
+ * The CANONICAL user-config contract (`tsnuke.config.json` / `package.json#tsNuke`)
  * as `effect/Schema` (Modernization Brief line 94). This is the FULL legacy
- * `TsFixConfig` (`legacy/ts-fix/packages/core/src/types.ts:151-164`), all six
+ * `TsNukeConfig` (`legacy/tsnuke/packages/core/src/types.ts:151-164`), all six
  * fields — consolidating the THREE divergent copies that exist today:
  *   - `config` slice:          the full shape (already canonical there; mirrored here).
  *   - `filter-pipeline` slice:  a 3-field SUBSET (`ignore`/`rules`/`categories`).
@@ -73,14 +73,14 @@ export const IgnoreConfig = Schema.Struct({
 export type IgnoreConfig = typeof IgnoreConfig.Type;
 
 /**
- * User config (`tsfix.config.json` / `package.json#tsFix`), loaded leniently
+ * User config (`tsnuke.config.json` / `package.json#tsNuke`), loaded leniently
  * (RULE-024). All fields optional — an empty `{}` is a valid, no-op config. Mirrors
- * legacy `TsFixConfig` (`types.ts:151-164`) field-for-field.
+ * legacy `TsNukeConfig` (`types.ts:151-164`) field-for-field.
  *
  * `plugins` is RETAINED if it is a valid `string[]` so the engine can warn about it
  * (RULE-024) but is NEVER loaded/resolved/imported (RULE-039 — RCE-by-construction).
  */
-export const TsFixConfig = Schema.Struct({
+export const TsNukeConfig = Schema.Struct({
   ignore: Schema.optional(IgnoreConfig),
   failOn: Schema.optional(FailOn),
   customRulesOnly: Schema.optional(Schema.Boolean),
@@ -95,13 +95,13 @@ export const TsFixConfig = Schema.Struct({
   categories: Schema.optional(
     Schema.Record({ key: Schema.String, value: ConfigSeverity }),
   ),
-}).annotations({ identifier: "TsFixConfig" });
-export type TsFixConfig = typeof TsFixConfig.Type;
+}).annotations({ identifier: "TsNukeConfig" });
+export type TsNukeConfig = typeof TsNukeConfig.Type;
 
 /**
- * Decode an untrusted value into a {@link TsFixConfig}, returning `Either` (not
+ * Decode an untrusted value into a {@link TsNukeConfig}, returning `Either` (not
  * throwing). NOTE: this is a STRICT contract decode, NOT the lenient drop-not-throw
  * loader (RULE-024) — that lives in the config slice's `sanitizeConfig`. Use this only
  * for already-trusted/structured config at a hard boundary.
  */
-export const decodeTsFixConfig = Schema.decodeUnknownEither(TsFixConfig);
+export const decodeTsNukeConfig = Schema.decodeUnknownEither(TsNukeConfig);

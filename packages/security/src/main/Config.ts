@@ -3,8 +3,8 @@
  *
  * This slice previously vendored a BARE `interface { plugins?: readonly string[] }` —
  * just the one field {@link ./Plugins.ts loadConfigPlugins} reads. That contract is now
- * consolidated in `@ts-fix/contracts-effect` (the canonical `effect/Schema` home).
- * The canonical `TsFixConfig` is a proven structural SUPERSET that includes
+ * consolidated in `@tsnuke/contracts-effect` (the canonical `effect/Schema` home).
+ * The canonical `TsNukeConfig` is a proven structural SUPERSET that includes
  * `plugins?: readonly string[]`, so `loadConfigPlugins` reads `config.plugins` unchanged.
  * Re-exported here as a type to preserve the public surface and keep the `./Config.js`
  * import path stable across the slice.
@@ -13,4 +13,4 @@
  * it (RULE-039 / BC-18). De-vendoring the TYPE does not touch that behavior.
  */
 
-export type { TsFixConfig } from "@ts-fix/contracts-effect";
+export type { TsNukeConfig } from "@tsnuke/contracts-effect";

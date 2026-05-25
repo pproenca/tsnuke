@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runRule } from "@ts-fix/rules-core-effect";
+import { runRule } from "@tsnuke/rules-core-effect";
 import { rule } from "../main/no-deep-relative-import.js";
 
 describe("no-deep-relative-import (SYN) — RULE-011", () => {
@@ -25,7 +25,7 @@ describe("no-deep-relative-import (SYN) — RULE-011", () => {
     expect(d.tier).toBe("SYN");
     expect(d.severity).toBe("warning");
     expect(d.category).toBe("Module Boundaries & Architecture");
-    expect(d.plugin).toBe("ts-fix");
+    expect(d.plugin).toBe("tsnuke");
     expect(d.message).toBe(
       "Deep relative import (4 levels) signals a missing module boundary.",
     );

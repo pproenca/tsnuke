@@ -5,7 +5,7 @@
  * Legacy `cli.ts` dispatched manually: first token `"install"` → `runInstall`, else
  * `runInspect` (treating a leading `"inspect"` as optional). On `@effect/cli` the
  * default command IS `inspect` and `install` is a registered subcommand; the library's
- * POSIX dispatcher routes `ts-fix install …` to the subcommand and everything else
+ * POSIX dispatcher routes `tsnuke install …` to the subcommand and everything else
  * (incl. a bare directory + flags) to the root `inspect` handler. `--help` / completions
  * are provided automatically (new capability vs the hand-rolled parser).
  *
@@ -26,6 +26,6 @@ export const command = inspectCommand.pipe(Command.withSubcommands([installComma
  * strips the prefix itself, unlike legacy which sliced `process.argv.slice(2)` by hand.
  */
 export const run = Command.run(command, {
-  name: "ts-fix",
+  name: "tsnuke",
   version: VERSION,
 });

@@ -1,6 +1,6 @@
 /**
  * FROZEN VENDORED ORACLE — a byte-faithful copy of legacy `runEngine`
- * (`legacy/ts-fix/packages/core/src/engine.ts:64-326`, READ-ONLY) as a plain
+ * (`legacy/tsnuke/packages/core/src/engine.ts:64-326`, READ-ONLY) as a plain
  * SYNCHRONOUS function, used ONLY by `equivalence.test.ts` to prove the modern Effect
  * `runEngine` produces the IDENTICAL `EngineResult`.
  *
@@ -9,7 +9,7 @@
  * `typecheck:ok`-as-result reconciliation, the CFG project-level emit, the parse-once
  * Tier-1/Tier-2 loop, and the GRAPH pass. This is copied verbatim from legacy with TWO
  * mechanical adaptations that DO NOT change behavior:
- *   1. The legacy `import { ... } from "@ts-fix/rules"` (the legacy package) is replaced
+ *   1. The legacy `import { ... } from "@tsnuke/rules"` (the legacy package) is replaced
  *      by INJECTED deps — the SAME already-proven MODERN components the real engine uses
  *      (`ruleRegistry`/`graphRuleRegistry`/`shouldActivate`/`buildModuleGraph`/
  *      `createGraphRuleContext`/`planEngineRun`). Feeding both sides the identical proven
@@ -24,20 +24,20 @@
 
 import { resolve } from "node:path";
 import ts from "typescript";
-import { shouldActivate } from "@ts-fix/capabilities-effect";
-import type { Capability, Diagnostic, RuleMeta } from "@ts-fix/contracts-effect";
-import { buildModuleGraph } from "@ts-fix/module-graph-effect";
-import { planEngineRun, type SeverityOverrides } from "@ts-fix/engine-plan-effect";
+import { shouldActivate } from "@tsnuke/capabilities-effect";
+import type { Capability, Diagnostic, RuleMeta } from "@tsnuke/contracts-effect";
+import { buildModuleGraph } from "@tsnuke/module-graph-effect";
+import { planEngineRun, type SeverityOverrides } from "@tsnuke/engine-plan-effect";
 import {
   createGraphRuleContext,
   createRuleContext,
   type GraphRule,
   type Rule,
-} from "@ts-fix/rules-core-effect";
-import { graphRuleRegistry, ruleRegistry } from "@ts-fix/rules-registry-effect";
+} from "@tsnuke/rules-core-effect";
+import { graphRuleRegistry, ruleRegistry } from "@tsnuke/rules-registry-effect";
 import type { EngineResult, SourceFileInput } from "../main/runEngine.js";
 
-const PLUGIN_NAME = "ts-fix" as const;
+const PLUGIN_NAME = "tsnuke" as const;
 
 /** Legacy `scriptKindFor` (engine.ts:106-113), verbatim. */
 function scriptKindFor(filePath: string): ts.ScriptKind {

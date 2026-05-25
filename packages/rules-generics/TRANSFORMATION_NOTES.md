@@ -1,13 +1,13 @@
 # Transformation Notes — `generics` rule category → Effect-TS
 
 Strangler-fig slice produced by
-`/code-modernization:modernize-transform ts-fix rules-generics effect`.
+`/code-modernization:modernize-transform tsnuke rules-generics effect`.
 
-Source (READ-ONLY): `legacy/ts-fix/packages/ts-fix-rules/src/rules/generics/`
+Source (READ-ONLY): `legacy/tsnuke/packages/tsnuke-rules/src/rules/generics/`
 (+ the `Diagnostic`/`RuleMeta` contracts and the `defineRule`/`runRule`/`runTypeAwareRule`
-substrate, now owned by `@ts-fix/contracts-effect` and `@ts-fix/rules-core-effect`
+substrate, now owned by `@tsnuke/contracts-effect` and `@tsnuke/rules-core-effect`
 respectively).
-Target: `modernized/rules-generics/effect/` (package `@ts-fix/rules-generics-effect`).
+Target: `modernized/rules-generics/effect/` (package `@tsnuke/rules-generics-effect`).
 
 Implements the **Generics & Type-Level Complexity** category — **5 rules**, split
 **4 SYN + 1 TYP**:
@@ -37,7 +37,7 @@ Implements the **Generics & Type-Level Complexity** category — **5 rules**, sp
 | `no-unnecessary-type-constraint.ts` | `no-unnecessary-type-constraint.ts` | SYN |
 | `prefer-generic-over-any-passthrough.ts` | `prefer-generic-over-any-passthrough.ts` | TYP |
 | category barrel + `genericsRules` registry | `src/main/index.ts` | — (v1 manual codegen seam) |
-| `runRule` / `runTypeAwareRule` test drivers (legacy `test-utils.ts`) | imported from `@ts-fix/rules-core-effect` (not vendored) | — |
+| `runRule` / `runTypeAwareRule` test drivers (legacy `test-utils.ts`) | imported from `@tsnuke/rules-core-effect` (not vendored) | — |
 | legacy `*.test.ts` vectors (the behavioral spec) | ported into `src/test/*.test.ts` | — |
 
 Each predicate was ported **VERBATIM** — same META (id / severity / category / tier /
@@ -59,18 +59,18 @@ are structural / dependency-routing:
 
 ### D1 — Import the substrate, do NOT re-vendor it
 - `defineRule` (and the `Rule` / `RuleContext` types) are imported from
-  `@ts-fix/rules-core-effect` instead of the legacy relative `../../define-rule.js`.
+  `@tsnuke/rules-core-effect` instead of the legacy relative `../../define-rule.js`.
 - `runRule` (the SYN AST driver) **and** `runTypeAwareRule` (the TYP checker driver) —
-  both legacy `test-utils.ts` — are imported from `@ts-fix/rules-core-effect` in the
+  both legacy `test-utils.ts` — are imported from `@tsnuke/rules-core-effect` in the
   tests. The engine drives these rules through the *same* walk/dispatch (SYN) and the
   *same* one-file `ts.Program` + `ts.TypeChecker` (TYP), so the tests exercise the real
   production drivers, not copies.
-- `Diagnostic` / `RuleMeta` come from `@ts-fix/contracts-effect` transitively (rules
+- `Diagnostic` / `RuleMeta` come from `@tsnuke/contracts-effect` transitively (rules
   never name them directly here; they flow through `defineRule`/`ctx.report`). This slice
   does not re-vendor any contract or substrate symbol.
 
 ### D2 — Two `file:` deps + double inline (consumption pattern)
-`package.json` adds `@ts-fix/rules-core-effect` **and** `@ts-fix/contracts-effect`
+`package.json` adds `@tsnuke/rules-core-effect` **and** `@tsnuke/contracts-effect`
 as `file:` deps, plus `typescript` as a real **dependency** (not devDependency): the rules
 call `ts.SyntaxKind` / `ts.is*` / `getLineAndCharacterOfPosition` / the `TypeChecker` API
 at **runtime**, so the compiler API is a production dependency, not a build-only tool.

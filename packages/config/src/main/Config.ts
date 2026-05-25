@@ -1,8 +1,8 @@
 /**
- * The user-config contract (`tsfix.config.json` / `package.json#tsFix`) as
+ * The user-config contract (`tsnuke.config.json` / `package.json#tsNuke`) as
  * `effect/Schema` (Modernization Brief line 94 — the wire/domain contract is a
- * Schema, not a hand-rolled type). This is the FULL legacy `TsFixConfig`
- * (`legacy/ts-fix/packages/core/src/types.ts:151-164`), all six fields, modeled
+ * Schema, not a hand-rolled type). This is the FULL legacy `TsNukeConfig`
+ * (`legacy/tsnuke/packages/core/src/types.ts:151-164`), all six fields, modeled
  * so the next slices can de-vendor onto it (the filter-pipeline slice vendored a
  * 3-field subset — TRANSFORMATION_NOTES Follow-up #2).
  *
@@ -88,14 +88,14 @@ export const IgnoreConfig = Schema.Struct({
 export type IgnoreConfig = typeof IgnoreConfig.Type;
 
 /**
- * User config (`tsfix.config.json` / `package.json#tsFix`), loaded leniently
+ * User config (`tsnuke.config.json` / `package.json#tsNuke`), loaded leniently
  * (RULE-024). All fields optional — an empty `{}` is a valid, no-op config. Mirrors
- * legacy `TsFixConfig` (`types.ts:151-164`) field-for-field.
+ * legacy `TsNukeConfig` (`types.ts:151-164`) field-for-field.
  *
  * `plugins` is RETAINED if it is a valid `string[]` so the engine can warn about it
  * (RULE-024) but is NEVER loaded/resolved/imported (RULE-039 — RCE-by-construction).
  */
-export const TsFixConfig = Schema.Struct({
+export const TsNukeConfig = Schema.Struct({
   ignore: Schema.optional(IgnoreConfig),
   failOn: Schema.optional(
     FailOn.annotations({ description: 'The `--fail-on` gate mode ("error" | "warning" | "none").' }),
@@ -119,5 +119,5 @@ export const TsFixConfig = Schema.Struct({
       description: "Per-category severity overrides (config vocabulary).",
     }),
   ),
-}).annotations({ identifier: "TsFixConfig" });
-export type TsFixConfig = typeof TsFixConfig.Type;
+}).annotations({ identifier: "TsNukeConfig" });
+export type TsNukeConfig = typeof TsNukeConfig.Type;

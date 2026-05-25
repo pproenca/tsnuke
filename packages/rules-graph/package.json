@@ -1,8 +1,8 @@
 {
-  "name": "@ts-fix/rules-graph-effect",
+  "name": "@tsnuke/rules-graph-effect",
   "private": true,
   "version": "0.1.0",
-  "description": "Effect-native rewrite of ts-fix's GRAPH-tier rules: `no-import-cycles` (RULE-015, 3-color iterative DFS) and `no-unused-exports` (RULE-025 dead-code row, gated `requires:[\"app\"]`). Two pure plain-TS graph predicates on the @ts-fix/rules-core-effect substrate (defineGraphRule / runGraphRule over a ModuleGraph), consuming the canonical Diagnostic/RuleMeta from @ts-fix/contracts-effect. GRAPH rules analyze the cross-file module graph, NOT a single-file AST — they never touch the TS compiler API, so `typescript` is a DEV dependency (only tsc needs it).",
+  "description": "Effect-native rewrite of tsnuke's GRAPH-tier rules: `no-import-cycles` (RULE-015, 3-color iterative DFS) and `no-unused-exports` (RULE-025 dead-code row, gated `requires:[\"app\"]`). Two pure plain-TS graph predicates on the @tsnuke/rules-core-effect substrate (defineGraphRule / runGraphRule over a ModuleGraph), consuming the canonical Diagnostic/RuleMeta from @tsnuke/contracts-effect. GRAPH rules analyze the cross-file module graph, NOT a single-file AST — they never touch the TS compiler API, so `typescript` is a DEV dependency (only tsc needs it).",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -14,8 +14,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ts-fix/contracts-effect": "workspace:*",
-    "@ts-fix/rules-core-effect": "workspace:*"
+    "@tsnuke/contracts-effect": "workspace:*",
+    "@tsnuke/rules-core-effect": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

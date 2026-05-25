@@ -11,7 +11,7 @@
  * Strategy:
  *   1. A VENDORED, FROZEN copy of legacy `sanitizeConfig` (+ its helpers
  *      `isObject`/`isStringArray`/`sanitizeSeverityMap`/`sanitizeIgnore`) from
- *      `legacy/ts-fix/packages/core/src/load-config.ts:22-154` is the oracle.
+ *      `legacy/tsnuke/packages/core/src/load-config.ts:22-154` is the oracle.
  *      Do NOT "improve" it — it exists to reproduce legacy behavior exactly.
  *   2. A broad, hand-authored fixture set covering: nullish/non-object raw, each
  *      field valid + invalid, the vocab quirk, plugins retained, overrides
@@ -27,8 +27,8 @@ import { describe, expect, it } from "vitest";
 import { sanitizeConfig } from "../main/index.js";
 
 // ===========================================================================
-// ORACLE: frozen copy of legacy/ts-fix/packages/core/src/load-config.ts:22-154.
-// Verbatim (only the `TsFixConfig` type import is inlined as `any`-shaped
+// ORACLE: frozen copy of legacy/tsnuke/packages/core/src/load-config.ts:22-154.
+// Verbatim (only the `TsNukeConfig` type import is inlined as `any`-shaped
 // locals so the oracle is self-contained). For differential testing ONLY.
 // ===========================================================================
 

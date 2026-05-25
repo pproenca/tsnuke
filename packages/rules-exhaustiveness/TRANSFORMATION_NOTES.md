@@ -1,16 +1,16 @@
 # Transformation Notes — `exhaustiveness` rule category → Effect-native substrate
 
-Strangler-fig slice produced by `/code-modernization:modernize-transform ts-fix exhaustiveness effect`.
+Strangler-fig slice produced by `/code-modernization:modernize-transform tsnuke exhaustiveness effect`.
 
-Source (READ-ONLY): `legacy/ts-fix/packages/ts-fix-rules/src/rules/exhaustiveness/`
+Source (READ-ONLY): `legacy/tsnuke/packages/tsnuke-rules/src/rules/exhaustiveness/`
 (8 rules — 3 SYN + 5 TYP — plus their colocated `*.test.ts`).
-Target: `modernized/rules-exhaustiveness/effect/` — package `@ts-fix/rules-exhaustiveness-effect`.
+Target: `modernized/rules-exhaustiveness/effect/` — package `@tsnuke/rules-exhaustiveness-effect`.
 
 This is a SYN/TYP-mixed rule-category slice on the Effect-native rule substrate, modeled on
 the completed `error-handling` sibling. It is a **true strangler-fig**: it CONSUMES the
-already-completed substrate (`@ts-fix/rules-core-effect` for `defineRule` / `runRule` /
+already-completed substrate (`@tsnuke/rules-core-effect` for `defineRule` / `runRule` /
 `runTypeAwareRule` / `Rule` / `RuleContext`) and the canonical data contracts
-(`@ts-fix/contracts-effect` for `Diagnostic` / `RuleMeta`, reached transitively through
+(`@tsnuke/contracts-effect` for `Diagnostic` / `RuleMeta`, reached transitively through
 rules-core). Neither dependency was modified — nor was `legacy/`. Same two-`file:`-dep + inline
 + `typescript`-runtime config structure as the `error-handling` sibling.
 
@@ -24,13 +24,13 @@ rules via `runRule` (one parse, walk, dispatch by kind) and TYP rules via `runTy
 `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `verbatimModuleSyntax`.
 
 **`file:` dependency imports + `runTypeAwareRule`:** both `file:../../rules-core/effect`
-(`@ts-fix/rules-core-effect`) and `file:../../contracts/effect` (`@ts-fix/contracts-effect`)
+(`@tsnuke/rules-core-effect`) and `file:../../contracts/effect` (`@tsnuke/contracts-effect`)
 import cleanly by package name. `typescript` is a real runtime DEPENDENCY (the rules call the
 compiler API at runtime — `ts.is*`, `ts.TypeFlags`, `checker.getTypeAtLocation`,
 `checker.isArrayType` / `isTupleType`, `type.isUnion()` / `isStringLiteral()` / `isNumberLiteral()`),
 not a devDependency. Vitest transpiles the two `.ts`-entry `file:` deps at test time via
-`vitest.config.ts → test.server.deps.inline: ["@ts-fix/rules-core-effect",
-"@ts-fix/contracts-effect"]` (contracts must be inlined too because rules-core imports it).
+`vitest.config.ts → test.server.deps.inline: ["@tsnuke/rules-core-effect",
+"@tsnuke/contracts-effect"]` (contracts must be inlined too because rules-core imports it).
 `runTypeAwareRule` (the TYP driver) builds the real default lib, so the checker resolves array /
 readonly-array / tuple types, nullability, and literal unions correctly. No relative-import
 fallback was needed.
@@ -55,7 +55,7 @@ predicate body (the exact `ts.is*` guards, helper functions, `ts.TypeFlags` mask
 line/column, message/help strings) were ported **verbatim**. The ONLY change to each rule file
 is the import line: `defineRule` (and the `RuleContext` type, for `no-constant-condition`,
 `prefer-discriminated-union`, and `no-unnecessary-condition`) now come from
-`@ts-fix/rules-core-effect` instead of the legacy relative `../../define-rule.js`.
+`@tsnuke/rules-core-effect` instead of the legacy relative `../../define-rule.js`.
 
 All eight rules carry `category: "Exhaustiveness & Narrowing"`. Severities preserved verbatim:
 `no-for-in-array` and `switch-exhaustiveness-check` are `error`; the other six are `warning`.
@@ -126,7 +126,7 @@ Both biases are asserted explicitly in `src/test/switch-exhaustiveness-check.tes
 ## 3. Characterization tests = equivalence proof
 
 TDD: tests written against the substrate's `runRule` (SYN) / `runTypeAwareRule` (TYP) drivers
-imported from `@ts-fix/rules-core-effect`. **Every legacy `*.test.ts` case was ported**
+imported from `@tsnuke/rules-core-effect`. **Every legacy `*.test.ts` case was ported**
 (the behavioral-equivalence proof), plus the required additions:
 
 - **prefer-discriminated-union**: single-`if` never fires; mixed-arm aborts; different-discriminant
@@ -151,9 +151,9 @@ five TYP rules, no `requires` on the SYN rules, and the two `error`-severity rul
 ## 4. Deviations from legacy
 
 - **Consumes the shared substrate + contracts.** The rules import `defineRule` / `RuleContext`
-  from `@ts-fix/rules-core-effect`, and the tests import `runRule` / `runTypeAwareRule` from
+  from `@tsnuke/rules-core-effect`, and the tests import `runRule` / `runTypeAwareRule` from
   the same package — instead of the legacy relative `../../define-rule.js` / `../../test-utils.js`.
-  The `Diagnostic` / `RuleMeta` contracts come transitively from `@ts-fix/contracts-effect`.
+  The `Diagnostic` / `RuleMeta` contracts come transitively from `@tsnuke/contracts-effect`.
   No predicate logic changed.
 - **No re-export of rules-core / contracts symbols.** `src/main/index.ts` exports only what this
   slice OWNS: the eight rules by name + `exhaustivenessRules: ReadonlyArray<Rule>` (barrel

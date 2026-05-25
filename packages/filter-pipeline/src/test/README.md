@@ -1,13 +1,13 @@
 # Characterization tests — `filter-pipeline` module (Effect-TS target)
 
-These tests **define "done"** for the Effect-TS rewrite of `ts-fix`'s four-stage
+These tests **define "done"** for the Effect-TS rewrite of `tsnuke`'s four-stage
 diagnostic filter pipeline. They were written *before* the implementation. The
 implementation lives at `src/main/*.ts` (imported as `../main/index.js` — `.js` on
 relative specifiers, per the legacy convention; the `Bundler` moduleResolution in
 `tsconfig.json` resolves `.js` to `.ts`). Until that module exists the suite is
 **RED**, and that is the correct starting state.
 
-The legacy module is the oracle (`legacy/ts-fix/packages/core/src/filter-pipeline.ts`,
+The legacy module is the oracle (`legacy/tsnuke/packages/core/src/filter-pipeline.ts`,
 read-only). We are proving *equivalence first*. Unlike the `score` slice, this
 transform has **no intended behavioral deviation** — output must be 100% identical
 to legacy. The only change is a STRUCTURAL one: the `warn`↔`warning` vocabulary is
@@ -22,7 +22,7 @@ which must NOT change any output.
 | RULE-023 S1 | auto-suppress — drop `tags` ∋ `"test-noise"` | `stageAutoSuppress.test.ts` |
 | RULE-023 S2 / RULE-040 | severity override — `rules` (precedence) then `categories`; `"off"` drops; `"warn"`→`"warning"` | `stageSeverity.test.ts` |
 | RULE-023 S3 | ignore — `ignore.rules` / `ignore.files` (exact/suffix/substring) / `ignore.overrides` | `stageIgnore.test.ts` |
-| RULE-023 S4 | inline-disable — `// ts-fix-disable-next-line [rules]`, next-line targeting, line≤0 exempt | `stageInlineDisable.test.ts` |
+| RULE-023 S4 | inline-disable — `// tsnuke-disable-next-line [rules]`, next-line targeting, line≤0 exempt | `stageInlineDisable.test.ts` |
 | RULE-023 | bare vs `plugin/rule` matching throughout; `tags` stripped before emit; gating on `respectInlineDisables`/`sources` | `runFilterPipeline.test.ts` |
 | equivalence | modern === legacy oracle over crafted fixtures (100% equality) | `equivalence.test.ts` |
 
@@ -41,7 +41,7 @@ import {
   AUTO_SUPPRESS_TAGS,         // ReadonlySet<string> = { "test-noise" }
 } from "../main/index.js";
 import type {
-  Diagnostic, DiagnosticWithTags, Severity, TsFixConfig,
+  Diagnostic, DiagnosticWithTags, Severity, TsNukeConfig,
   FilterPipelineOptions, SourceTextMap, Stage,
 } from "../main/index.js";
 ```
