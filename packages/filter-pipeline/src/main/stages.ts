@@ -132,20 +132,17 @@ export interface InlineDirective {
  */
 export function parseInlineDisables(text: string): Map<number, InlineDirective> {
   const out = new Map<number, InlineDirective>();
-  const lines = text.split(/\r\n|\r|\n/);
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (line === undefined) continue;
+  text.split(/\r\n|\r|\n/).forEach((line, i) => {
     const m = line.match(DISABLE_NEXT_LINE_RE);
-    if (!m) continue;
-    const targetLine = i + 2; // 1-based, the NEXT line
+    if (!m) return;
     const rest = (m[1] ?? "").trim();
     const ruleNames = rest.length > 0 ? rest.split(/[\s,]+/).filter(Boolean) : [];
-    out.set(targetLine, {
+    // i + 2 → 1-based line number of the directive's *target* (the NEXT line).
+    out.set(i + 2, {
       all: ruleNames.length === 0,
       rules: new Set(ruleNames),
     });
-  }
+  });
   return out;
 }
 
