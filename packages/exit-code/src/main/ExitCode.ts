@@ -14,7 +14,10 @@
 import { Schema } from "effect";
 
 /** A resolved process exit code: `0` (pass) or `1` (fail). Branded (RULE-030). */
-export const ExitCode = Schema.Literal(0, 1).pipe(Schema.brand("ExitCode"));
+export const ExitCode = Schema.Literal(0, 1).pipe(
+  Schema.brand("ExitCode"),
+  Schema.annotations({ identifier: "ExitCode" }),
+);
 export type ExitCode = typeof ExitCode.Type;
 
 /** Exit code for a passing run / gate not tripped. */

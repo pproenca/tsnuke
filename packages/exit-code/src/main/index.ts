@@ -10,24 +10,32 @@
  * The gate/resolver are plain synchronous pure functions (NOT `Effect`-wrapped);
  * the Effect ecosystem appears only in the contract types (`FailOn`/`Severity`/
  * `ExitCode` Schemas) and in `Match` for the failOn dispatch.
+ *
+ * Exports are ordered schemas → types → functions, then closed by the self-barrel
+ * `export * as ExitCodeModule from "."` so callers can reach the surface as a
+ * namespace without colliding with the `ExitCode` schema named export. All named
+ * re-exports stay byte-stable.
  */
 
-// Contract layer (Schema literals / branded types).
+// ---- Schemas + their derived types (the contract layer) ----
 export {
+  DEFAULT_FAIL_ON,
   FailOn,
   Severity,
-  DEFAULT_FAIL_ON,
   decodeFailOn,
 } from "./FailOn.js";
 
 // `makeExitCode` (the validating constructor) stays in ExitCode.ts but is NOT
 // re-exported: a 2-value domain has no meaningful trust boundary to decode at, so
 // publishing it would be ceremony (cf. the score slice's barrel-hygiene lesson).
-export { ExitCode, PASS, FAIL } from "./ExitCode.js";
+export { ExitCode, FAIL, PASS } from "./ExitCode.js";
 
-// Logic layer (pure synchronous gate + resolver).
-export {
-  shouldFailForDiagnostics,
-  resolveExitCode,
-  type ExitCodeInputs,
-} from "./resolve.js";
+export type { ExitCodeInputs } from "./resolve.js";
+
+// ---- Functions (pure synchronous gate + resolver) ----
+export { resolveExitCode, shouldFailForDiagnostics } from "./resolve.js";
+
+// ---- Self-barrel: THIS is the module's namespace ----
+// Bound as `ExitCodeModule` (not `ExitCode`) because `ExitCode` is already the
+// branded schema's named export — a `export * as ExitCode` would duplicate it.
+export * as ExitCodeModule from "./index.js";

@@ -22,7 +22,9 @@ import { Schema } from "effect";
  *   - `"none"`    → never fail
  * Default is `"error"` (legacy `flags.ts`); see {@link DEFAULT_FAIL_ON}.
  */
-export const FailOn = Schema.Literal("error", "warning", "none");
+export const FailOn = Schema.Literal("error", "warning", "none").annotations({
+  identifier: "FailOn",
+});
 export type FailOn = typeof FailOn.Type;
 
 /**
@@ -44,5 +46,7 @@ export const decodeFailOn = Schema.decodeUnknownOption(FailOn);
  * no `info` level (RULE-031). Severity is the only field the exit-code gate reads
  * from a diagnostic.
  */
-export const Severity = Schema.Literal("error", "warning");
+export const Severity = Schema.Literal("error", "warning").annotations({
+  identifier: "Severity",
+});
 export type Severity = typeof Severity.Type;

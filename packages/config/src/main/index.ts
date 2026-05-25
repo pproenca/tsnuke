@@ -9,8 +9,13 @@
  *     `FileSystem` + `Path`, delegating validation to `sanitizeConfig`. Provide a
  *     Layer at the edge: `NodeContext` (production) or an in-memory stub (tests). The
  *     `*Node` helpers run it against the real disk.
+ *
+ * Exports are ordered schemas → types → functions, then closed by the self-barrel
+ * `export * as Config from "./index.js"` so callers can `import { Config } from "..."`
+ * and reach the same surface as a namespace — the named re-exports stay byte-stable.
  */
 
+// ---- Schemas + their derived types (the config contract) ----
 export {
   ConfigSeverity,
   FailOn,
@@ -19,7 +24,10 @@ export {
   TsDoctorConfig,
 } from "./Config.js";
 
-export { sanitizeConfig, type SanitizeResult } from "./sanitize.js";
+export type { SanitizeResult } from "./sanitize.js";
+
+// ---- Functions (pure sanitizer + effectful loader) ----
+export { sanitizeConfig } from "./sanitize.js";
 
 export {
   loadConfig,
@@ -28,3 +36,6 @@ export {
   loadConfigWithWarningsNode,
   NodeContext,
 } from "./loadConfig.js";
+
+// ---- Self-barrel: THIS is the module's namespace ----
+export * as Config from "./index.js";
