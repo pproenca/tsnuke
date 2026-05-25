@@ -39,6 +39,18 @@ function unwrapSingle(stmt: ts.Statement): ts.Statement {
   return stmt;
 }
 
+/**
+ * True when `stmt` is a push-only loop body: either a bare `acc.push(...)` (a),
+ * or an `if` with no `else` whose then-branch is just `acc.push(...)` (b).
+ */
+function isPushLoopBody(stmt: ts.Statement): boolean {
+  if (isPushStatement(stmt)) return true;
+  if (ts.isIfStatement(stmt) && stmt.elseStatement === undefined) {
+    return isPushStatement(unwrapSingle(stmt.thenStatement));
+  }
+  return false;
+}
+
 export const rule = defineRule(
   {
     id: "prefer-array-methods",
@@ -52,19 +64,7 @@ export const rule = defineRule(
   },
   () => {
     const check = (node: ts.IterationStatement, ctx: RuleContext): void => {
-      const stmt = unwrapSingle(node.statement);
-
-      let matches = false;
-      if (isPushStatement(stmt)) {
-        // (a) the body is a bare `acc.push(...)`.
-        matches = true;
-      } else if (ts.isIfStatement(stmt) && stmt.elseStatement === undefined) {
-        // (b) an `if` with no `else` whose then-branch is just `acc.push(...)`.
-        const then = unwrapSingle(stmt.thenStatement);
-        if (isPushStatement(then)) matches = true;
-      }
-
-      if (!matches) return;
+      if (!isPushLoopBody(unwrapSingle(node.statement))) return;
 
       const start = node.getStart(ctx.sourceFile);
       const { line, character } =

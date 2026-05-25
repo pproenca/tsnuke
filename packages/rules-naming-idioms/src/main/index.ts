@@ -70,3 +70,7 @@ export const namingIdiomsRules: ReadonlyArray<Rule> = [
   preferUnionOverEnum,
   tripleEquals,
 ];
+
+// Self-barrel: `import { RulesNamingIdioms } from "@ts-doctor/rules-naming-idioms-effect"`
+// resolves to this module's namespace. Additive — the named exports above stay the surface.
+export * as RulesNamingIdioms from "./index.js";

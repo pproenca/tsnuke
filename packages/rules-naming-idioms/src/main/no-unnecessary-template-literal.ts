@@ -22,11 +22,10 @@ export const rule = defineRule(
   () => ({
     [ts.SyntaxKind.NoSubstitutionTemplateLiteral]: (node, ctx) => {
       if (!ts.isNoSubstitutionTemplateLiteral(node)) return;
-      const { text } = node;
       // Only flag when conversion to a quoted string is trivially safe.
-      if (text.includes("\n")) return;
-      if (text.includes("'")) return;
-      if (text.includes('"')) return;
+      if (node.text.includes("\n")) return;
+      if (node.text.includes("'")) return;
+      if (node.text.includes('"')) return;
 
       const start = node.getStart(ctx.sourceFile);
       const { line, character } =
