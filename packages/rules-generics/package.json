@@ -1,0 +1,24 @@
+{
+  "name": "@ts-doctor/rules-generics-effect",
+  "version": "0.1.0",
+  "description": "Effect-native rewrite of ts-doctor's `generics` rule category (4 SYN + 1 TYP): generic-name-convention, generic-param-count-budget (RULE-007, >4 exclusive), no-generic-with-default-any, no-unnecessary-type-constraint, and prefer-generic-over-any-passthrough (TYP, uses ctx.checker). Pure AST/type-aware predicates on the @ts-doctor/rules-core-effect substrate (defineRule/runRule/runTypeAwareRule), consuming the canonical Diagnostic/RuleMeta from @ts-doctor/contracts-effect. Plain-TS visitors over the TS compiler API — NOT Effect-wrapped (sync AST walk).",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/main/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ts-doctor/contracts-effect": "workspace:*",
+    "@ts-doctor/rules-core-effect": "workspace:*",
+    "typescript": "^5.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "vitest": "^3.2.0"
+  }
+}

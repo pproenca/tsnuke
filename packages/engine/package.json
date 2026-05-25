@@ -1,0 +1,38 @@
+{
+  "name": "@ts-doctor/engine-effect",
+  "version": "0.1.0",
+  "description": "THE integrating keystone of the ts-doctor modernization: the two-tier `runEngine` (RULE-018 partial-honesty gate + RULE-036 Program disposal via Scope + RULE-013 memory guard, now WIRED) and the `diagnose()` orchestration that wires ~12 finished strangler-fig slices into a working end-to-end analysis. The ONE genuinely-effectful part is the `ts.Program` lifecycle (scale.scopedProgram); rule execution stays pure synchronous. `diagnose` is an Effect over FileSystem|Path|Scope; `diagnoseNode` is the prod runnable over NodeContext.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/main/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@effect/platform": "^0.96.1",
+    "@effect/platform-node": "^0.106.0",
+    "@ts-doctor/capabilities-effect": "workspace:*",
+    "@ts-doctor/config-effect": "workspace:*",
+    "@ts-doctor/contracts-effect": "workspace:*",
+    "@ts-doctor/discovery-effect": "workspace:*",
+    "@ts-doctor/engine-plan-effect": "workspace:*",
+    "@ts-doctor/errors-effect": "workspace:*",
+    "@ts-doctor/filter-pipeline-effect": "workspace:*",
+    "@ts-doctor/module-graph-effect": "workspace:*",
+    "@ts-doctor/rules-core-effect": "workspace:*",
+    "@ts-doctor/rules-registry-effect": "workspace:*",
+    "@ts-doctor/scale-effect": "workspace:*",
+    "@ts-doctor/score-effect": "workspace:*",
+    "effect": "^3.21.2",
+    "typescript": "^5.8.0"
+  },
+  "devDependencies": {
+    "@effect/vitest": "^0.29.0",
+    "@types/node": "^22.10.0",
+    "vitest": "^3.2.0"
+  }
+}

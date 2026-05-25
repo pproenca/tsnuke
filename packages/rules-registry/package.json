@@ -1,0 +1,37 @@
+{
+  "name": "@ts-doctor/rules-registry-effect",
+  "version": "0.1.0",
+  "description": "The GLOBAL rule registry: aggregates all 88 transformed rules (86 per-file SYN/TYP/CFG + 2 GRAPH) into the two registries the engine consumes (`ruleRegistry` + `graphRuleRegistry`). Effect-native replacement for the legacy codegen `rule-registry.generated.ts` — a hand-assembled aggregator over the per-category rule slices (import read-only; owns no rules itself).",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/main/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ts-doctor/contracts-effect": "workspace:*",
+    "@ts-doctor/rules-core-effect": "workspace:*",
+    "@ts-doctor/rules-type-performance-effect": "workspace:*",
+    "@ts-doctor/rules-declaration-api-effect": "workspace:*",
+    "@ts-doctor/rules-security-effect": "workspace:*",
+    "@ts-doctor/rules-naming-idioms-effect": "workspace:*",
+    "@ts-doctor/rules-generics-effect": "workspace:*",
+    "@ts-doctor/rules-type-assertions-effect": "workspace:*",
+    "@ts-doctor/rules-async-effect": "workspace:*",
+    "@ts-doctor/rules-error-handling-effect": "workspace:*",
+    "@ts-doctor/rules-type-safety-effect": "workspace:*",
+    "@ts-doctor/rules-exhaustiveness-effect": "workspace:*",
+    "@ts-doctor/rules-module-boundaries-effect": "workspace:*",
+    "@ts-doctor/rules-graph-effect": "workspace:*",
+    "effect": "^3.21.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}

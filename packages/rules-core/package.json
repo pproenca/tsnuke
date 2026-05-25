@@ -1,0 +1,24 @@
+{
+  "name": "@ts-doctor/rules-core-effect",
+  "version": "0.1.0",
+  "description": "The rule SUBSTRATE for ts-doctor: defineRule + rule context/visitor shape + diagnostic identity (BC-13) + a hand-written rule registry, plus the AST-free `strictness` rule category (RULE-020) as the first proof-of-pattern. Consumes @ts-doctor/contracts-effect for the Diagnostic/RuleMeta contracts (first NEW contracts consumer); owns ModuleGraph (single-site GRAPH-tier input). Plain-TS substrate wrapping the TS compiler API — NOT Effect-wrapped (visitors are sync).",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/main/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ts-doctor/contracts-effect": "workspace:*",
+    "effect": "^3.21.2",
+    "typescript": "^5.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "vitest": "^3.2.0"
+  }
+}

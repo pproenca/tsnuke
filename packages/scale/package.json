@@ -1,0 +1,24 @@
+{
+  "name": "@ts-doctor/scale-effect",
+  "version": "0.1.0",
+  "description": "Effect-native rewrite of ts-doctor's scale guard: a PURE Tier-2 memory-ceiling check (RULE-013) plus the resource-disposal seam (RULE-036) re-expressed as idiomatic Effect Scope (Effect.acquireRelease / acquireUseRelease). Strangler-fig slice.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/main/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "effect": "^3.21.2"
+  },
+  "devDependencies": {
+    "@effect/vitest": "^0.29.0",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}

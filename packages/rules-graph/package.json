@@ -1,0 +1,24 @@
+{
+  "name": "@ts-doctor/rules-graph-effect",
+  "version": "0.1.0",
+  "description": "Effect-native rewrite of ts-doctor's GRAPH-tier rules: `no-import-cycles` (RULE-015, 3-color iterative DFS) and `no-unused-exports` (RULE-025 dead-code row, gated `requires:[\"app\"]`). Two pure plain-TS graph predicates on the @ts-doctor/rules-core-effect substrate (defineGraphRule / runGraphRule over a ModuleGraph), consuming the canonical Diagnostic/RuleMeta from @ts-doctor/contracts-effect. GRAPH rules analyze the cross-file module graph, NOT a single-file AST — they never touch the TS compiler API, so `typescript` is a DEV dependency (only tsc needs it).",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/main/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ts-doctor/contracts-effect": "workspace:*",
+    "@ts-doctor/rules-core-effect": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}

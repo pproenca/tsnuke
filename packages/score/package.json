@@ -1,0 +1,24 @@
+{
+  "name": "@ts-doctor/score-effect",
+  "version": "0.1.0",
+  "description": "Effect-native rewrite of ts-doctor's local health scoring (RULE-001/002/003/041). Strangler-fig slice — pure functions on the Effect ecosystem (Schema/Option/branded types).",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/main/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ts-doctor/contracts-effect": "workspace:*",
+    "effect": "^3.21.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}

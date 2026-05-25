@@ -1,39 +1,33 @@
 {
-  "name": "@ts-doctor/mcp",
+  "name": "@ts-doctor/mcp-effect",
   "version": "0.1.0",
-  "description": "MCP server (stdio) exposing ts-doctor to coding agents: diagnose, explain, list_rules.",
+  "description": "The ts-doctor MCP (Model Context Protocol) server (stdio), Effect-TS slice. Exposes the linter to coding agents via three tools (ts_doctor_diagnose / ts_doctor_explain / ts_doctor_list_rules). The pure handlers are a faithful port of legacy `packages/mcp/src/tools.ts`, rewired onto the modern engine/format/registry slices; the SDK wiring (`packages/mcp/src/server.ts`) swaps tool-argument validation from zod to `effect/Schema` (RULE-029). zod is GONE.",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/pproenca/ts-doctor.git",
-    "directory": "packages/mcp"
-  },
   "type": "module",
-  "bin": { "ts-doctor-mcp": "./dist/server.js" },
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
-  "exports": { ".": "./src/index.ts" },
-  "files": ["dist"],
-  "publishConfig": {
-    "access": "public",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-      ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" }
-    }
+  "bin": {
+    "ts-doctor-mcp": "./src/main/server.ts"
+  },
+  "exports": {
+    ".": "./src/main/index.ts"
   },
   "scripts": {
-    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.0",
-    "typescript": "^5.8.0",
-    "zod": "^3.23.0"
+    "@effect/platform-node": "^0.106.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@ts-doctor/contracts-effect": "workspace:*",
+    "@ts-doctor/engine-effect": "workspace:*",
+    "@ts-doctor/format-effect": "workspace:*",
+    "@ts-doctor/rules-registry-effect": "workspace:*",
+    "effect": "^3.21.2"
   },
   "devDependencies": {
-    "@ts-doctor/core": "workspace:*",
-    "@ts-doctor/rules": "workspace:*",
-    "@types/node": "^22.10.0"
+    "@effect/vitest": "^0.29.0",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
   }
 }

@@ -1,0 +1,24 @@
+{
+  "name": "@ts-doctor/filter-pipeline-effect",
+  "version": "0.1.0",
+  "description": "Effect-native rewrite of ts-doctor's four-stage diagnostic filter pipeline (RULE-023/024/040). Strangler-fig slice — pure synchronous stage functions on the Effect ecosystem (Schema contracts).",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/main/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ts-doctor/contracts-effect": "workspace:*",
+    "effect": "^3.21.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}

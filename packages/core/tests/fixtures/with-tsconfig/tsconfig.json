@@ -1,8 +1,0 @@
-{
-  "compilerOptions": {
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "module": "ESNext"
-  },
-  "include": ["src"]
-}

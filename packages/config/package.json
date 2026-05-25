@@ -1,0 +1,25 @@
+{
+  "name": "@ts-doctor/config-effect",
+  "version": "0.1.0",
+  "description": "Effect-native rewrite of ts-doctor's config loading (RULE-024 lenient drop-not-throw + RULE-040 severity vocabulary). Strangler-fig slice — pure decode-with-fallback on the Effect ecosystem (Schema) plus the effectful filesystem loader over @effect/platform FileSystem + Path with Node/in-memory Layers.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/main/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@effect/platform": "^0.96.1",
+    "@effect/platform-node": "^0.106.0",
+    "effect": "^3.21.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}

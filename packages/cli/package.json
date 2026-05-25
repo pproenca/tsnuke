@@ -1,0 +1,39 @@
+{
+  "name": "@ts-doctor/cli-effect",
+  "version": "0.1.0",
+  "description": "The user-facing `ts-doctor` CLI, re-imagined on `@effect/cli`: POSIX flag parsing, auto-help, and RULE-028 flag-exclusivity encoded as `Options` constraints. Wires the finished engine + format + fix-applier + build-report + exit-code slices into the default `inspect` command and the `install` subcommand. Equivalence is BEHAVIORAL (same flags accepted, same validation rejections, same output content, same exit codes), not a byte-verbatim port of the hand-rolled argv parser.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "ts-doctor": "./src/main/bin.ts"
+  },
+  "exports": {
+    ".": "./src/main/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@effect/cli": "^0.75.1",
+    "@effect/platform": "^0.96.1",
+    "@effect/platform-node": "^0.106.0",
+    "@effect/printer": "^0.49.0",
+    "@effect/printer-ansi": "^0.49.0",
+    "@ts-doctor/build-report-effect": "workspace:*",
+    "@ts-doctor/contracts-effect": "workspace:*",
+    "@ts-doctor/engine-effect": "workspace:*",
+    "@ts-doctor/exit-code-effect": "workspace:*",
+    "@ts-doctor/fix-applier-effect": "workspace:*",
+    "@ts-doctor/format-effect": "workspace:*",
+    "@ts-doctor/rules-registry-effect": "workspace:*",
+    "effect": "^3.21.2"
+  },
+  "devDependencies": {
+    "@effect/vitest": "^0.29.0",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}

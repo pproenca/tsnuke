@@ -1,0 +1,23 @@
+{
+  "name": "@ts-doctor/contracts-effect",
+  "version": "0.1.0",
+  "description": "Canonical effect/Schema home for ts-doctor's cross-cutting domain contracts (Diagnostic/Severity/Tier/FixKind/Fix/TextEdit, RuleMeta/Capability, the TsDoctorConfig family). Consolidation slice — pure contracts (no Effect monad) that existing slices currently vendor; the engine slice is the first consumer that imports from here instead of duplicating.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/main/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "effect": "^3.21.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}

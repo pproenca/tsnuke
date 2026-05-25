@@ -1,0 +1,24 @@
+{
+  "name": "@ts-doctor/rules-exhaustiveness-effect",
+  "version": "0.1.0",
+  "description": "Effect-native rewrite of ts-doctor's `exhaustiveness` rule category (RULE-025): 3 SYN AST predicates (default-case-last, no-constant-condition, prefer-discriminated-union) + 5 TYP type-aware predicates (no-for-in-array, no-unnecessary-boolean-literal-compare, no-unnecessary-condition, prefer-nullish-coalescing, switch-exhaustiveness-check). Strangler-fig slice — consumes @ts-doctor/rules-core-effect for the rule substrate (defineRule/runRule/runTypeAwareRule/Rule/RuleContext) and @ts-doctor/contracts-effect for the Diagnostic/RuleMeta contracts. Plain-TS AST predicates wrapping the TS compiler API — NOT Effect-wrapped (visitors are sync). Preserves RULE-016 (discriminated-union ≥2-arm same-discriminant threshold) and the RULE-025 switch-exhaustiveness false-negative bias (bails on non-literal member or a `default` clause) verbatim.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/main/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ts-doctor/contracts-effect": "workspace:*",
+    "@ts-doctor/rules-core-effect": "workspace:*",
+    "typescript": "^5.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "vitest": "^3.2.0"
+  }
+}
