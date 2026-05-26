@@ -34,11 +34,11 @@
     "dist"
   ],
   "engines": {
-    "node": ">=22"
+    "node": ">=22.18"
   },
   "scripts": {
-    "build": "node build.mjs",
-    "prepublishOnly": "node build.mjs",
+    "build": "node build.ts",
+    "prepublishOnly": "node build.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"

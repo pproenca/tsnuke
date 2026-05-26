@@ -389,6 +389,6 @@ export const inspectCommand = Command.make(
 
 /** Package version string for the `--version` banner and the `--json` report's `version`
  * field. The esbuild bundle replaces `process.env.TSNUKE_VERSION` with the real
- * `package.json` version at build time (see `build.mjs`); source-mode and tests fall back
+ * `package.json` version at build time (see `build.ts`); source-mode and tests fall back
  * to "0.0.0" (the legacy pinned value the equivalence tests pass explicitly). */
 export const VERSION = process.env.TSNUKE_VERSION ?? "0.0.0";

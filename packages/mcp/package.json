@@ -12,7 +12,7 @@
     ".": "./src/main/index.ts"
   },
   "scripts": {
-    "build": "node build.mjs",
+    "build": "node build.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
