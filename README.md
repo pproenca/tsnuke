@@ -50,17 +50,49 @@ node packages/cli/dist/cli.js examples/sample-app
 ```
 
 ```
-Score: 90/100 — Great
+  ╭─────╮       84 / 100  Great
+  │ ╔═╗ │      █████████████████░░░
+  │ ╚═╝ │      tsnuke · 0.2.0
+  ╰─────╯
 
-Async / Promises:
-  src/main.ts:13:3  error  no-floating-promises  Floating promise: this Promise is never awaited or handled.
-Compiler Strictness Gaps:
-  tsconfig.json:1:1  warning  enable-strict  tsconfig `strict` is off — the full strict-mode check family is disabled.
-Module Boundaries & Architecture:
-  src/a.ts:1:1  error  no-import-cycles  Import cycle detected involving src/a.ts.
-…
-3 error(s), 9 warning(s).
+  Tiers   SYN ●●●●●+5  TYP ●●●  GRAPH ●●  CFG ●●●●
+
+  Async / Promises  2 issues
+    ✗ no-floating-promises  [TYP · auto-fix]
+      Floating promise: this Promise is never awaited or handled. — Prefix with `await`, `return` it, or `void` it.
+      src/main.ts:13:3
+
+    ⚠ require-await  [SYN · manual]
+      `async` function has no `await` expression. — Remove `async`, or add the `await` this function was meant to use.
+      src/store-slop.ts:10:1
+
+  Type Safety  9 issues
+    ⚠ no-record-string-unknown  ×3  [SYN · manual]
+      Untyped object bag — define an interface with named properties instead of `Record<string, unknown>`.
+      src/cli-slop.ts:8:29
+      src/cli-slop.ts:9:32
+      src/store-slop.ts:5:40
+    …
+
+  25 issues across 7 files · 88 rules checked · 255ms
+  → Run `tsnuke --fix` to auto-resolve 1 issue. (0 codemod, 24 manual remaining)
 ```
+
+The left-column panel is a **nuke gauge** — it escalates as the score drops:
+
+```
+  ╭─────╮      ╭─────╮      ╭─────╮
+  │ ╔═╗ │      │ ░░░ │      │ ▓█▓ │
+  │ ╚═╝ │      │ ╲│╱ │      │ ╱│╲ │
+  ╰─────╯      ╰─────╯      ╰─────╯
+   Great        Needs work    Critical
+   (≥ 75)       (≥ 50)        (< 50)
+  contained    smoke rising   mushroom cloud
+```
+
+Rules are **deduplicated per `plugin/rule`** with occurrence counts; `--verbose`
+expands every occurrence. The bar tints green/yellow/red by band, and ANSI is
+auto-disabled in non-TTY / `NO_COLOR` / `CI` environments (override with `--no-color`).
 
 ## CLI
 
@@ -88,8 +120,25 @@ no root `tsconfig.json` of its own) and it discovers every member package that h
 `tsconfig.json`, scores each, and reports a per-project breakdown plus a **summary = the
 minimum project score** (breadth-not-depth, BC-05):
 
+```
+  Workspace  /repo  ·  4 project(s)
+
+  ▸ packages/clean        100 / 100  Great          ██████████████████████  clean
+  ▸ packages/messy         60 / 100  Needs work     █████████████░░░░░░░░░  1 err · 3 warn
+  ▸ packages/half          85 / 100  Great          ███████████████████░░░  0 err · 2 warn
+  ▸ apps/web               71 / 100  Needs work*    ███████████████░░░░░░░  partial · 2 warn
+
+  ╭─────╮       60 / 100  Needs work
+  │ ░░░ │      █████████████░░░░░░░
+  │ ╲│╱ │      tsnuke · 0.2.0  ·  workspace score = min of 4
+  ╰─────╯
+
+  6 issues across 4 project(s) · 1 err · 5 warn · 1.8s
+  → Start with `no-floating-promises` … (open packages/messy first — it pulls the score down)
+```
+
 ```bash
-tsnuke .            # per-project sections + "Workspace: N project(s) · Score: <min>/100 …"
+tsnuke .            # per-project rows + min-score panel + CTA pointing at the worst member
 tsnuke . --score    # just the min score across the workspace
 tsnuke . --json     # one report; projects[] per package + summary rollup
 ```
@@ -123,9 +172,42 @@ Tools:
 
 | Tool | Args | Returns |
 |---|---|---|
-| `tsnuke_diagnose` | `directory`, `deep?` | a one-line score summary + the agent-tuned report (rule-deduplicated, tier+fix sorted) |
-| `tsnuke_explain` | `rule` | offline, deterministic explanation of a rule (category, tier, severity, recommendation, fix kind) |
+| `tsnuke_diagnose` | `directory`, `deep?` | a one-line headline + the agent-tuned report (rule-deduplicated, tier+fix sorted, with `fixSummary` / `tierBreakdown` / `nextAction` headlines pre-computed) |
+| `tsnuke_explain` | `rule` | offline, deterministic explanation card (category, tier, severity, fix kind, URL, recommendation) |
 | `tsnuke_list_rules` | — | the full rule catalog (id, category, tier, severity) for discovery |
+
+`tsnuke_diagnose` headline:
+
+```
+Score 84/100 — Great. 19 rule(s) fired across 25 occurrence(s) in /path.
+Next: Run `tsnuke --fix` to auto-resolve 1 issue.
+```
+
+`--format agent` / MCP `report` (additive fields highlighted):
+
+```jsonc
+{
+  "score": 84,
+  "scoreLabel": "Great",
+  "scorePartial": false,        // Tier-2 skipped → score on a partial scale (BC-03)
+  "ruleCount": 19,
+  "occurrenceCount": 25,
+  "elapsedMs": 253,
+  "fixSummary": { "autoFixable": 1, "codemod": 0, "manual": 24 },
+  "tierBreakdown": {            // which tiers fired, at a glance
+    "SYN":   { "rules": 10, "occurrences": 14 },
+    "TYP":   { "rules": 3,  "occurrences": 4  },
+    "GRAPH": { "rules": 2,  "occurrences": 3  },
+    "CFG":   { "rules": 4,  "occurrences": 4  }
+  },
+  "nextAction": {               // the agent's first move; matches the human CTA
+    "kind": "run-fix",
+    "summary": "Run `tsnuke --fix` to auto-resolve 1 issue.",
+    "autoFixableRules": ["no-floating-promises"]
+  },
+  "categories": [ /* deduped rules, sorted SYN → TYP → GRAPH → CFG, auto-fix first */ ]
+}
+```
 
 Point your agent client at the `tsnuke-mcp` binary. Everything is local and
 deterministic — no network, so an agent can loop on the score offline.

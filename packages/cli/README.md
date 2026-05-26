@@ -36,16 +36,39 @@ npm i -D tsnuke && npx tsnuke .
 Point it at a directory containing a `tsconfig.json`. Example output:
 
 ```
-Score: 90/100 — Great
+  ╭─────╮       84 / 100  Great
+  │ ╔═╗ │      █████████████████░░░
+  │ ╚═╝ │      tsnuke · 0.2.0
+  ╰─────╯
 
-Async / Promises:
-  src/main.ts:13:3  error  no-floating-promises  Floating promise: this Promise is never awaited or handled.
-Compiler Strictness Gaps:
-  tsconfig.json:1:1  warning  enable-strict  tsconfig `strict` is off — the full strict-mode check family is disabled.
-Module Boundaries & Architecture:
-  src/a.ts:1:1  error  no-import-cycles  Import cycle detected involving src/a.ts.
-…
-3 error(s), 9 warning(s).
+  Tiers   SYN ●●●●●+5  TYP ●●●  GRAPH ●●  CFG ●●●●
+
+  Async / Promises  2 issues
+    ✗ no-floating-promises  [TYP · auto-fix]
+      Floating promise: this Promise is never awaited or handled.
+      src/main.ts:13:3
+
+  Type Safety  9 issues
+    ⚠ no-record-string-unknown  ×3  [SYN · manual]
+      Untyped object bag — define an interface with named properties instead of `Record<string, unknown>`.
+      src/cli-slop.ts:8:29
+      src/cli-slop.ts:9:32
+      src/store-slop.ts:5:40
+    …
+
+  25 issues across 7 files · 88 rules checked · 255ms
+  → Run `tsnuke --fix` to auto-resolve 1 issue. (0 codemod, 24 manual remaining)
+```
+
+The left-column panel is a **nuke gauge** — it escalates as the score drops:
+
+```
+  ╭─────╮      ╭─────╮      ╭─────╮
+  │ ╔═╗ │      │ ░░░ │      │ ▓█▓ │
+  │ ╚═╝ │      │ ╲│╱ │      │ ╱│╲ │
+  ╰─────╯      ╰─────╯      ╰─────╯
+   Great        Needs work    Critical
+   contained    smoke rising  mushroom cloud
 ```
 
 ## CLI
@@ -69,15 +92,19 @@ When the project doesn't type-check, the type-aware tier is skipped and the scor
 is flagged **partial** (computed on a different, not-directly-comparable scale).
 
 **Monorepos:** point it at a workspace root (`pnpm-workspace.yaml` / `package.json#workspaces`,
-no root `tsconfig.json`) and it discovers every member package with a `tsconfig.json`, scores
-each, and reports a per-project breakdown plus a summary equal to the **minimum project score**.
+no root `tsconfig.json`) and it renders a per-project row (score + bar + counts) for every
+member, then a workspace summary panel showing the **minimum project score** and a CTA pointing
+at the project pulling it down.
 
 ## For coding agents (MCP)
 
 tsnuke also ships an [MCP](https://modelcontextprotocol.io) server (`tsnuke-mcp`)
 exposing the linter to coding agents over stdio — tools `tsnuke_diagnose`,
-`tsnuke_explain`, and `tsnuke_list_rules`. Everything is local and deterministic,
-so an agent can loop on the score offline.
+`tsnuke_explain`, and `tsnuke_list_rules`. The `tsnuke_diagnose` report is
+rule-deduplicated and sorted **cheapest action first**, with pre-computed
+`fixSummary`, `tierBreakdown`, and `nextAction` headlines so the agent doesn't
+have to recompute them. Everything is local and deterministic, so an agent can
+loop on the score offline.
 
 ## Links
 
