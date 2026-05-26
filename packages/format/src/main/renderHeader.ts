@@ -1,17 +1,18 @@
 /**
- * The "doctor face + score bar" header. A 5-line ASCII block whose right column
- * carries the score, label, and progress bar. Pure: returns the rendered string.
+ * The score header — a 4-line ASCII panel whose right column carries the score,
+ * label, and progress bar; the left column shows a nuke-themed status icon that
+ * grows more violent as the score drops. Pure: returns the rendered string.
  *
  * Layout (color stripped):
  *   ╭─────╮      82 / 100   Great
- *   │ ◠ ◠ │      ██████████████████░░
- *   │  ▽  │      tsnuke · 0.2.0
+ *   │ ╔═╗ │      ██████████████████░░
+ *   │ ╚═╝ │      tsnuke · 0.2.0
  *   ╰─────╯
  *
- * Bands → face + bar colour (RULE-002 thresholds):
- *   ≥ 75  green   ◠ ◠ /  ▽
- *   ≥ 50  yellow  • • /  ─
- *   else  red    x x /  ▽
+ * Bands → icon + bar colour (RULE-002 thresholds):
+ *   ≥ 75  green    ╔═╗ ╚═╝   warhead contained — code is clean, no nuke needed
+ *   ≥ 50  yellow   ░░░ ╲│╱   smoke rising — early warning
+ *   <  50 red      ▓█▓ ╱│╲   mushroom cloud — code has been nuked
  *
  * Partial scores (Tier-2 skipped, BC-03): the bar is dimmed and a `*` is appended,
  * the label becomes `Partial — type info unavailable`. Score `null` ⇒ a "not run"
@@ -34,12 +35,20 @@ export interface ScoreHeaderInput {
   readonly color: boolean;
 }
 
-/** Pick the 2-line face for the given score band. Stable across colour on/off. */
+/**
+ * Pick the 2-line nuke-status icon for the given score band. Stable across colour
+ * on/off; each row is exactly 3 cells so the panel walls stay aligned.
+ *
+ *   null     ` ? ` / ` - `   not run
+ *   ≥ 75     `╔═╗` / `╚═╝`   warhead in silo — nothing to nuke
+ *   ≥ 50     `░░░` / `╲│╱`   smoke + early plume
+ *   <  50    `▓█▓` / `╱│╲`   mushroom cap + flaring stem
+ */
 function faceFor(score: number | null): readonly [string, string] {
-  if (score === null) return ["? ?", " ? "];
-  if (score >= 75) return ["◠ ◠", " ▽ "];
-  if (score >= 50) return ["• •", " ─ "];
-  return ["x x", " ▽ "];
+  if (score === null) return [" ? ", " - "];
+  if (score >= 75) return ["╔═╗", "╚═╝"];
+  if (score >= 50) return ["░░░", "╲│╱"];
+  return ["▓█▓", "╱│╲"];
 }
 
 /** Render the bar string (filled `█`, empty `░`), 20 chars wide. */
@@ -52,7 +61,7 @@ function buildBar(score: number | null, color: boolean): string {
   return colorForScore(score, color, bar);
 }
 
-/** Render the doctor-style score header. Returns 4 lines joined by `\n`. */
+/** Render the nuke-status score header. Returns 4 lines joined by `\n`. */
 export function renderHeader(input: ScoreHeaderInput): string {
   const { score, label, partial, tagline, color } = input;
   const [faceTop, faceBot] = faceFor(score);

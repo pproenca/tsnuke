@@ -57,24 +57,27 @@ describe("renderScoreLine", () => {
 });
 
 describe("renderPretty — doctor-style header", () => {
-  it("shows the face/score/label/bar when showScore is true", () => {
+  it("shows the nuke-status icon/score/label/bar when showScore is true", () => {
     const out = renderPretty(
       [diag({ rule: "r" })],
       { score: 92, label: "Great", partial: false },
       false,
     );
-    expect(out).toContain("◠ ◠"); // happy face for ≥ 75
+    expect(out).toContain("╔═╗"); // warhead-in-silo glyph for ≥ 75
+    expect(out).toContain("╚═╝");
     expect(out).toContain("92 / 100");
     expect(out).toContain("Great");
     expect(out).toContain("█"); // bar is rendered
   });
 
-  it("switches face by band (neutral / sad)", () => {
+  it("escalates the icon as the score drops (smoke → mushroom cloud)", () => {
     const needsWork = renderPretty([diag({ rule: "r" })], { score: 60, label: "Needs work", partial: false }, false);
-    expect(needsWork).toContain("• •");
+    expect(needsWork).toContain("░░░"); // light smoke
+    expect(needsWork).toContain("╲│╱"); // early plume
 
     const critical = renderPretty([diag({ rule: "r" })], { score: 20, label: "Critical", partial: false }, false);
-    expect(critical).toContain("x x");
+    expect(critical).toContain("▓█▓"); // mushroom cap
+    expect(critical).toContain("╱│╲"); // stem flaring at base
   });
 
   it("omits the score header when showScore is false", () => {
