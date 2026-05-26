@@ -129,7 +129,8 @@ export const diagnose: (
 
     const project: ProjectInfo = yield* discoverTsProject(directory);
     const caps = computeCapabilities(project);
-    const config: TsNukeConfig = yield* loadConfig(directory);
+    const config: TsNukeConfig =
+      options.config ?? (yield* loadConfig(directory));
 
     const ignoredTags = new Set(config.ignore?.tags ?? []);
     const overrides = overridesFromConfig(config.rules);

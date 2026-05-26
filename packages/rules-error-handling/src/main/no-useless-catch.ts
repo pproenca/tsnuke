@@ -28,9 +28,8 @@ export const rule = defineRule(
       const boundName = decl.name.text;
 
       // Body must be exactly one statement: `throw <ident>;`.
-      const statements = node.block.statements;
-      if (statements.length !== 1) return;
-      const only = statements[0]!;
+      const [only, ...rest] = node.block.statements;
+      if (only === undefined || rest.length > 0) return;
       if (!ts.isThrowStatement(only)) return;
       const thrown = only.expression;
       if (thrown === undefined) return;

@@ -22,11 +22,10 @@ export const rule = defineRule(
     [ts.SyntaxKind.SwitchStatement]: (node, ctx) => {
       if (!ts.isSwitchStatement(node)) return;
       const clauses = node.caseBlock.clauses;
-      const defaultIndex = clauses.findIndex((c) => ts.isDefaultClause(c));
-      if (defaultIndex === -1) return; // no default — nothing to order.
-      if (defaultIndex === clauses.length - 1) return; // already last.
+      const defaultClause = clauses.find((c) => ts.isDefaultClause(c));
+      if (defaultClause === undefined) return; // no default — nothing to order.
+      if (clauses[clauses.length - 1] === defaultClause) return; // already last.
 
-      const defaultClause = clauses[defaultIndex]!;
       const start = defaultClause.getStart(ctx.sourceFile);
       const { line, character } = ctx.sourceFile.getLineAndCharacterOfPosition(start);
       ctx.report({

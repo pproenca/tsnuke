@@ -14,7 +14,7 @@
  * is what carries `partial`. See TRANSFORMATION_NOTES.md.
  */
 
-import type { Diagnostic } from "@tsnuke/contracts-effect";
+import type { Diagnostic, TsNukeConfig } from "@tsnuke/contracts-effect";
 import type { ProjectInfo } from "@tsnuke/discovery-effect";
 
 export type { ProjectInfo };
@@ -39,6 +39,12 @@ export interface DiagnoseOptions {
   /** Diff/staged narrowing: report only on these paths. */
   readonly includePaths?: string[];
   readonly respectInlineDisables?: boolean;
+  /**
+   * Pre-loaded config supplied by the caller. When set, `diagnose()` skips its own
+   * `${directory}/tsnuke.config.json` lookup. `diagnoseWorkspace()` uses this to apply a
+   * single workspace-root `tsnuke.config.json` uniformly across members.
+   */
+  readonly config?: TsNukeConfig;
 }
 
 /** The result of a single-project `diagnose()` call (the public boundary). */

@@ -39,10 +39,11 @@ export const rule = defineGraphRule(
       const stack: { file: string; depIndex: number }[] = [{ file: start, depIndex: 0 }];
       color.set(start, GRAY);
       while (stack.length > 0) {
-        const frame = stack[stack.length - 1]!;
+        const frame = stack[stack.length - 1];
+        if (frame === undefined) break;
         const deps = imports.get(frame.file) ?? [];
-        if (frame.depIndex < deps.length) {
-          const dep = deps[frame.depIndex]!;
+        const dep = deps[frame.depIndex];
+        if (dep !== undefined) {
           frame.depIndex++;
           const c = color.get(dep) ?? WHITE;
           if (c === GRAY) {

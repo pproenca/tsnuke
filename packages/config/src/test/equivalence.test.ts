@@ -322,12 +322,12 @@ function buildCombinatorialFixtures(): unknown[] {
   };
   // Full cartesian product would be 5*4*3*3*4*3 = 2160 — keep all of them.
   const out: unknown[] = [];
-  for (const ignore of fieldChoices["ignore"]!)
-    for (const failOn of fieldChoices["failOn"]!)
-      for (const customRulesOnly of fieldChoices["customRulesOnly"]!)
-        for (const plugins of fieldChoices["plugins"]!)
-          for (const rules of fieldChoices["rules"]!)
-            for (const categories of fieldChoices["categories"]!) {
+  for (const ignore of fieldChoices["ignore"] ?? [])
+    for (const failOn of fieldChoices["failOn"] ?? [])
+      for (const customRulesOnly of fieldChoices["customRulesOnly"] ?? [])
+        for (const plugins of fieldChoices["plugins"] ?? [])
+          for (const rules of fieldChoices["rules"] ?? [])
+            for (const categories of fieldChoices["categories"] ?? []) {
               const obj: Record<string, unknown> = {};
               // Only set a key when its choice is defined, so we exercise the
               // "field absent entirely" path too (legacy keys off `!== undefined`).

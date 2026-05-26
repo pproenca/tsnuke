@@ -19,8 +19,8 @@ import type { RuleContext } from "@tsnuke/rules-core-effect";
 function isSingleNumericLength(
   args: readonly ts.Expression[],
 ): boolean {
-  if (args.length !== 1) return false;
-  const a = args[0]!;
+  const [a, ...rest] = args;
+  if (a === undefined || rest.length > 0) return false;
   if (ts.isNumericLiteral(a)) return true;
   // `Array(-5)` / `Array(+5)` — a unary numeric literal is still a length-ish form.
   return (

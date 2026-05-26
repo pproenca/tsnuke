@@ -27,6 +27,7 @@
 import { FileSystem, Path } from "@effect/platform";
 import { Effect } from "effect";
 import { enumerateWorkspaceProjects } from "@tsnuke/discovery-effect";
+import { loadConfig } from "@tsnuke/config-effect";
 import type {
   NoTypeScriptProjectError,
   TsconfigNotFoundError,
@@ -84,11 +85,18 @@ export const diagnoseWorkspace: (
     } satisfies WorkspaceResult;
   }
 
+  // Load the workspace-root `tsnuke.config.json` ONCE and apply it to every member —
+  // a workspace-wide policy (ignore globs, rule overrides) lives at the workspace root,
+  // not 32× in each package. Per-package configs are reachable by callers passing
+  // `options.config` explicitly, in which case THAT wins.
+  const rootConfig = options.config ?? (yield* loadConfig(root));
+  const memberOptions: typeof options = { ...options, config: rootConfig };
+
   // Workspace: analyze each member SEQUENTIALLY, each under its own Scope so project N's
   // Program is released before N+1 (RULE-036 / BC-24 — bounded memory across the run).
   const projects: DiagnoseResult[] = yield* Effect.forEach(
     memberDirs,
-    (memberDir) => Effect.scoped(diagnose(memberDir, options)),
+    (memberDir) => Effect.scoped(diagnose(memberDir, memberOptions)),
     { concurrency: 1 },
   );
 

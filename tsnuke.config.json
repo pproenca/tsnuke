@@ -1,0 +1,18 @@
+{
+  "$schema": "./tsnuke.schema.json",
+  "ignore": {
+    "overrides": [
+      {
+        "files": ["/src/test/"],
+        "rules": [
+          "no-non-null-assertion",
+          "no-unnecessary-non-null-assertion",
+          "no-unsafe-object-assertion",
+          "no-record-string-unknown",
+          "no-default-export",
+          "no-unknown-return"
+        ]
+      }
+    ]
+  }
+}
