@@ -12,6 +12,19 @@
           "no-default-export",
           "no-unknown-return"
         ]
+      },
+      {
+        "files": ["vitest.config.ts", "build.ts"],
+        "rules": [
+          "no-default-export",
+          "prefer-error-instantiation"
+        ]
+      },
+      {
+        "files": ["module-graph/src/test/"],
+        "rules": [
+          "no-unnecessary-template-literal"
+        ]
       }
     ]
   }

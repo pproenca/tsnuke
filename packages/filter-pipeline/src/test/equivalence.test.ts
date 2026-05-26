@@ -369,6 +369,7 @@ describe("equivalence — RULE-023 oracle sanity", () => {
   it("the oracle actually drops things (so the proof is meaningful)", () => {
     const dropped = legacyRunFilterPipeline(
       [
+        // tsnuke-disable-next-line prefer-satisfies-over-as
         { ...diag({ rule: "n", tags: ["test-noise"] }) } as LegacyDiagnosticWithTags,
       ],
       {},

@@ -43,7 +43,7 @@ function diag(
     category: "c",
     tier: "SYN",
     ...over,
-  } as Diagnostic;
+  };
 }
 
 /** Minimal full-mode input with a single project's diagnostics + score. */

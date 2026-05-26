@@ -38,8 +38,15 @@ function diag(
 ): Diagnostic {
   return {
     plugin: "tsnuke",
+    filePath: "/x.ts",
+    message: "m",
+    help: "h",
+    line: 1,
+    column: 1,
+    category: "c",
+    tier: "SYN",
     ...over,
-  } as Diagnostic;
+  };
 }
 
 describe("computeScore — RULE-001 (frozen constants)", () => {

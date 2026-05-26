@@ -79,13 +79,24 @@ function roundHalfEven(x: number): number {
 // warning-rule keys (each fires once). Distinct keys exercise the Set-based
 // breadth-not-depth counting that drives the penalty.
 // ---------------------------------------------------------------------------
+const baseDiag: Omit<Diagnostic, "rule" | "severity"> = {
+  plugin: "tsnuke",
+  filePath: "/x.ts",
+  message: "m",
+  help: "h",
+  line: 1,
+  column: 1,
+  category: "c",
+  tier: "SYN",
+};
+
 function buildDiagnostics(e: number, w: number): Diagnostic[] {
   const out: Diagnostic[] = [];
   for (let i = 0; i < e; i++) {
-    out.push({ plugin: "tsnuke", rule: `err-${i}`, severity: "error" } as Diagnostic);
+    out.push({ ...baseDiag, rule: `err-${i}`, severity: "error" });
   }
   for (let i = 0; i < w; i++) {
-    out.push({ plugin: "tsnuke", rule: `warn-${i}`, severity: "warning" } as Diagnostic);
+    out.push({ ...baseDiag, rule: `warn-${i}`, severity: "warning" });
   }
   return out;
 }
@@ -192,7 +203,7 @@ describe("equivalence — RULE-001 distinctness/breadth under repetition", () =>
         const times = rand();
         for (let k = 0; k < times; k++) {
           // same plugin/rule/severity -> same key -> de-duplicated
-          repeated.push({ ...d, line: k + 1 } as Diagnostic);
+          repeated.push({ ...d, line: k + 1 });
         }
       }
 

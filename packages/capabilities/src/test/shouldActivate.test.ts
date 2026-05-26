@@ -30,7 +30,7 @@ function rule(over: Partial<RuleMeta> = {}): RuleMeta {
     category: "test",
     tier: "SYN",
     ...over,
-  } as RuleMeta;
+  } satisfies RuleMeta;
 }
 
 const caps = (...tokens: string[]): ReadonlySet<string> => new Set(tokens);

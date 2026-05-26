@@ -183,7 +183,7 @@ const resolveTsVersion = (
     const deps = {
       ...(isObject(pkg["dependencies"]) ? pkg["dependencies"] : {}),
       ...(isObject(pkg["devDependencies"]) ? pkg["devDependencies"] : {}),
-    } as Record<string, unknown>;
+    } satisfies Record<string, unknown>;
     const declared = deps["typescript"];
     if (typeof declared === "string") {
       const m = declared.match(/(\d+)\.(\d+)(?:\.(\d+))?/);
@@ -210,7 +210,7 @@ const hasTypeScript = (
     const deps = {
       ...(isObject(pkg["dependencies"]) ? pkg["dependencies"] : {}),
       ...(isObject(pkg["devDependencies"]) ? pkg["devDependencies"] : {}),
-    } as Record<string, unknown>;
+    } satisfies Record<string, unknown>;
     return typeof deps["typescript"] === "string";
   });
 
@@ -257,7 +257,7 @@ const detectBuildTool = (
     const allDeps = {
       ...(isObject(pkg["dependencies"]) ? pkg["dependencies"] : {}),
       ...(isObject(pkg["devDependencies"]) ? pkg["devDependencies"] : {}),
-    } as Record<string, unknown>;
+    } satisfies Record<string, unknown>;
 
     const has = (name: string): Effect.Effect<boolean, never, FileSystem.FileSystem> =>
       Effect.gen(function* () {

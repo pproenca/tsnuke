@@ -136,7 +136,7 @@ function powersetOfSets<T>(items: readonly T[]): ReadonlySet<T>[] {
 
 const base = { severity: "warning" as Severity, category: "test" };
 function r(over: Partial<RuleMeta> & Pick<RuleMeta, "id" | "tier">): RuleMeta {
-  return { ...base, ...over } as RuleMeta;
+  return { ...base, ...over } satisfies RuleMeta;
 }
 
 // A crafted catalog spanning every tier, presence/absence of gating fields, the

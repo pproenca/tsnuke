@@ -95,7 +95,7 @@ const safeReadDirectory = (
   fs: FileSystem.FileSystem,
   dir: string,
 ): Effect.Effect<ReadonlyArray<string>> =>
-  fs.readDirectory(dir).pipe(Effect.orElseSucceed(() => [] as ReadonlyArray<string>));
+  fs.readDirectory(dir).pipe(Effect.orElseSucceed((): ReadonlyArray<string> => []));
 
 /**
  * `stat` a path, returning whether it is a directory; a `PlatformError` (failed stat)

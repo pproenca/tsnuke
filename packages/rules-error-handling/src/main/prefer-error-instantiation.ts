@@ -17,21 +17,24 @@ import { defineRule } from "@tsnuke/rules-core-effect";
  *
  * Conservative: matches a bare identifier callee named `Error` or ending in
  * `Error` (e.g. `TypeError`, `RangeError`, `HttpError`) — the well-established
- * naming convention for error types — to keep false positives near zero.
+ * naming convention for error types. The first character MUST be uppercase so
+ * predicate / helper names that happen to end in `Error` (`isTsNukeError`,
+ * `serializeError`, `mapError`) are NOT flagged — only PascalCase constructor
+ * names are.
  *
  * RULE-026 (preserved VERBATIM): this rule declares `fixKind: "auto-fix"` in its
  * meta but attaches NO `fix` payload to its diagnostic, so `--fix` is a silent
  * no-op for it. This is a confirmed legacy defect carried forward unchanged — the
  * fix (emit a payload, or downgrade `fixKind` to `manual`/`codemod`) is deferred
  * to an SME decision. See TRANSFORMATION_NOTES.md follow-ups.
- *
- * RULE-017 (preserved VERBATIM): the `*Error` name heuristic — `name === "Error"`
- * OR (`name.length > 5` AND `name.endsWith("Error")`).
  */
 
-/** True if `name` is `Error` or a conventional `*Error` constructor name. */
+/** True if `name` is `Error` or a conventional PascalCase `*Error` constructor name. */
 function isErrorCtorName(name: string): boolean {
-  return name === "Error" || (name.length > 5 && name.endsWith("Error"));
+  if (name === "Error") return true;
+  if (name.length <= 5 || !name.endsWith("Error")) return false;
+  const first = name.charCodeAt(0);
+  return first >= 65 && first <= 90; // 'A'..'Z' — constructor convention
 }
 
 export const rule = defineRule(

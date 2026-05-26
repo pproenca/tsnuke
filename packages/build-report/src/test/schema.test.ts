@@ -25,7 +25,7 @@ function diag(
     category: "c",
     tier: "SYN",
     ...over,
-  } as Diagnostic;
+  };
 }
 
 const INPUTS: ReadonlyArray<{ name: string; input: BuildReportInput }> = [

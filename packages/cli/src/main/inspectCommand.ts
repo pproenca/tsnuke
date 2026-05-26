@@ -261,7 +261,7 @@ export const resolveInspectFlags = Effect.fn("Cli.resolveFlags")(function* (
     const format: OutputFormat = json ? "json" : raw.format;
 
     const projects = Option.match(raw.project, {
-      onNone: () => [] as string[],
+      onNone: (): string[] => [],
       onSome: (v) =>
         v
           .split(",")

@@ -156,7 +156,7 @@ function diag(
     category: "c",
     tier: "SYN",
     ...over,
-  } as Diagnostic;
+  };
 }
 
 type Project = BuildReportInput["projects"][number];

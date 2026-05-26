@@ -117,23 +117,23 @@ const EXPLICITS: readonly (Severity | "off" | undefined)[] = [
 // states — INCLUDING the canonical RULE-020 inverted-gating shape.
 const RULE_METAS: readonly RuleMeta[] = [
   // bare — no gates set
-  { ...base } as RuleMeta,
-  { ...base, severity: "error" } as RuleMeta,
+  { ...base } satisfies RuleMeta,
+  { ...base, severity: "error" } satisfies RuleMeta,
   // requires
-  { ...base, requires: ["tsconfig"] } as RuleMeta,
-  { ...base, requires: ["tsconfig", "typecheck:ok"] } as RuleMeta,
-  { ...base, requires: [] } as RuleMeta, // empty-array edge
+  { ...base, requires: ["tsconfig"] } satisfies RuleMeta,
+  { ...base, requires: ["tsconfig", "typecheck:ok"] } satisfies RuleMeta,
+  { ...base, requires: [] } satisfies RuleMeta, // empty-array edge
   // disabledBy
-  { ...base, disabledBy: ["strict"] } as RuleMeta,
-  { ...base, disabledBy: ["strict", "noise"] } as RuleMeta,
-  { ...base, disabledBy: [] } as RuleMeta, // empty-array edge
+  { ...base, disabledBy: ["strict"] } satisfies RuleMeta,
+  { ...base, disabledBy: ["strict", "noise"] } satisfies RuleMeta,
+  { ...base, disabledBy: [] } satisfies RuleMeta, // empty-array edge
   // tags
-  { ...base, tags: ["style"] } as RuleMeta,
-  { ...base, tags: ["style", "pedantic"] } as RuleMeta,
-  { ...base, tags: [] } as RuleMeta, // empty-array edge
+  { ...base, tags: ["style"] } satisfies RuleMeta,
+  { ...base, tags: ["style", "pedantic"] } satisfies RuleMeta,
+  { ...base, tags: [] } satisfies RuleMeta, // empty-array edge
   // defaultEnabled (incl. the KNOWN dead branch: false)
-  { ...base, defaultEnabled: true } as RuleMeta,
-  { ...base, defaultEnabled: false } as RuleMeta,
+  { ...base, defaultEnabled: true } satisfies RuleMeta,
+  { ...base, defaultEnabled: false } satisfies RuleMeta,
   // RULE-020 inverted-gating canonical shape (+ a dual-gate variant)
   {
     ...base,
@@ -141,14 +141,14 @@ const RULE_METAS: readonly RuleMeta[] = [
     tier: "CFG",
     requires: ["tsconfig"],
     disabledBy: ["strict"],
-  } as RuleMeta,
+  } satisfies RuleMeta,
   {
     ...base,
     id: "enable-use-unknown-in-catch",
     tier: "CFG",
     requires: ["tsconfig"],
     disabledBy: ["useUnknownInCatchVariables", "strict"],
-  } as RuleMeta,
+  } satisfies RuleMeta,
   // every gate set at once (cross-interaction)
   {
     ...base,
@@ -156,7 +156,7 @@ const RULE_METAS: readonly RuleMeta[] = [
     disabledBy: ["strict"],
     tags: ["style"],
     defaultEnabled: false,
-  } as RuleMeta,
+  } satisfies RuleMeta,
 ];
 
 describe("equivalence — RULE-019/020 exhaustive differential (modern === legacy, 0 divergence)", () => {

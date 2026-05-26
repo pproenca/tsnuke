@@ -115,6 +115,7 @@ describe("RULE-020 strictness rules — AST-free (create returns {})", () => {
   for (const rule of RULES) {
     it(`${rule.id}: create() returns an empty visitor set`, () => {
       const ctx = {
+        // tsnuke-disable-next-line prefer-satisfies-over-as
         sourceFile: {} as ts.SourceFile,
         filePath: "x.ts",
         report: () => {},

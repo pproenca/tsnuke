@@ -114,7 +114,7 @@ describe("structural shape", () => {
       for (const field of REQUIRED_META) {
         expect(rule, `rule ${rule.id} missing ${field}`).toHaveProperty(field);
         expect(
-          (rule as Record<string, unknown>)[field],
+          (rule satisfies Record<string, unknown>)[field],
           `rule ${rule.id}.${field} is undefined`,
         ).toBeDefined();
       }
@@ -131,7 +131,7 @@ describe("structural shape", () => {
           field,
         );
         expect(
-          (rule as Record<string, unknown>)[field],
+          (rule satisfies Record<string, unknown>)[field],
           `graph rule ${rule.id}.${field} is undefined`,
         ).toBeDefined();
       }

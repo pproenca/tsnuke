@@ -30,7 +30,7 @@ function diag(
     category: "c",
     tier: "SYN",
     ...over,
-  } as Diagnostic;
+  };
 }
 
 function inputWith(over: Partial<BuildReportInput> = {}): BuildReportInput {

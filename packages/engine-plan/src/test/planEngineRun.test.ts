@@ -39,7 +39,7 @@ function rule(over: Partial<RuleMeta> & Pick<RuleMeta, "id" | "tier">): RuleMeta
     severity: "warning",
     category: "test",
     ...over,
-  } as RuleMeta;
+  } satisfies RuleMeta;
 }
 
 /** Trivial injected predicate: everything is active (isolates the planner). */

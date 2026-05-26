@@ -144,6 +144,7 @@ describe("createRuleContext — checker passthrough (exactOptional)", () => {
   });
 
   it("sets checker when supplied (TYP path)", () => {
+    // tsnuke-disable-next-line prefer-satisfies-over-as
     const fakeChecker = {} as ts.TypeChecker;
     const ctx = createRuleContext(META, {
       sourceFile: FAKE_SOURCE_FILE,
