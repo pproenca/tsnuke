@@ -19,10 +19,10 @@ import type { JsonReportError } from "./Report.js";
 export function serializeError(err: unknown): JsonReportError {
   if (err instanceof Error) {
     const chain: string[] = [];
-    let cause: unknown = (err as { cause?: unknown }).cause;
+    let cause: unknown = err.cause;
     while (cause instanceof Error) {
       chain.push(cause.message);
-      cause = (cause as { cause?: unknown }).cause;
+      cause = cause.cause;
     }
     return { message: err.message, name: err.name, chain };
   }

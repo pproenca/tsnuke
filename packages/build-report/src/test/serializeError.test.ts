@@ -26,7 +26,7 @@ describe("serializeError — RULE-034 (plain Error)", () => {
 
   it("preserves a custom error name", () => {
     class DiscoveryError extends Error {
-      override name = "DiscoveryError";
+      public override name = "DiscoveryError";
     }
     expect(serializeError(new DiscoveryError("nope"))).toStrictEqual({
       message: "nope",

@@ -57,7 +57,8 @@ const tryParseJson = (
     if (text === undefined) return undefined;
     // `JSON.parse` can throw on malformed text — capture that synchronously with
     // `Either.try` (no I/O), mirroring legacy's `try { JSON.parse(...) } catch`.
-    const parsed = Either.try(() => JSON.parse(text) as unknown);
+    // tsnuke-disable-next-line no-unknown-return
+    const parsed = Either.try((): unknown => JSON.parse(text));
     return Either.isRight(parsed) ? parsed.right : undefined;
   });
 

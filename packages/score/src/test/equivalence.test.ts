@@ -91,14 +91,15 @@ const baseDiag: Omit<Diagnostic, "rule" | "severity"> = {
 };
 
 function buildDiagnostics(e: number, w: number): Diagnostic[] {
-  const out: Diagnostic[] = [];
-  for (let i = 0; i < e; i++) {
-    out.push({ ...baseDiag, rule: `err-${i}`, severity: "error" });
-  }
-  for (let i = 0; i < w; i++) {
-    out.push({ ...baseDiag, rule: `warn-${i}`, severity: "warning" });
-  }
-  return out;
+  const errors = Array.from(
+    { length: e },
+    (_, i): Diagnostic => ({ ...baseDiag, rule: `err-${i}`, severity: "error" }),
+  );
+  const warnings = Array.from(
+    { length: w },
+    (_, i): Diagnostic => ({ ...baseDiag, rule: `warn-${i}`, severity: "warning" }),
+  );
+  return [...errors, ...warnings];
 }
 
 const E_MAX = 80;
@@ -198,14 +199,10 @@ describe("equivalence — RULE-001 distinctness/breadth under repetition", () =>
       const w = (trial * 11) % 17; // 0..16 distinct warning rules
 
       const singleFire = buildDiagnostics(e, w);
-      const repeated: Diagnostic[] = [];
-      for (const d of singleFire) {
-        const times = rand();
-        for (let k = 0; k < times; k++) {
-          // same plugin/rule/severity -> same key -> de-duplicated
-          repeated.push({ ...d, line: k + 1 });
-        }
-      }
+      // same plugin/rule/severity -> same key -> de-duplicated by computeScore.
+      const repeated = singleFire.flatMap((d) =>
+        Array.from({ length: rand() }, (_, k) => ({ ...d, line: k + 1 })),
+      );
 
       const scoreSingle = computeScore(singleFire).score;
       const scoreRepeated = computeScore(repeated).score;

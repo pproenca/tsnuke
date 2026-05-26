@@ -58,7 +58,8 @@ const readJson = (
       .readFileString(p, "utf8")
       .pipe(Effect.orElseSucceed(() => undefined as string | undefined));
     if (text === undefined) return undefined;
-    const parsed = Either.try(() => JSON.parse(text) as unknown);
+    // tsnuke-disable-next-line no-unknown-return
+    const parsed = Either.try((): unknown => JSON.parse(text));
     return Either.isRight(parsed) ? parsed.right : undefined;
   });
 
@@ -108,11 +109,11 @@ export const parsePnpmWorkspacePackages = (yaml: string): string[] => {
 
 /** Extract member globs from `package.json#workspaces` (array OR `{ packages: [...] }`). */
 const parsePackageJsonWorkspaces = (pkg: unknown): string[] => {
-  if (typeof pkg !== "object" || pkg === null) return [];
-  const ws = (pkg as Record<string, unknown>)["workspaces"];
+  if (typeof pkg !== "object" || pkg === null || !("workspaces" in pkg)) return [];
+  const ws: unknown = pkg.workspaces;
   if (Array.isArray(ws)) return ws.filter((v): v is string => typeof v === "string");
-  if (typeof ws === "object" && ws !== null) {
-    const inner = (ws as Record<string, unknown>)["packages"];
+  if (typeof ws === "object" && ws !== null && "packages" in ws) {
+    const inner: unknown = ws.packages;
     if (Array.isArray(inner)) return inner.filter((v): v is string => typeof v === "string");
   }
   return [];

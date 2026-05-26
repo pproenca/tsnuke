@@ -95,7 +95,7 @@ export interface InspectFlags {
  * `ValidationError` so the parser rejects with the same message text.
  */
 export class FlagError extends Error {
-  override readonly name = "FlagError";
+  public override readonly name = "FlagError";
 }
 
 /**

@@ -29,7 +29,9 @@ import { FAIL, PASS, type ExitCode } from "./ExitCode.js";
 import type { FailOn, Severity } from "./FailOn.js";
 
 /** The minimal diagnostic the gate reads — only `severity` matters (RULE-030). */
-type SeverityOnly = { readonly severity: Severity };
+interface SeverityOnly {
+  readonly severity: Severity;
+}
 
 /**
  * Decide whether a diagnostic set trips the `--fail-on` gate (RULE-030).

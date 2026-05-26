@@ -77,11 +77,9 @@ function exportedNamesOfStatement(node: ts.Node): string[] {
   }
   if (ts.isTypeAliasDeclaration(node)) return [node.name.text];
   if (ts.isVariableStatement(node)) {
-    const names: string[] = [];
-    for (const decl of node.declarationList.declarations) {
-      if (ts.isIdentifier(decl.name)) names.push(decl.name.text);
-    }
-    return names;
+    return node.declarationList.declarations.flatMap((d) =>
+      ts.isIdentifier(d.name) ? [d.name.text] : [],
+    );
   }
   return [];
 }
@@ -203,7 +201,7 @@ export function buildModuleGraph(files: readonly GraphFileInput[]): ModuleGraph 
         exportNames.push("default"); // `export default x` / `export = x`
       } else {
         // exported declarations (export const/function/class/type/...).
-        for (const name of exportedNamesOfStatement(node)) exportNames.push(name);
+        exportNames.push(...exportedNamesOfStatement(node));
       }
       ts.forEachChild(node, visit);
     };

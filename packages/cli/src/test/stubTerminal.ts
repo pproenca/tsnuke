@@ -10,19 +10,19 @@ import { FileSystem, Path, Terminal } from "@effect/platform";
 import { NodeFileSystem, NodePath } from "@effect/platform-node";
 import { Effect, Layer } from "effect";
 
-export interface CapturedTerminal {
+interface CapturedTerminal {
   readonly layer: Layer.Layer<Terminal.Terminal>;
   readonly output: string[];
 }
 
 /** The full e2e environment Layer type: capturing Terminal + real FileSystem + Path. */
-export interface CapturedEnv {
+interface CapturedEnv {
   readonly layer: Layer.Layer<Terminal.Terminal | FileSystem.FileSystem | Path.Path>;
   readonly output: string[];
 }
 
 /** Build a capturing Terminal layer + the buffer it writes into. */
-export const makeCapturedTerminal = (): CapturedTerminal => {
+const makeCapturedTerminal = (): CapturedTerminal => {
   const output: string[] = [];
   const terminal: Terminal.Terminal = {
     columns: Effect.succeed(80),

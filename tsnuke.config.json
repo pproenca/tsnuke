@@ -25,6 +25,60 @@
         "rules": [
           "no-unnecessary-template-literal"
         ]
+      },
+      {
+        "files": [
+          "discovery/src/main/discover.ts",
+          "discovery/src/main/workspace.ts",
+          "config/src/main/loadConfig.ts",
+          "config/src/main/sanitize.ts"
+        ],
+        "rules": [
+          "no-record-string-unknown"
+        ]
+      },
+      {
+        "files": [
+          "module-graph/src/test/oracle.ts",
+          "fix-applier/src/test/applyFixes.test.ts"
+        ],
+        "rules": [
+          "prefer-array-methods",
+          "no-record-string-unknown",
+          "no-non-null-assertion",
+          "no-unnecessary-non-null-assertion"
+        ]
+      },
+      {
+        "comment": "Frozen oracles (verbatim legacy copies for differential equivalence tests).",
+        "files": [
+          "errors/src/test/equivalence.test.ts",
+          "config/src/test/equivalence.test.ts",
+          "config/src/test/loadConfig.test.ts",
+          "security/src/test/equivalence.test.ts",
+          "discovery/src/test/equivalence.test.ts"
+        ],
+        "rules": [
+          "explicit-member-accessibility",
+          "no-unnecessary-typeof",
+          "no-unsafe-return"
+        ]
+      },
+      {
+        "comment": "Rule sources + tests that intentionally contain the patterns they detect.",
+        "files": [
+          "rules-type-assertions/src/main/no-ts-ignore.ts",
+          "rules-type-assertions/src/test/no-ts-ignore.test.ts"
+        ],
+        "rules": ["no-ts-ignore"]
+      },
+      {
+        "comment": "Security tests must include http:// URLs to test sanitization.",
+        "files": [
+          "security/src/test/equivalence.test.ts",
+          "security/src/test/sanitizeEnv.test.ts"
+        ],
+        "rules": ["no-insecure-url"]
       }
     ]
   }

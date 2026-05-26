@@ -55,7 +55,7 @@ export const result = (over: Partial<DiagnoseResult> = {}): DiagnoseResult => ({
 });
 
 /** Wrap a single `DiagnoseResult` as a non-workspace `WorkspaceResult` (the common case). */
-export const single = (r: DiagnoseResult): WorkspaceResult => ({
+const single = (r: DiagnoseResult): WorkspaceResult => ({
   rootDirectory: r.project.rootDirectory,
   isWorkspace: false,
   projects: [r],
@@ -74,7 +74,7 @@ export const workspace = (
 });
 
 /** A tiny rule catalog for `--explain` lookups. */
-export const ruleCatalog: Record<string, RuleMeta> = {
+const ruleCatalog: Record<string, RuleMeta> = {
   "no-any": {
     id: "no-any",
     severity: "warning",
@@ -86,7 +86,7 @@ export const ruleCatalog: Record<string, RuleMeta> = {
 };
 
 /** A capturing {@link InspectIo}: records stdout/stderr; serves a fixed result. */
-export interface CapturingIo extends InspectIo {
+interface CapturingIo extends InspectIo {
   readonly out: string[];
   readonly err: string[];
   readonly fixCalls: Array<{ diagnostics: readonly Diagnostic[]; rootDir: string }>;

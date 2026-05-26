@@ -96,7 +96,7 @@ describe("defineGraphRule", () => {
   it("returns meta + an analyze() pass (not create())", () => {
     const seen: string[] = [];
     const rule = defineGraphRule(META, (ctx) => {
-      for (const f of ctx.graph.files) seen.push(f);
+      seen.push(...ctx.graph.files);
     });
     expect(rule.id).toBe("no-cycle");
     expect(rule.tier).toBe("GRAPH");

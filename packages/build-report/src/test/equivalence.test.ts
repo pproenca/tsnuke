@@ -361,7 +361,7 @@ describe("equivalence — RULE-034 serializeError vs legacy oracle", () => {
   const top = new Error("top", { cause: mid });
 
   class Tagged extends Error {
-    override name = "DiscoveryError";
+    public override name = "DiscoveryError";
   }
 
   const CASES: ReadonlyArray<{ name: string; err: unknown }> = [

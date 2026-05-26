@@ -41,13 +41,8 @@ export interface ApplyResult {
 
 /** Flatten all edits out of a fix list (only `auto-fix` fixes carry applyable edits). */
 function collectEdits(fixes: readonly Fix[]): TextEdit[] {
-  const edits: TextEdit[] = [];
-  for (const fix of fixes) {
-    // Only auto-fixes are mechanically applyable; codemod/manual are advisory (RULE-032).
-    if (fix.kind !== "auto-fix") continue;
-    for (const edit of fix.edits) edits.push(edit);
-  }
-  return edits;
+  // Only auto-fixes are mechanically applyable; codemod/manual are advisory (RULE-032).
+  return fixes.filter((f) => f.kind === "auto-fix").flatMap((f) => [...f.edits]);
 }
 
 /** An applied edit's ORIGINAL (pre-splice) range, used for conflict detection. */

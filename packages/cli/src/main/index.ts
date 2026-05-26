@@ -38,6 +38,7 @@ export {
   runInspect,
   toDiagnoseOptions,
   buildJsonString,
+  buildWorkspaceJsonString,
   findDiagnosticAt,
   type InspectIo,
 } from "./inspectHandler.js";

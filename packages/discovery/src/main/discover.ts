@@ -91,7 +91,8 @@ const readJsonFile = (
       .replace(/\/\*[\s\S]*?\*\//g, "")
       .replace(/(^|[^:])\/\/.*$/gm, "$1")
       .replace(/,(\s*[}\]])/g, "$1");
-    const parsed = Either.try(() => JSON.parse(stripped) as unknown);
+    // tsnuke-disable-next-line no-unknown-return
+    const parsed = Either.try((): unknown => JSON.parse(stripped));
     return Either.isRight(parsed) ? parsed.right : undefined;
   });
 

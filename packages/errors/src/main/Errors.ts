@@ -142,6 +142,6 @@ export const TSNUKE_ERROR_TAGS: ReadonlySet<string> = new Set([
  */
 export function isTsNukeError(value: unknown): value is AnyTsNukeError {
   if (!(value instanceof Error)) return false;
-  const tag = (value as { _tag?: unknown })._tag;
+  const tag = "_tag" in value ? value._tag : undefined;
   return typeof tag === "string" && TSNUKE_ERROR_TAGS.has(tag);
 }
