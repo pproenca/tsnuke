@@ -60,10 +60,12 @@ describe("diagnoseTool — runs the real engine + projects the agent summary/rep
     expect(out.report.ruleCount).toBe(0);
     expect(out.report.occurrenceCount).toBe(0);
     expect(out.scorePartial).toBe(false);
-    // Summary text shape is preserved VERBATIM from legacy.
-    expect(out.summary).toBe(
-      `Score 100/100 — 0 rule(s) fired across 0 occurrence(s) in ${cleanDir}.`,
-    );
+    // Summary headline carries score + label + counts + a next-action suffix.
+    expect(out.summary).toContain("Score 100/100");
+    expect(out.summary).toContain("0 rule(s) fired across 0 occurrence(s)");
+    expect(out.summary).toContain(cleanDir);
+    expect(out.summary).toContain("Next:");
+    expect(out.summary).toContain("All clear");
   });
 
   it("a project with a SYN violation → no-explicit-any in the report + score drops", async () => {
@@ -88,7 +90,8 @@ describe("explainTool — offline, deterministic rule explanation", () => {
   it("returns the offline text for a known rule", () => {
     const out = explainTool({ rule: "no-explicit-any" });
     expect(out).toContain("no-explicit-any");
-    expect(out).toContain("[SYN]");
+    expect(out).toContain("[SYN");
+    expect(out).toContain("Fix:");
     expect(out).not.toContain("Unknown rule");
   });
 

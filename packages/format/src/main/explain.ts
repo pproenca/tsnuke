@@ -1,18 +1,14 @@
 /**
- * `--explain` / `--why` — INTENTIONALLY OFFLINE & DETERMINISTIC (critic m3).
+ * `--explain` / `--why` — INTENTIONALLY OFFLINE & DETERMINISTIC.
  *
- * No model call, no network. The "AI-native" value is the *structured rule
- * metadata* an agent consumes, not an in-tool LLM round-trip. `explain` is a
- * pure lookup + formatter over the static rule registry: same rule id →
- * byte-identical output. Shared by the CLI and the MCP server.
+ * No model call, no network. The "AI-native" value is the *structured rule metadata*
+ * an agent consumes, not an in-tool LLM round-trip. `explain` is a pure lookup +
+ * formatter over the static rule registry: same rule id + same context → byte-identical
+ * output. Shared by the CLI (`--explain`) and the MCP server (`tsnuke_explain`).
  *
- * ── Effect-TS slice port ──────────────────────────────────────────────────────
- * Ported VERBATIM from `legacy/.../packages/core/src/explain.ts`. The only
- * deviation is plumbing, NOT behavior: `Diagnostic`/`RuleMeta` are imported from
- * `@tsnuke/contracts-effect` (the canonical de-vendored Schema types) instead
- * of the legacy `@tsnuke/rules`. `asRuleLookup` stays GENERIC over a plain
- * `Record<string, RuleMeta>` (the rule-registry shape) — it does NOT depend on
- * the rules-registry slice. The offline text is preserved byte-for-byte.
+ * The card is intentionally compact (one screen): header row, fix/url chip, help
+ * paragraph, recommendation, and (when called with a concrete diagnostic) the
+ * inferred type and a run-occurrence count.
  */
 import type { Diagnostic, RuleMeta } from "@tsnuke/contracts-effect";
 
@@ -34,12 +30,29 @@ export function asRuleLookup(registry: Readonly<Record<string, RuleMeta>>): Rule
 
 /** Optional concrete-diagnostic context, used to enrich the static explanation. */
 export interface ExplainContext {
+  /** The diagnostic's `help` text (per-occurrence, may differ from `recommendation`). */
   help?: string;
+  /** Inferred TypeScript type at the site, when the rule captured one. */
   inferredType?: string;
+  /** Documentation URL for the rule (lives on the diagnostic, not the meta). */
+  url?: string;
+  /** How many times the rule fired in the current run. */
+  occurrencesInRun?: number;
 }
 
 /**
- * Render an offline explanation for `ruleId`. Deterministic; no model/network.
+ * Render an offline explanation card for `ruleId`. Deterministic; no model / network.
+ *
+ * Layout:
+ *   <id>   [<tier> · <category> · <severity>]
+ *   Fix: <fixKind> · <url>?
+ *
+ *   <help>?
+ *
+ *   Recommendation: <recommendation>?
+ *
+ *   Inferred type: <inferredType>?
+ *   Occurrences in this run: <n>?
  */
 export function explain(
   ruleId: string,
@@ -52,23 +65,33 @@ export function explain(
   }
 
   const lines: string[] = [];
-  lines.push(`${meta.id}  [${meta.tier}] (${meta.category}, ${meta.severity})`);
+
+  lines.push(`${meta.id}   [${meta.tier} · ${meta.category} · ${meta.severity}]`);
+
+  const fixKind = meta.fixKind ?? "manual";
+  const chip = context?.url !== undefined ? `Fix: ${fixKind} · ${context.url}` : `Fix: ${fixKind}`;
+  lines.push(chip);
 
   if (context?.help !== undefined && context.help.length > 0) {
     lines.push("");
     lines.push(context.help);
   }
+
   if (meta.recommendation !== undefined && meta.recommendation.length > 0) {
     lines.push("");
     lines.push(`Recommendation: ${meta.recommendation}`);
   }
+
+  const tail: string[] = [];
   if (context?.inferredType !== undefined && context.inferredType.length > 0) {
-    lines.push("");
-    lines.push(`Inferred type: ${context.inferredType}`);
+    tail.push(`Inferred type: ${context.inferredType}`);
   }
-  if (meta.fixKind !== undefined) {
+  if (context?.occurrencesInRun !== undefined && context.occurrencesInRun > 0) {
+    tail.push(`Occurrences in this run: ${context.occurrencesInRun}`);
+  }
+  if (tail.length > 0) {
     lines.push("");
-    lines.push(`Fix kind: ${meta.fixKind}`);
+    lines.push(...tail);
   }
 
   return lines.join("\n");
@@ -81,6 +104,7 @@ export function explainDiagnostic(diagnostic: Diagnostic, registry: RuleLookup):
     ...(diagnostic.fix?.inferredType !== undefined
       ? { inferredType: diagnostic.fix.inferredType }
       : {}),
+    ...(diagnostic.url !== undefined ? { url: diagnostic.url } : {}),
   };
   return explain(diagnostic.rule, registry, context);
 }

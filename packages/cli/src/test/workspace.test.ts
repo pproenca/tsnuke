@@ -27,6 +27,7 @@ const flags = (over: Partial<InspectFlags> = {}): InspectFlags => ({
   prComment: false,
   fix: false,
   yes: false,
+  color: false,
   full: false,
   projects: [],
   diff: undefined,
@@ -58,13 +59,15 @@ describe("workspace mode — pretty", () => {
     const io = makeCapturingIo(twoProjectWs());
     await Effect.runPromise(runInspect(flags(), io, "0.0.0"));
     const text = io.out.join("");
-    // per-project headers (relative to the workspace root)
+    // per-project rows (relative to the workspace root)
     expect(text).toContain("packages/clean");
     expect(text).toContain("packages/messy");
-    // the BC-05 summary: 2 projects, min score 60
-    expect(text).toContain("Workspace: 2 project(s)");
-    expect(text).toContain("60/100");
-    expect(text).toContain("1 error(s)");
+    // workspace header + BC-05 min-score summary footer
+    expect(text).toContain("Workspace  /ws");
+    expect(text).toContain("2 project(s)");
+    expect(text).toContain("60 / 100");
+    expect(text).toContain("1 err");
+    expect(text).toContain("Needs work");
   });
 });
 

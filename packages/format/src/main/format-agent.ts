@@ -7,23 +7,14 @@
  *     list (breadth-not-depth, matches the scoring model).
  *   - SORTED by tier (SYN→TYP→GRAPH→CFG) then fixKind (auto-fix first).
  *   - GROUPED by category; file paths made repo-relative.
- *   - deterministic ordering throughout.
+ *   - HEADLINE fields the agent would otherwise have to recompute: `fixSummary`,
+ *     `tierBreakdown`, `nextAction`. All additive — existing consumers ignore them.
  *
- * Pure: diagnostics + score → a plain JSON-serializable object. Shared by the
+ * Pure: diagnostics + score + meta → a plain JSON-serializable object. Shared by the
  * CLI (`--format agent`) and the MCP server.
- *
- * ── Effect-TS slice port ──────────────────────────────────────────────────────
- * Ported VERBATIM from `legacy/.../packages/core/src/format-agent.ts`. The two
- * deviations are pure plumbing, NOT behavior:
- *   1. `Diagnostic`/`FixKind`/`Tier` are imported from `@tsnuke/contracts-effect`
- *      (the canonical de-vendored Schema types) instead of the legacy `@tsnuke/rules`.
- *      The structural shapes are identical (proven by the contracts compat tests).
- *   2. The legacy `score` param was `Pick<ScoreResult, "score" | "label"> | null`;
- *      this slice does NOT depend on the score/engine slices, so the structural
- *      `{ score, label }` shape is inlined as a local type. RULE-032 sort logic is
- *      unchanged.
  */
 import type { Diagnostic, FixKind, Tier } from "@tsnuke/contracts-effect";
+import { deriveNextAction, summarizeFixes, type FixSummary, type NextAction } from "./nextAction.js";
 
 /** One occurrence of a rule firing. */
 export interface AgentOccurrence {
@@ -51,24 +42,59 @@ export interface AgentCategoryGroup {
   rules: AgentRuleEntry[];
 }
 
+/** Per-tier counts: rules that fired in that tier + total occurrences. */
+export interface TierStat {
+  readonly rules: number;
+  readonly occurrences: number;
+}
+
+/** Tier × counts across all four tiers (zeros included so the shape is stable). */
+export interface TierBreakdown {
+  readonly SYN: TierStat;
+  readonly TYP: TierStat;
+  readonly GRAPH: TierStat;
+  readonly CFG: TierStat;
+}
+
 /** The full agent report payload. */
 export interface AgentReport {
+  /** 0–100 score, or null when unscored. */
   score: number | null;
+  /** "Great" / "Needs work" / "Critical" / null. */
   scoreLabel: string | null;
+  /** True when Tier-2 was skipped — score is on a partial scale. */
+  scorePartial: boolean;
+  /** Distinct rules that fired. */
   ruleCount: number;
+  /** Total occurrences across all rules. */
   occurrenceCount: number;
+  /** Wall-clock duration of the analysis (ms). 0 when not provided. */
+  elapsedMs: number;
+  /** Per-fix-kind occurrence counts (cheapest action available at a glance). */
+  fixSummary: FixSummary;
+  /** Per-tier rule + occurrence counts. */
+  tierBreakdown: TierBreakdown;
+  /** The first move an agent should take on this report. */
+  nextAction: NextAction;
+  /** Diagnostics grouped by category, then by tier + fix-kind. */
   categories: AgentCategoryGroup[];
 }
 
 /**
- * Structural input shape for the score summary `formatAgentReport` reads. The
- * legacy signature took `Pick<ScoreResult, "score" | "label">`; this slice is a
- * pure consumer of a structural input and does NOT depend on the score/engine
- * slices, so the two fields it reads are declared locally.
+ * Structural input shape for the score summary `formatAgentReport` reads. Kept as a
+ * local type so this slice stays decoupled from the score/engine slices.
  */
 export interface AgentScoreInput {
   score: number;
   label: string;
+}
+
+/** Optional run-level metadata threaded in by the engine. */
+export interface AgentReportMeta {
+  /** Wall-clock analysis time in milliseconds. */
+  elapsedMs?: number;
+  /** True when the type-aware tier was skipped (BC-03). */
+  scorePartial?: boolean;
 }
 
 /** Tier sort order: cheap/syntactic first, config last. */
@@ -112,14 +138,38 @@ function toRepoRelative(filePath: string, repoRoot: string): string {
   return filePath.startsWith(root) ? filePath.slice(root.length) : filePath;
 }
 
+/** Build a per-tier breakdown: rule count + occurrence count per tier. */
+export function buildTierBreakdown(diagnostics: readonly Diagnostic[]): TierBreakdown {
+  const rulesByTier = new Map<Tier, Set<string>>();
+  const occByTier = new Map<Tier, number>();
+  for (const d of diagnostics) {
+    const set = rulesByTier.get(d.tier) ?? new Set<string>();
+    set.add(`${d.plugin}/${d.rule}`);
+    rulesByTier.set(d.tier, set);
+    occByTier.set(d.tier, (occByTier.get(d.tier) ?? 0) + 1);
+  }
+  const stat = (tier: Tier): TierStat => ({
+    rules: rulesByTier.get(tier)?.size ?? 0,
+    occurrences: occByTier.get(tier) ?? 0,
+  });
+  return {
+    SYN: stat("SYN"),
+    TYP: stat("TYP"),
+    GRAPH: stat("GRAPH"),
+    CFG: stat("CFG"),
+  };
+}
+
 /**
  * Build the agent report. `repoRoot` (default `""`) is stripped from file paths
- * to make them repo-relative; pass the discovered project root.
+ * to make them repo-relative; pass the discovered project root. `meta` carries
+ * optional run-level fields (timing + partial-score flag).
  */
 export function formatAgentReport(
   diagnostics: readonly Diagnostic[],
   score: AgentScoreInput | null,
   repoRoot = "",
+  meta: AgentReportMeta = {},
 ): AgentReport {
   const byRule = new Map<string, AgentRuleEntry>();
 
@@ -177,8 +227,13 @@ export function formatAgentReport(
   return {
     score: score?.score ?? null,
     scoreLabel: score?.label ?? null,
+    scorePartial: meta.scorePartial ?? false,
     ruleCount: byRule.size,
     occurrenceCount: diagnostics.length,
+    elapsedMs: meta.elapsedMs ?? 0,
+    fixSummary: summarizeFixes(diagnostics),
+    tierBreakdown: buildTierBreakdown(diagnostics),
+    nextAction: deriveNextAction(diagnostics),
     categories,
   };
 }

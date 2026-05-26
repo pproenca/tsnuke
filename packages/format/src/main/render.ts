@@ -1,93 +1,127 @@
 /**
- * Minimal pretty renderer for human terminal output: a score header followed by
- * diagnostics grouped by category. Deliberately small (not heavily tested) — the
- * machine-facing surfaces (`--json`, `--format agent`) are the contract-critical
- * ones; this is just a readable default.
+ * Pretty terminal rendering — the human surface of `tsnuke`. Composes the small
+ * `render*` pieces (header, tier line, rule groups, footer) into one block. Pure:
+ * returns a string. The CLI edge writes it to stdout.
  *
- * Pure: returns a string. The CLI edge writes it to stdout.
+ * The CLI decides colour (`isTTY && !NO_COLOR && !CI`), passes it in as a boolean.
+ * When `color === false`, output is plain ASCII and snapshot-stable.
  *
- * ── Effect-TS slice port ──────────────────────────────────────────────────────
- * Ported VERBATIM from `legacy/.../packages/tsnuke/src/render.ts`. Deviations
- * are pure plumbing, NOT behavior:
- *   1. `Diagnostic` is imported from `@tsnuke/contracts-effect` (the canonical
- *      de-vendored Schema type) instead of the legacy `@tsnuke/rules`.
- *   2. The score input keeps the LEGACY structural `ScoreResult` shape
- *      `{ score; label; partial }` (legacy `core/types.ts`) — render is a PURE
- *      consumer of a structural input and does NOT depend on the engine/score
- *      slices. The modern score slice renamed the field to `band`; the CLI maps
- *      the engine's `band` → `label` when building this input. `renderScoreLine`
- *      reads only `.score` and `.label`; `partial` arrives via the separate
- *      `scorePartial` boolean param, exactly as in the legacy signature. The
- *      output strings are preserved byte-for-byte.
+ * `renderScoreLine` keeps a single-line shape for the `--score` mode. It gains
+ * colour but stays text — pipelines that grep `Score: 80/100` still work.
  */
 import type { Diagnostic } from "@tsnuke/contracts-effect";
+import { formatAgentReport, type AgentReport } from "./format-agent.js";
+import { renderHeader } from "./renderHeader.js";
+import { renderTierLine } from "./renderTierLine.js";
+import { renderFooter } from "./renderFooter.js";
+import { renderRuleGroup } from "./renderRuleGroup.js";
+import { colorForScore, dim, gray } from "./theme.js";
 
 /**
- * The legacy `ScoreResult` structural shape (legacy `core/types.ts`). Render is a
- * pure consumer of this structural input; it does NOT depend on the engine/score
- * slices. The CLI maps the engine's score result into this shape (mapping the
- * modern `band` field → `label`).
+ * The structural score input the pretty renderer consumes. The CLI maps the engine's
+ * `band` → `label` when building this; render stays decoupled from the score slice.
  */
 export interface RenderScoreResult {
   /** 0–100 integer. */
   score: number;
   /** Band label: "Great" / "Needs work" / "Critical". */
   label: string;
-  /** True when Tier-2 was skipped — score is on a different scale (BC-03). */
+  /** True when Tier-2 was skipped — score is on a partial scale (BC-03). */
   partial: boolean;
 }
 
-/** Render just the score line (used by `--score` mode and as the pretty header). */
-export function renderScoreLine(
-  score: RenderScoreResult | null,
-  scorePartial: boolean,
-): string {
-  if (score === null) return "Score: n/a";
-  const partial = scorePartial ? " (partial — type info unavailable, not comparable)" : "";
-  return `Score: ${score.score}/100 — ${score.label}${partial}`;
-}
-
-/** Render one diagnostic as a single `file:line:col  severity  rule  message` line. */
-function renderDiagnostic(d: Diagnostic): string {
-  return `  ${d.filePath}:${d.line}:${d.column}  ${d.severity}  ${d.rule}  ${d.message}`;
+/** Optional rendering knobs. Defaults preserve `tsnuke X.Y.Z` style output. */
+export interface RenderPrettyOptions {
+  readonly color?: boolean;
+  readonly verbose?: boolean;
+  readonly version?: string;
+  readonly elapsedMs?: number;
+  readonly rulesChecked?: number;
+  readonly showScore?: boolean;
+  /** Strip a repo-root prefix from occurrence paths (purely cosmetic). */
+  readonly repoRoot?: string;
 }
 
 /**
- * Render the full pretty report: score header (unless `showScore` is false) plus
- * diagnostics grouped by category, categories in alphabetical order.
+ * Single-line score header — preserved for `--score` mode. When `color`, the score
+ * number + label are tinted by band (green/yellow/red). Partial → dim + `*`.
+ */
+export function renderScoreLine(
+  score: RenderScoreResult | null,
+  scorePartial: boolean,
+  options: { color?: boolean } = {},
+): string {
+  const color = options.color ?? false;
+  if (score === null) return `Score: ${gray(color, "n/a")}`;
+  const partialSuffix = scorePartial
+    ? ` ${dim(color, "(partial — type info unavailable, not comparable)")}`
+    : "";
+  const num = colorForScore(score.score, color, `${score.score}/100`);
+  const lab = colorForScore(score.score, color, score.label);
+  return `Score: ${num} — ${lab}${partialSuffix}`;
+}
+
+/**
+ * Render the full pretty report: the doctor-style header, a one-line tier breakdown,
+ * the rule-grouped diagnostics, and a footer with stats + CTA. Pure: returns string.
  */
 export function renderPretty(
   diagnostics: readonly Diagnostic[],
   score: RenderScoreResult | null,
   scorePartial: boolean,
-  showScore = true,
+  options: RenderPrettyOptions = {},
 ): string {
+  const color = options.color ?? false;
+  const verbose = options.verbose ?? false;
+  const showScore = options.showScore ?? true;
+  const version = options.version;
+  const elapsedMs = options.elapsedMs ?? 0;
+  const rulesChecked = options.rulesChecked ?? 0;
+  const repoRoot = options.repoRoot ?? "";
+
+  const report: AgentReport = formatAgentReport(
+    diagnostics,
+    score === null ? null : { score: score.score, label: score.label },
+    repoRoot,
+    { elapsedMs, scorePartial },
+  );
+
   const lines: string[] = [];
 
   if (showScore) {
-    lines.push(renderScoreLine(score, scorePartial));
+    lines.push(
+      renderHeader({
+        score: score?.score ?? null,
+        label: score?.label ?? null,
+        partial: scorePartial,
+        ...(version !== undefined ? { tagline: `tsnuke · ${version}` } : {}),
+        color,
+      }),
+    );
     lines.push("");
   }
 
-  if (diagnostics.length === 0) {
-    lines.push("No issues found.");
-    return lines.join("\n");
+  const tierLine = renderTierLine(report.tierBreakdown, color);
+  if (tierLine.length > 0) {
+    lines.push(tierLine);
+    lines.push("");
   }
 
-  const byCategory = new Map<string, Diagnostic[]>();
-  for (const d of diagnostics) {
-    const bucket = byCategory.get(d.category) ?? [];
-    if (!byCategory.has(d.category)) byCategory.set(d.category, bucket);
-    bucket.push(d);
+  const block = renderRuleGroup({ categories: report.categories, verbose, color });
+  if (block.length > 0) {
+    lines.push(block);
   }
 
-  const categories = [...byCategory.keys()].sort((a, b) => a.localeCompare(b));
-  for (const category of categories) {
-    lines.push(`${category}:`, ...(byCategory.get(category) ?? []).map(renderDiagnostic), "");
-  }
-
-  const errors = diagnostics.filter((d) => d.severity === "error").length;
-  lines.push(`${errors} error(s), ${diagnostics.length - errors} warning(s).`);
+  lines.push(
+    renderFooter({
+      diagnostics,
+      fixSummary: report.fixSummary,
+      nextAction: report.nextAction,
+      rulesChecked,
+      elapsedMs,
+      color,
+    }),
+  );
 
   return lines.join("\n");
 }

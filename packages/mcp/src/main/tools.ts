@@ -61,13 +61,16 @@ export async function diagnoseTool(args: DiagnoseToolArgs): Promise<DiagnoseTool
     result.diagnostics,
     result.score,
     result.project.rootDirectory,
+    { elapsedMs: result.elapsedMilliseconds, scorePartial: result.scorePartial },
   );
   const score = result.score?.score ?? null;
+  const label = result.score?.label ?? "n/a";
   const partial = result.scorePartial ? " (partial — type info unavailable)" : "";
-  const summary =
-    `Score ${score ?? "n/a"}/100${partial} — ` +
+  const headline =
+    `Score ${score ?? "n/a"}/100${partial} — ${label}. ` +
     `${report.ruleCount} rule(s) fired across ${report.occurrenceCount} occurrence(s) ` +
     `in ${args.directory}.`;
+  const summary = `${headline} Next: ${report.nextAction.summary}`;
   return { summary, report, scorePartial: result.scorePartial };
 }
 

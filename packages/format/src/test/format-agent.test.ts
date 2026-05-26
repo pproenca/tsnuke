@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { Diagnostic } from "@tsnuke/contracts-effect";
 import { formatAgentReport } from "../main/index.js";
-import { frozenFormatAgentReport, type FrozenDiagnostic } from "./legacy-frozen.js";
 
-/** Build a plain Diagnostic literal for tests (ported from the legacy fixture). */
+/** Build a plain Diagnostic literal for tests. */
 function diag(over: Partial<Diagnostic> & Pick<Diagnostic, "rule">): Diagnostic {
   return {
     filePath: "/repo/src/a.ts",
@@ -19,7 +18,7 @@ function diag(over: Partial<Diagnostic> & Pick<Diagnostic, "rule">): Diagnostic 
   };
 }
 
-describe("C14 — formatAgentReport (ported legacy vectors)", () => {
+describe("formatAgentReport — rule dedup + sort", () => {
   it("deduplicates a rule fired 3x into one entry with 3 occurrences", () => {
     const diagnostics = [
       diag({ rule: "no-any", filePath: "/repo/src/a.ts", line: 1, column: 1 }),
@@ -37,22 +36,11 @@ describe("C14 — formatAgentReport (ported legacy vectors)", () => {
   it("sorts entries by tier then fixKind (auto-fix first)", () => {
     const diagnostics = [
       diag({ rule: "cfg-rule", tier: "CFG", category: "C" }),
-      diag({
-        rule: "syn-manual",
-        tier: "SYN",
-        category: "C",
-        fix: { kind: "manual", edits: [] },
-      }),
-      diag({
-        rule: "syn-autofix",
-        tier: "SYN",
-        category: "C",
-        fix: { kind: "auto-fix", edits: [] },
-      }),
+      diag({ rule: "syn-manual", tier: "SYN", category: "C", fix: { kind: "manual", edits: [] } }),
+      diag({ rule: "syn-autofix", tier: "SYN", category: "C", fix: { kind: "auto-fix", edits: [] } }),
       diag({ rule: "typ-rule", tier: "TYP", category: "C" }),
     ];
     const report = formatAgentReport(diagnostics, null, "/repo");
-    // All in one category "C". Order should be: SYN auto-fix, SYN manual, TYP, CFG.
     const order = report.categories.flatMap((c) => c.rules.map((r) => r.rule));
     expect(order).toEqual(["syn-autofix", "syn-manual", "typ-rule", "cfg-rule"]);
   });
@@ -75,6 +63,21 @@ describe("C14 — formatAgentReport (ported legacy vectors)", () => {
     expect(report.categories[0]?.rules[0]?.occurrences[0]?.filePath).toBe("src/deep/x.ts");
   });
 
+  it("preserves an optional url and omits it when absent", () => {
+    const report = formatAgentReport(
+      [
+        diag({ rule: "with-url", url: "https://example.test/r" }),
+        diag({ rule: "no-url", category: "Other" }),
+      ],
+      null,
+    );
+    const all = report.categories.flatMap((c) => c.rules);
+    const withUrl = all.find((r) => r.rule === "with-url");
+    const noUrl = all.find((r) => r.rule === "no-url");
+    expect(withUrl?.url).toBe("https://example.test/r");
+    expect(Object.prototype.hasOwnProperty.call(noUrl ?? {}, "url")).toBe(false);
+  });
+
   it("is deterministic: same input → identical JSON", () => {
     const diagnostics = [
       diag({ rule: "b", category: "Two", filePath: "/repo/b.ts", line: 3 }),
@@ -91,27 +94,25 @@ describe("C14 — formatAgentReport (ported legacy vectors)", () => {
   });
 });
 
-describe("RULE-032 — fix-kind taxonomy & agent action ordering (added)", () => {
-  it("orders auto-fix (0) < codemod (1) < manual (2) within one tier, no-fix → manual (last)", () => {
+describe("formatAgentReport — RULE-032 fix-kind ordering", () => {
+  it("orders auto-fix (0) < codemod (1) < manual (2) within one tier", () => {
     const diagnostics = [
-      diag({ rule: "r-nofix", tier: "SYN", category: "C" }), // no fix → manual (2)
+      diag({ rule: "r-nofix", tier: "SYN", category: "C" }),
       diag({ rule: "r-manual", tier: "SYN", category: "C", fix: { kind: "manual", edits: [] } }),
       diag({ rule: "r-codemod", tier: "SYN", category: "C", fix: { kind: "codemod", edits: [] } }),
       diag({ rule: "r-autofix", tier: "SYN", category: "C", fix: { kind: "auto-fix", edits: [] } }),
     ];
     const report = formatAgentReport(diagnostics, null);
     const order = report.categories.flatMap((c) => c.rules.map((r) => r.rule));
-    // auto-fix, codemod, then the two manual-kind (manual tie broken by rule.localeCompare:
-    // "r-manual" < "r-nofix").
     expect(order).toEqual(["r-autofix", "r-codemod", "r-manual", "r-nofix"]);
   });
 
-  it("a diagnostic with no fix defaults its agent fixKind to \"manual\"", () => {
+  it("no-fix diagnostic defaults its agent fixKind to manual", () => {
     const report = formatAgentReport([diag({ rule: "no-fix-rule" })], null);
     expect(report.categories[0]?.rules[0]?.fixKind).toBe("manual");
   });
 
-  it("tier dominates fixKind: a CFG auto-fix still sorts after a SYN manual", () => {
+  it("tier dominates fixKind: a CFG auto-fix sorts after a SYN manual", () => {
     const diagnostics = [
       diag({ rule: "cfg-autofix", tier: "CFG", category: "C", fix: { kind: "auto-fix", edits: [] } }),
       diag({ rule: "syn-manual", tier: "SYN", category: "C", fix: { kind: "manual", edits: [] } }),
@@ -119,21 +120,6 @@ describe("RULE-032 — fix-kind taxonomy & agent action ordering (added)", () =>
     const report = formatAgentReport(diagnostics, null);
     const order = report.categories.flatMap((c) => c.rules.map((r) => r.rule));
     expect(order).toEqual(["syn-manual", "cfg-autofix"]);
-  });
-
-  it("preserves an optional url and omits it when absent", () => {
-    const report = formatAgentReport(
-      [
-        diag({ rule: "with-url", url: "https://example.test/r" }),
-        diag({ rule: "no-url", category: "Other" }),
-      ],
-      null,
-    );
-    const all = report.categories.flatMap((c) => c.rules);
-    const withUrl = all.find((r) => r.rule === "with-url");
-    const noUrl = all.find((r) => r.rule === "no-url");
-    expect(withUrl?.url).toBe("https://example.test/r");
-    expect(Object.prototype.hasOwnProperty.call(noUrl ?? {}, "url")).toBe(false);
   });
 
   it("score=null yields null score + scoreLabel; counts still populated", () => {
@@ -145,35 +131,70 @@ describe("RULE-032 — fix-kind taxonomy & agent action ordering (added)", () =>
   });
 });
 
-describe("equivalence vs frozen legacy formatAgentReport", () => {
-  // Crafted inputs that exercise dedup, all three fix kinds + no-fix, every tier,
-  // multiple categories, repo-root stripping, occurrence sort, and the null score.
-  const crafted: FrozenDiagnostic[] = [
-    { filePath: "/repo/src/z.ts", plugin: "tsnuke", rule: "syn-cm", severity: "warning", message: "m1", help: "h1", line: 10, column: 4, category: "Zeta", tier: "SYN", fix: { kind: "codemod", edits: [] } },
-    { filePath: "/repo/src/a.ts", plugin: "tsnuke", rule: "syn-cm", severity: "warning", message: "m1", help: "h1", line: 2, column: 1, category: "Zeta", tier: "SYN", fix: { kind: "codemod", edits: [] } },
-    { filePath: "/repo/src/a.ts", plugin: "tsnuke", rule: "syn-af", severity: "error", message: "m2", help: "h2", url: "https://x.test", line: 1, column: 1, category: "Alpha", tier: "SYN", fix: { kind: "auto-fix", edits: [] } },
-    { filePath: "/repo/src/b.ts", plugin: "tsnuke", rule: "typ-x", severity: "warning", message: "m3", help: "h3", line: 3, column: 7, category: "Alpha", tier: "TYP" },
-    { filePath: "/repo/src/c.ts", plugin: "tsnuke", rule: "graph-y", severity: "warning", message: "m4", help: "h4", line: 4, column: 2, category: "Mid", tier: "GRAPH", fix: { kind: "manual", edits: [] } },
-    { filePath: "/repo/src/d.ts", plugin: "tsnuke", rule: "cfg-z", severity: "error", message: "m5", help: "h5", line: 5, column: 9, category: "Mid", tier: "CFG" },
-  ];
-
-  const ported = crafted as unknown as Diagnostic[];
-
-  it("deep-equals the frozen oracle (with score, repoRoot stripped)", () => {
-    const score = { score: 73, label: "Needs work" };
-    expect(formatAgentReport(ported, score, "/repo")).toEqual(
-      frozenFormatAgentReport(crafted, score, "/repo"),
-    );
+describe("formatAgentReport — agent-facing summaries", () => {
+  it("reports per-fix-kind counts in fixSummary", () => {
+    const diagnostics = [
+      diag({ rule: "a", fix: { kind: "auto-fix", edits: [] } }),
+      diag({ rule: "b", fix: { kind: "auto-fix", edits: [] } }),
+      diag({ rule: "c", fix: { kind: "codemod", edits: [] } }),
+      diag({ rule: "d" }), // no fix → manual
+    ];
+    const report = formatAgentReport(diagnostics, null);
+    expect(report.fixSummary.autoFixable).toBe(2);
+    expect(report.fixSummary.codemod).toBe(1);
+    expect(report.fixSummary.manual).toBe(1);
   });
 
-  it("deep-equals the frozen oracle (null score, no repoRoot)", () => {
-    expect(formatAgentReport(ported, null)).toEqual(frozenFormatAgentReport(crafted, null));
+  it("reports a tier breakdown with zeros for tiers that didn't fire", () => {
+    const diagnostics = [
+      diag({ rule: "a", tier: "SYN" }),
+      diag({ rule: "b", tier: "TYP" }),
+      diag({ rule: "b", tier: "TYP", line: 2 }),
+    ];
+    const report = formatAgentReport(diagnostics, null);
+    expect(report.tierBreakdown.SYN).toEqual({ rules: 1, occurrences: 1 });
+    expect(report.tierBreakdown.TYP).toEqual({ rules: 1, occurrences: 2 });
+    expect(report.tierBreakdown.GRAPH).toEqual({ rules: 0, occurrences: 0 });
+    expect(report.tierBreakdown.CFG).toEqual({ rules: 0, occurrences: 0 });
   });
 
-  it("JSON-equals the frozen oracle byte-for-byte", () => {
-    const score = { score: 0, label: "Critical" };
-    expect(JSON.stringify(formatAgentReport(ported, score, "/repo"))).toBe(
-      JSON.stringify(frozenFormatAgentReport(crafted, score, "/repo")),
-    );
+  it("nextAction.kind=run-fix when auto-fixables exist, listing rule ids", () => {
+    const diagnostics = [
+      diag({ rule: "fixable-1", fix: { kind: "auto-fix", edits: [] } }),
+      diag({ rule: "fixable-2", fix: { kind: "auto-fix", edits: [] } }),
+      diag({ rule: "manual-1" }),
+    ];
+    const report = formatAgentReport(diagnostics, null);
+    expect(report.nextAction.kind).toBe("run-fix");
+    expect(report.nextAction.autoFixableRules).toEqual(["fixable-1", "fixable-2"]);
+    expect(report.nextAction.summary).toContain("--fix");
+  });
+
+  it("nextAction.kind=address-rule when nothing is auto-fixable", () => {
+    const diagnostics = [
+      diag({ rule: "a" }),
+      diag({ rule: "b", line: 2 }),
+      diag({ rule: "b", line: 3 }),
+    ];
+    const report = formatAgentReport(diagnostics, null);
+    expect(report.nextAction.kind).toBe("address-rule");
+    expect(report.nextAction.focusRule).toBe("b"); // highest occurrence count
+  });
+
+  it("nextAction.kind=all-clear on a clean run", () => {
+    const report = formatAgentReport([], null);
+    expect(report.nextAction.kind).toBe("all-clear");
+  });
+
+  it("threads meta.elapsedMs and meta.scorePartial onto the report", () => {
+    const report = formatAgentReport([], null, "", { elapsedMs: 421, scorePartial: true });
+    expect(report.elapsedMs).toBe(421);
+    expect(report.scorePartial).toBe(true);
+  });
+
+  it("defaults elapsedMs to 0 and scorePartial to false when meta omitted", () => {
+    const report = formatAgentReport([], null);
+    expect(report.elapsedMs).toBe(0);
+    expect(report.scorePartial).toBe(false);
   });
 });

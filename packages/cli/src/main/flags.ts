@@ -67,6 +67,9 @@ export interface InspectFlags {
   fix: boolean;
   yes: boolean;
 
+  /** True when ANSI colour should be emitted (TTY + not CI + not NO_COLOR + not `--no-color`). */
+  color: boolean;
+
   // mode selection (RULE-033)
   full: boolean;
   /** `--project a,b,c` → `["a","b","c"]`. */

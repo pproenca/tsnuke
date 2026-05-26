@@ -29,7 +29,7 @@ import { Effect, Either, Option } from "effect";
 import type { RuleMeta } from "@tsnuke/contracts-effect";
 import { diagnoseWorkspaceNode } from "@tsnuke/engine-effect";
 import { applyFixesToFilesNode } from "@tsnuke/fix-applier-effect";
-import { ruleRegistry } from "@tsnuke/rules-registry-effect";
+import { graphRuleRegistry, ruleRegistry } from "@tsnuke/rules-registry-effect";
 import {
   FlagError,
   parseFileLine,
@@ -159,6 +159,9 @@ const yesOpt = Options.boolean("yes").pipe(
   Options.withAlias("y"),
   Options.withDescription("Assume yes to prompts."),
 );
+const noColorOpt = Options.boolean("no-color").pipe(
+  Options.withDescription("Disable ANSI colour in pretty output (also honours NO_COLOR / non-TTY)."),
+);
 
 // ── mode selection (RULE-033 — labels only; file-selection is a STUB) ─────────────────
 const fullOpt = Options.boolean("full").pipe(
@@ -209,6 +212,7 @@ const rawOptions = Options.all({
   prComment: prCommentOpt,
   fix: fixOpt,
   yes: yesOpt,
+  noColor: noColorOpt,
   full: fullOpt,
   project: projectOpt,
   diff: diffOpt,
@@ -265,6 +269,11 @@ export const resolveInspectFlags = Effect.fn("Cli.resolveFlags")(function* (
       ? { base: Option.getOrUndefined(raw.diffBase) }
       : undefined;
 
+    // Colour: opt OUT via `--no-color` or NO_COLOR env, opt OUT in non-TTY / CI.
+    const env = process.env;
+    const ttyColor = Boolean(process.stdout.isTTY) && env["NO_COLOR"] === undefined && env["CI"] === undefined;
+    const color = !raw.noColor && ttyColor;
+
     const flags: Omit<InspectFlags, "directory"> = {
       lint: Option.getOrElse(raw.lint, () => true),
       deadCode: Option.getOrElse(raw.deadCode, () => true),
@@ -280,6 +289,7 @@ export const resolveInspectFlags = Effect.fn("Cli.resolveFlags")(function* (
       prComment: raw.prComment,
       fix: raw.fix,
       yes: raw.yes,
+      color,
       full: raw.full,
       projects,
       diff,
@@ -309,10 +319,11 @@ export const resolveInspectFlags = Effect.fn("Cli.resolveFlags")(function* (
  * `stdout`/`stderr` need the `Terminal` service from context.
  */
 const makeRealIo = (terminal: Terminal.Terminal): InspectIo => {
-  // A `Rule` is `RuleMeta & { create }` (rules-core), so each registry entry IS a
-  // structural `RuleMeta` — keyed by `id`, exactly as legacy `inspect.ts:124-126`.
+  // A `Rule`/`GraphRule` is `RuleMeta & { create }`, so each registry entry IS a
+  // structural `RuleMeta` — keyed by `id`. Include both per-file and graph rules so
+  // `--explain <graph-rule>` resolves.
   const ruleCatalog: Record<string, RuleMeta> = Object.fromEntries(
-    ruleRegistry.map((r): [string, RuleMeta] => [r.id, r]),
+    [...ruleRegistry, ...graphRuleRegistry].map((r): [string, RuleMeta] => [r.id, r]),
   );
   return {
     // `terminal.display` may fail with a `PlatformError`; a Terminal-write failure is
@@ -368,7 +379,8 @@ export const inspectCommand = Command.make(
         return;
       }
       const flags: InspectFlags = { ...resolved.right, directory };
-      const code = yield* runInspect(flags, makeRealIo(terminal), VERSION);
+      const rulesChecked = ruleRegistry.length + graphRuleRegistry.length;
+      const code = yield* runInspect(flags, makeRealIo(terminal), VERSION, rulesChecked);
       // The process edge reads `process.exitCode`; set it here for the success path.
       // (Engine failures bypass this and are mapped to 1 at `bin.ts`.)
       process.exitCode = code;

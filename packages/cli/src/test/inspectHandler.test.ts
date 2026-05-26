@@ -29,6 +29,7 @@ const flags = (over: Partial<InspectFlags> = {}): InspectFlags => ({
   prComment: false,
   fix: false,
   yes: false,
+  color: false,
   full: false,
   projects: [],
   diff: undefined,
@@ -44,9 +45,10 @@ describe("output formats — the CLI selects + emits the right one", () => {
     const io = makeCapturingIo(result({ diagnostics: [diag()] }));
     await Effect.runPromise(runInspect(flags(), io, "0.0.0"));
     const text = io.out.join("");
-    expect(text).toContain("Score: 100/100 — Great");
-    expect(text).toContain("no-any");
-    expect(text).toContain("0 error(s), 1 warning(s)."); // pretty footer present
+    expect(text).toContain("100 / 100"); // header bar score
+    expect(text).toContain("Great"); // label
+    expect(text).toContain("no-any"); // rule id present
+    expect(text).toContain("1 issue across 1 file"); // pretty footer
   });
 
   it("pretty + --no-score (showScore=false) omits the score header", async () => {

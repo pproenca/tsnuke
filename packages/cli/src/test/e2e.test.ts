@@ -186,16 +186,17 @@ describe("regression: boolean tri-state defaults (real argv parse)", () => {
     expect(Exit.isFailure(exit)).toBe(true);
   });
 
-  it("DEFAULT pretty output shows the score line (--show-score default on)", async () => {
+  it("DEFAULT pretty output shows the score header (--show-score default on)", async () => {
     writeCleanProject();
     const stdout = await runCli([dir]);
-    expect(stdout).toContain("Score:");
+    expect(stdout).toContain("/ 100"); // score header rendered
   });
 
-  it("--no-score hides the score line in pretty output", async () => {
+  it("--no-score hides the score header in pretty output", async () => {
     writeCleanProject();
     const stdout = await runCli([dir, "--no-score"]);
-    expect(stdout).not.toContain("Score:");
+    expect(stdout).not.toContain("/ 100"); // no score header at all
+    expect(stdout).not.toContain("╭─────╮"); // no doctor face
   });
 
   it("DEFAULT run honours inline-disable directives (--respect-inline-disables default on)", async () => {

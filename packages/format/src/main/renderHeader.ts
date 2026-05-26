@@ -1,0 +1,90 @@
+/**
+ * The "doctor face + score bar" header. A 5-line ASCII block whose right column
+ * carries the score, label, and progress bar. Pure: returns the rendered string.
+ *
+ * Layout (color stripped):
+ *   ╭─────╮      82 / 100   Great
+ *   │ ◠ ◠ │      ██████████████████░░
+ *   │  ▽  │      tsnuke · 0.2.0
+ *   ╰─────╯
+ *
+ * Bands → face + bar colour (RULE-002 thresholds):
+ *   ≥ 75  green   ◠ ◠ /  ▽
+ *   ≥ 50  yellow  • • /  ─
+ *   else  red    x x /  ▽
+ *
+ * Partial scores (Tier-2 skipped, BC-03): the bar is dimmed and a `*` is appended,
+ * the label becomes `Partial — type info unavailable`. Score `null` ⇒ a "not run"
+ * card. No animation: the file remains pure and snapshot-stable.
+ */
+import { bold, colorForScore, dim, gray } from "./theme.js";
+
+const BAR_WIDTH = 20;
+
+export interface ScoreHeaderInput {
+  /** 0–100 score, or null when unscored. */
+  readonly score: number | null;
+  /** Band label ("Great" / "Needs work" / "Critical"). */
+  readonly label: string | null;
+  /** Tier-2 skipped → partial scale (BC-03). */
+  readonly partial: boolean;
+  /** Optional tag line under the bar (e.g. `tsnuke · 0.2.0`). */
+  readonly tagline?: string;
+  /** Enable ANSI colour. */
+  readonly color: boolean;
+}
+
+/** Pick the 2-line face for the given score band. Stable across colour on/off. */
+function faceFor(score: number | null): readonly [string, string] {
+  if (score === null) return ["? ?", " ? "];
+  if (score >= 75) return ["◠ ◠", " ▽ "];
+  if (score >= 50) return ["• •", " ─ "];
+  return ["x x", " ▽ "];
+}
+
+/** Render the bar string (filled `█`, empty `░`), 20 chars wide. */
+function buildBar(score: number | null, color: boolean): string {
+  if (score === null) {
+    return dim(color, "░".repeat(BAR_WIDTH));
+  }
+  const filled = Math.max(0, Math.min(BAR_WIDTH, Math.round((score / 100) * BAR_WIDTH)));
+  const bar = "█".repeat(filled) + "░".repeat(BAR_WIDTH - filled);
+  return colorForScore(score, color, bar);
+}
+
+/** Render the doctor-style score header. Returns 4 lines joined by `\n`. */
+export function renderHeader(input: ScoreHeaderInput): string {
+  const { score, label, partial, tagline, color } = input;
+  const [faceTop, faceBot] = faceFor(score);
+
+  const scoreText =
+    score === null ? "  -- / 100" : `${String(score).padStart(3, " ")} / 100`;
+  const partialMark = partial && score !== null ? "*" : " ";
+  const scoreCol =
+    score === null ? gray(color, scoreText) : bold(color, colorForScore(score, color, scoreText));
+
+  const labelText =
+    label === null
+      ? gray(color, "not scored")
+      : partial
+        ? `${label}*  (partial — type info unavailable)`
+        : label;
+  const labelCol =
+    score === null ? labelText : colorForScore(score, color, labelText);
+
+  const bar = buildBar(score, color);
+  const dimmedBar = partial ? dim(color, bar) : bar;
+  const tag = tagline !== undefined ? dim(color, tagline) : "";
+
+  const left1 = "  ╭─────╮     ";
+  const left2 = `  │ ${faceTop} │     `;
+  const left3 = `  │ ${faceBot} │     `;
+  const left4 = "  ╰─────╯     ";
+
+  return [
+    `${left1} ${scoreCol}${partialMark} ${labelCol}`,
+    `${left2} ${dimmedBar}`,
+    `${left3} ${tag}`,
+    left4,
+  ].join("\n");
+}

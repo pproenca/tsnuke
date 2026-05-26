@@ -1,20 +1,17 @@
 /**
- * `@tsnuke/format-effect` — public surface of the Effect-TS output-formatter slice.
+ * `@tsnuke/format-effect` — public surface of the output-formatter slice.
  *
- * Three PURE formatters over structural inputs (NOT Effect-wrapped — pure string
- * formatting, no IO):
- *   - `formatAgentReport` (+ the `Agent*` projection types): the `--format agent`
- *     report, RULE-032 cheapest-action-first ordering (auto-fix 0 < codemod 1 <
- *     manual 2; no-fix → manual) + category grouping.
- *   - `renderScoreLine` / `renderPretty`: human terminal output. Consume the legacy
- *     structural `ScoreResult` shape `{ score; label; partial }` (the CLI maps the
- *     engine's `band` → `label`).
- *   - `asRuleLookup` / `explain` / `explainDiagnostic`: the offline `--explain` text
- *     (no model call), generic over the rule-registry `Record<string, RuleMeta>` shape.
+ * Three groups of PURE formatters over structural inputs (NOT Effect-wrapped — pure
+ * string formatting, no IO):
+ *   - `formatAgentReport` (+ the `Agent*`/`TierBreakdown`/`FixSummary`/`NextAction`
+ *     projection types): the `--format agent` report. Rule-deduplicated, tier-sorted,
+ *     cheapest-action-first (auto-fix → codemod → manual), with `fixSummary` /
+ *     `tierBreakdown` / `nextAction` headlines so an agent doesn't recompute them.
+ *   - `renderScoreLine` / `renderPretty` / `renderWorkspacePretty`: human terminal
+ *     output. `renderHeader` is exposed too (the workspace renderer composes it).
+ *   - `asRuleLookup` / `explain` / `explainDiagnostic`: the offline `--explain` card.
  *
- * Consumes `@tsnuke/contracts-effect` for the `Diagnostic`/`RuleMeta` contract.
- * It does NOT re-export any contracts symbols — those stay owned by contracts-effect.
- * See TRANSFORMATION_NOTES.md for the legacy → target mapping and deviations.
+ * Consumes `@tsnuke/contracts-effect` for the `Diagnostic`/`RuleMeta` contracts.
  */
 
 export {
@@ -23,14 +20,35 @@ export {
   type AgentRuleEntry,
   type AgentCategoryGroup,
   type AgentReport,
+  type AgentReportMeta,
   type AgentScoreInput,
+  type TierStat,
+  type TierBreakdown,
 } from "./format-agent.js";
+
+export {
+  deriveNextAction,
+  summarizeFixes,
+  type FixSummary,
+  type NextAction,
+  type NextActionKind,
+} from "./nextAction.js";
 
 export {
   renderScoreLine,
   renderPretty,
   type RenderScoreResult,
+  type RenderPrettyOptions,
 } from "./render.js";
+
+export { renderHeader, type ScoreHeaderInput } from "./renderHeader.js";
+
+export {
+  renderWorkspacePretty,
+  type WorkspaceView,
+  type WorkspaceProjectView,
+  type RenderWorkspaceOptions,
+} from "./renderWorkspace.js";
 
 export {
   asRuleLookup,
@@ -40,6 +58,8 @@ export {
   type ExplainContext,
 } from "./explain.js";
 
-// --- Self-barrel: opt-in namespace import (`import { Format } from "..."`). ADDITIVE —
-// the named re-exports above remain the byte-stable surface every consumer imports from. ---
+// Theme helpers that external consumers need. The full palette
+// (red/green/yellow/blue/magenta/cyan) stays internal to the slice.
+export { bold, dim, gray, colorForScore, formatDuration } from "./theme.js";
+
 export * as Format from "./index.js";
