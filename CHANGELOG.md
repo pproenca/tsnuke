@@ -4,7 +4,7 @@ All notable changes to `tsnuke` are listed here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project follows
 [SemVer](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.4.0] — 2026-05-26
 
 ### Added
 - **Workspace-root `tsnuke.config.json`.** When the CLI is pointed at a workspace
