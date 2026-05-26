@@ -20,6 +20,7 @@
  * build-report-effect, exit-code-effect) — never re-implemented here.
  */
 
+import * as os from "node:os";
 import { Effect } from "effect";
 import type { Diagnostic, RuleMeta } from "@tsnuke/contracts-effect";
 import type {
@@ -320,6 +321,8 @@ export const runInspect = Effect.fn("Cli.inspect")(function* (
                   version,
                   rulesChecked,
                   showScore: flags.showScore,
+                  showAll: flags.all,
+                  homeDir: os.homedir(),
                 });
     yield* io.stdout(`${output}\n`);
 

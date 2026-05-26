@@ -67,6 +67,9 @@ export interface InspectFlags {
   fix: boolean;
   yes: boolean;
 
+  /** Workspace renderer: when true, expand the per-project table past the top-N truncation. */
+  all: boolean;
+
   /** True when ANSI colour should be emitted (TTY + not CI + not NO_COLOR + not `--no-color`). */
   color: boolean;
 

@@ -162,6 +162,9 @@ const yesOpt = Options.boolean("yes").pipe(
 const noColorOpt = Options.boolean("no-color").pipe(
   Options.withDescription("Disable ANSI colour in pretty output (also honours NO_COLOR / non-TTY)."),
 );
+const allOpt = Options.boolean("all").pipe(
+  Options.withDescription("Workspace mode: show every project in the table (default: top-N worst)."),
+);
 
 // ── mode selection (RULE-033 — labels only; file-selection is a STUB) ─────────────────
 const fullOpt = Options.boolean("full").pipe(
@@ -213,6 +216,7 @@ const rawOptions = Options.all({
   fix: fixOpt,
   yes: yesOpt,
   noColor: noColorOpt,
+  all: allOpt,
   full: fullOpt,
   project: projectOpt,
   diff: diffOpt,
@@ -289,6 +293,7 @@ export const resolveInspectFlags = Effect.fn("Cli.resolveFlags")(function* (
       prComment: raw.prComment,
       fix: raw.fix,
       yes: raw.yes,
+      all: raw.all,
       color,
       full: raw.full,
       projects,

@@ -27,6 +27,7 @@ const flags = (over: Partial<InspectFlags> = {}): InspectFlags => ({
   prComment: false,
   fix: false,
   yes: false,
+  all: false,
   color: false,
   full: false,
   projects: [],
@@ -64,10 +65,12 @@ describe("workspace mode — pretty", () => {
     expect(text).toContain("packages/messy");
     // workspace header + BC-05 min-score summary footer
     expect(text).toContain("Workspace  /ws");
-    expect(text).toContain("2 project(s)");
-    expect(text).toContain("60 / 100");
+    expect(text).toContain("2 projects");
+    expect(text).toContain("60/100");
     expect(text).toContain("1 err");
     expect(text).toContain("Needs work");
+    // Sort is worst-first now: messy (60) appears before clean (100).
+    expect(text.indexOf("packages/messy")).toBeLessThan(text.indexOf("packages/clean"));
   });
 });
 

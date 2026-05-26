@@ -29,6 +29,7 @@ const flags = (over: Partial<InspectFlags> = {}): InspectFlags => ({
   prComment: false,
   fix: false,
   yes: false,
+  all: false,
   color: false,
   full: false,
   projects: [],
