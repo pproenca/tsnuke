@@ -388,9 +388,16 @@ describe("equivalence — RULE-023 differential (modern === legacy, structural)"
         fx.config,
         fx.options ?? {},
       );
+      // Bridge modern Schema-derived shapes onto the frozen legacy oracle (which uses
+      // hand-rolled types). Forced via `unknown` because the two are structurally
+      // identical-but-nominally-distinct.
+      // tsnuke-disable-next-line no-double-assertion
+      const fxDiagnostics = fx.diagnostics as unknown as LegacyDiagnosticWithTags[];
+      // tsnuke-disable-next-line no-double-assertion
+      const fxConfig = fx.config as unknown as LegacyTsNukeConfig;
       const legacy = legacyRunFilterPipeline(
-        fx.diagnostics as unknown as LegacyDiagnosticWithTags[],
-        fx.config as unknown as LegacyTsNukeConfig,
+        fxDiagnostics,
+        fxConfig,
         (fx.options ?? {}) as LegacyFilterPipelineOptions,
       );
       // Structural deep equality — same survivors, same field values, same order,
@@ -416,13 +423,15 @@ describe("equivalence — RULE-040 out-of-vocab config severity falls through to
   // (architecture review). The cast is deliberate — we are probing contract-violating input.
   it('a config value of "warning" maps to error in both pipelines', () => {
     const d = diag({ rule: "r", severity: "warning" });
-    const cfg = { rules: { r: "warning" } } as unknown as TsNukeConfig;
+    // Out-of-vocab config value: probe a contract-violating shape via `unknown`.
+    const rawCfg: unknown = { rules: { r: "warning" } };
+    const cfg = rawCfg as TsNukeConfig;
     const modern = modernRun([d], cfg, {});
-    const legacy = legacyRunFilterPipeline(
-      [d as unknown as LegacyDiagnosticWithTags],
-      cfg as unknown as LegacyTsNukeConfig,
-      {},
-    );
+    // tsnuke-disable-next-line no-double-assertion
+    const dLegacy = d as unknown as LegacyDiagnosticWithTags;
+    // tsnuke-disable-next-line no-double-assertion
+    const cfgLegacy = cfg as unknown as LegacyTsNukeConfig;
+    const legacy = legacyRunFilterPipeline([dLegacy], cfgLegacy, {});
     expect(modern).toEqual(legacy);
     expect(modern[0]?.severity).toBe("error");
   });

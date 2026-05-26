@@ -12,14 +12,13 @@
  */
 
 import { describe, expect, it } from "vitest";
-import type ts from "typescript";
+import ts from "typescript";
 import type { Diagnostic, RuleMeta } from "@tsnuke/contracts-effect";
 import { createRuleContext } from "../main/index.js";
 import type { ReportInput } from "../main/index.js";
 
-// The substrate's `report` never reads the sourceFile; a placeholder is enough to
-// satisfy the type. (No AST needed — the auto-fill is pure record-building.)
-const FAKE_SOURCE_FILE = { kind: 0 } as unknown as ts.SourceFile;
+// The substrate's `report` never reads the sourceFile; an empty parse is enough.
+const FAKE_SOURCE_FILE = ts.createSourceFile("fake.ts", "", ts.ScriptTarget.Latest);
 
 const META: RuleMeta = {
   id: "no-explicit-any",

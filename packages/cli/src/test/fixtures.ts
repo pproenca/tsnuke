@@ -35,13 +35,13 @@ export const project: ProjectInfo = {
   projectName: "proj",
   tsVersion: "5.8.0",
   tsMajor: 5,
-  projectKind: "single",
+  projectKind: "lib",
   moduleSystem: "esm",
-  buildTool: "none",
+  buildTool: "unknown",
   strictFlags: { strict: true },
   typecheckOk: true,
   sourceFileCount: 1,
-} as unknown as ProjectInfo;
+};
 
 /** Build a canned `DiagnoseResult`. */
 export const result = (over: Partial<DiagnoseResult> = {}): DiagnoseResult => ({

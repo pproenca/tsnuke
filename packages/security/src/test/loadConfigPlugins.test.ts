@@ -60,18 +60,16 @@ describe("loadConfigPlugins — RULE-039 (always returns empty plugins, loads no
   it("filters out non-string entries defensively (still loads nothing)", () => {
     // A malformed config could carry non-strings; they are dropped from
     // `ignored` and never reach any (non-existent) load path.
-    const config = { plugins: [123, null, "ok.js", { x: 1 }] } as unknown as {
-      plugins?: string[];
-    };
-    const result = loadConfigPlugins(config);
+    const malformed: unknown = { plugins: [123, null, "ok.js", { x: 1 }] };
+    const result = loadConfigPlugins(malformed as { plugins?: string[] });
     expect(result.plugins).toEqual([]);
     expect(result.ignored).toEqual(["ok.js"]);
     expect(result.warnings).toHaveLength(1);
   });
 
   it("tolerates a non-array `plugins` field (lenient, loads nothing)", () => {
-    const config = { plugins: "not-an-array" } as unknown as { plugins?: string[] };
-    const result = loadConfigPlugins(config);
+    const malformed: unknown = { plugins: "not-an-array" };
+    const result = loadConfigPlugins(malformed as { plugins?: string[] });
     expect(result.plugins).toEqual([]);
     expect(result.ignored).toEqual([]);
     expect(result.warnings).toEqual([]);
@@ -87,9 +85,9 @@ describe("loadConfigPlugins — RULE-039 (no plugins property is ever non-empty 
       { plugins: ["a", "b", "c"] },
       { plugins: ["./rel", "../up", "/abs", "@scope/x", "bare-name"] },
       { plugins: undefined },
-      { plugins: null as unknown as string[] },
-      { plugins: "string" as unknown as string[] },
-      { plugins: [1, 2, 3] as unknown as string[] },
+      { plugins: null },
+      { plugins: "string" },
+      { plugins: [1, 2, 3] },
     ];
     for (const input of inputs) {
       const result = loadConfigPlugins(input as { plugins?: string[] });

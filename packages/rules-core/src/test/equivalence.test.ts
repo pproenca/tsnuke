@@ -22,7 +22,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import type ts from "typescript";
+import ts from "typescript";
 import type { Diagnostic, RuleMeta } from "@tsnuke/contracts-effect";
 import {
   createRuleContext,
@@ -139,7 +139,7 @@ const LEGACY_STRICTNESS_META: ReadonlyArray<RuleMeta> = [
 // ---------------------------------------------------------------------------
 // Fixtures.
 // ---------------------------------------------------------------------------
-const FAKE_SOURCE_FILE = { kind: 0 } as unknown as ts.SourceFile;
+const FAKE_SOURCE_FILE = ts.createSourceFile("fake.ts", "", ts.ScriptTarget.Latest);
 
 const META: RuleMeta = {
   id: "no-explicit-any",

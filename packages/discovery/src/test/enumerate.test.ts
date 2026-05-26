@@ -8,7 +8,7 @@
 
 import { Effect } from "effect";
 import { describe, expect, it } from "vitest";
-import { collectSourceFiles, countSourceFiles } from "../main/enumerate.js";
+import { COLLECT_CAP, COUNT_CAP, collectSourceFiles, countSourceFiles } from "../main/enumerate.js";
 import { makeTree, testLayer, UNREADABLE, type Tree } from "./stubFs.js";
 
 const runCount = (root: string, tree: Tree, cap?: number): Promise<number> =>
@@ -211,8 +211,7 @@ describe("RULE-012 quirk — count vs collect divergence is preserved", () => {
     expect([...collected]).toEqual(["/p/keep.ts"]); // collect skips them
   });
 
-  it("default caps differ (count 5000 / collect 10000) — exported constants", async () => {
-    const { COUNT_CAP, COLLECT_CAP } = await import("../main/enumerate.js");
+  it("default caps differ (count 5000 / collect 10000) — exported constants", () => {
     expect(COUNT_CAP).toBe(5000);
     expect(COLLECT_CAP).toBe(10000);
   });

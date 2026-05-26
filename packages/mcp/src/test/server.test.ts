@@ -23,9 +23,9 @@ describe("createServer — SDK wiring", () => {
   it("does not register tools via the SDK's zod-shape `tool()` path", () => {
     // The authoritative validation is effect/Schema in the request handler, so the
     // SDK's zod-backed tool registry must be empty (we register raw protocol handlers).
-    const server = createServer() as unknown as {
-      _registeredTools: Record<string, unknown>;
-    };
+    // Probing private SDK state: bridge via `unknown` to the inspection shape.
+    const raw: unknown = createServer();
+    const server = raw as { _registeredTools: Record<string, unknown> };
     expect(Object.keys(server._registeredTools)).toStrictEqual([]);
   });
 });
