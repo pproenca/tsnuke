@@ -31,15 +31,13 @@ const fixKindOf = (d: Diagnostic): FixKind => d.fix?.kind ?? "manual";
 
 /** Count occurrences by fix kind across all diagnostics. */
 export function summarizeFixes(diagnostics: readonly Diagnostic[]): FixSummary {
-  return diagnostics.reduce<FixSummary>(
-    (acc, d) => {
-      const kind = fixKindOf(d);
-      if (kind === "auto-fix") return { autoFixable: acc.autoFixable + 1, codemod: acc.codemod, manual: acc.manual };
-      if (kind === "codemod") return { autoFixable: acc.autoFixable, codemod: acc.codemod + 1, manual: acc.manual };
-      return { autoFixable: acc.autoFixable, codemod: acc.codemod, manual: acc.manual + 1 };
-    },
-    { autoFixable: 0, codemod: 0, manual: 0 },
-  );
+  const countOf = (kind: FixKind): number =>
+    diagnostics.filter((d) => fixKindOf(d) === kind).length;
+  return {
+    autoFixable: countOf("auto-fix"),
+    codemod: countOf("codemod"),
+    manual: countOf("manual"),
+  };
 }
 
 /** Choose the rule to focus on when nothing is auto-fixable: highest occurrence count, then alphabetical. */
