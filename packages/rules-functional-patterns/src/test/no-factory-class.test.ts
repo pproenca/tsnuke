@@ -34,6 +34,11 @@ class User {
     expect(runRule(rule, "class D { from(x: string): D { return new D(); } }")).toHaveLength(1);
   });
 
+  it("flags a Factory declared as a class expression (L1: `const F = class { create() {…} }`)", () => {
+    const code = `const F = class { create() { return {}; } };\n`;
+    expect(runRule(rule, code)).toHaveLength(1);
+  });
+
   it("does NOT flag a class with multiple instance methods", () => {
     const code = `
 class XService {

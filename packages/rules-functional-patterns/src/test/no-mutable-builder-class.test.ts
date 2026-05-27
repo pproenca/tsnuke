@@ -52,6 +52,30 @@ class Chain {
     expect(runRule(rule, code)).toHaveLength(0);
   });
 
+  it("flags a builder using arrow-property methods (L3: `size = (s) => { …; return this; }`)", () => {
+    const code = `
+class PB {
+  private _s: string = "";
+  private _t: string = "";
+  size = (s: string) => { this._s = s; return this; };
+  topping = (t: string) => { this._t = t; return this; };
+  build = () => ({ size: this._s, topping: this._t });
+}
+`;
+    expect(runRule(rule, code)).toHaveLength(1);
+  });
+
+  it("flags a builder declared as a class expression (L1: `const PB = class { … }`)", () => {
+    const code = `
+const PB = class {
+  size(s: string) { return this; }
+  addTopping(t: string) { return this; }
+  build() { return {}; }
+};
+`;
+    expect(runRule(rule, code)).toHaveLength(1);
+  });
+
   it("does NOT flag plain non-builder classes", () => {
     const code = `
 class Calculator {

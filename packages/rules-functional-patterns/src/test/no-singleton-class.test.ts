@@ -103,6 +103,30 @@ class Db {
     expect(runRule(rule, code)).toHaveLength(1);
   });
 
+  it("flags a Singleton declared as a class expression (L1: `const X = class X { … }`)", () => {
+    const code = `
+const Logger = class Logger {
+  private static instance: Logger | null = null;
+  static getInstance(): Logger {
+    return Logger.instance ??= new Logger();
+  }
+};
+`;
+    const diags = runRule(rule, code);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]!.message).toContain("Logger");
+  });
+
+  it("flags a Singleton class expression named via its binding variable", () => {
+    const code = `
+const Db = class {
+  private static instance: Db | null = null;
+  static get(): Db { return Db.instance ??= new Db(); }
+};
+`;
+    expect(runRule(rule, code)).toHaveLength(1);
+  });
+
   it("does NOT flag a class with no static self-typed field", () => {
     const code = `
 class Bus {

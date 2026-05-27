@@ -39,6 +39,39 @@ for (const x of xs) {
     expect(runRule(rule, code)).toHaveLength(1);
   });
 
+  it("flags the `== null` variant (L4: loose-equality nullish check)", () => {
+    const code = `
+const g: Record<string, X[]> = {};
+for (const x of xs) {
+  if (g[x.k] == null) g[x.k] = [];
+  g[x.k].push(x);
+}
+`;
+    expect(runRule(rule, code)).toHaveLength(1);
+  });
+
+  it("flags the `=== null` variant (L4: strict-equality null check)", () => {
+    const code = `
+const g: Record<string, X[]> = {};
+for (const x of xs) {
+  if (g[x.k] === null) g[x.k] = [];
+  g[x.k].push(x);
+}
+`;
+    expect(runRule(rule, code)).toHaveLength(1);
+  });
+
+  it("flags the `!(k in X)` variant (L4: `in`-operator key-existence)", () => {
+    const code = `
+const g: Record<string, X[]> = {};
+for (const x of xs) {
+  if (!(x.k in g)) g[x.k] = [];
+  g[x.k].push(x);
+}
+`;
+    expect(runRule(rule, code)).toHaveLength(1);
+  });
+
   it("does NOT flag a 1-statement body (handled by prefer-array-methods)", () => {
     const code = `
 const g: Record<string, X[]> = {};

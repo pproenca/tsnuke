@@ -6,18 +6,19 @@ import type { RuleContext } from "@tsnuke/rules-core-effect";
  * SYN — flag the canonical imperative groupBy loop: a `for`/`for-of` whose body
  * is exactly two statements:
  *
- *   1. `if (!X[k]) X[k] = [];` (or `if (X[k] === undefined) ...`)
+ *   1. A "missing-key" condition + assignment: any of
+ *        if (!X[k]) X[k] = [];
+ *        if (X[k] === undefined) X[k] = [];
+ *        if (X[k] == null)       X[k] = [];
+ *        if (!(k in X))          X[k] = [];
  *   2. `X[k].push(item);`  (also accepts `X[k]!.push(...)`)
  *
- * Same identifier `X` and same key expression `k` in both. This is the shape an
- * LLM defaults to when it should write `Object.groupBy(xs, x => x.k)` (or
+ * Same identifier `X` and same key expression `k` in both. This is the shape
+ * an LLM defaults to when it should write `Object.groupBy(xs, x => x.k)` (or
  * `Map.groupBy` for non-string keys, TS 5.4+ / Node 21+).
  *
- * Strict MULTI-statement shape: the `(X[k] ??= []).push(item)` single-statement
+ * Strict MULTI-statement shape: the single-statement `(X[k] ??= []).push(item)`
  * variant is already covered (less specifically) by `prefer-array-methods`.
- *
- * Anti-pattern catalog reference:
- *   `implementation-functional-patterns/references/stream-reduce-over-imperative-accumulation.md`
  */
 export const rule = defineRule(
   {
@@ -64,12 +65,16 @@ interface GroupInit {
   readonly keyText: string;
 }
 
+interface KeyAccess {
+  readonly receiver: string;
+  readonly keyText: string;
+}
+
 function matchGroupInitIf(stmt: ts.Statement): GroupInit | undefined {
   if (!ts.isIfStatement(stmt) || stmt.elseStatement !== undefined) return undefined;
 
-  const access = missingKeyAccess(stmt.expression);
-  if (access === undefined) return undefined;
-  if (!ts.isIdentifier(access.expression)) return undefined;
+  const cond = missingKeyCondition(stmt.expression);
+  if (cond === undefined) return undefined;
 
   const thenStmt = unwrapSingle(stmt.thenStatement);
   if (!ts.isExpressionStatement(thenStmt)) return undefined;
@@ -78,40 +83,56 @@ function matchGroupInitIf(stmt: ts.Statement): GroupInit | undefined {
   if (assign.operatorToken.kind !== ts.SyntaxKind.EqualsToken) return undefined;
   if (!ts.isElementAccessExpression(assign.left)) return undefined;
   if (!ts.isIdentifier(assign.left.expression)) return undefined;
-  if (assign.left.expression.text !== access.expression.text) return undefined;
-  if (assign.left.argumentExpression.getText() !== access.argumentExpression.getText()) return undefined;
+  if (assign.left.expression.text !== cond.receiver) return undefined;
+  if (assign.left.argumentExpression.getText() !== cond.keyText) return undefined;
   if (!ts.isArrayLiteralExpression(assign.right) || assign.right.elements.length !== 0) {
     return undefined;
   }
 
-  return {
-    target: access.expression.text,
-    keyText: access.argumentExpression.getText(),
-  };
+  return { target: cond.receiver, keyText: cond.keyText };
 }
 
 /**
- * Match a condition that's true when `X[k]` is missing from a record/map: either
- * `!X[k]` or `X[k] === undefined` / `X[k] == undefined`. Returns the underlying
- * `X[k]` access, or `undefined` if the condition doesn't match.
+ * Recognize a condition that's true when `X[k]` is missing from a record/map:
+ *   - `!X[k]`               (truthy-check negation)
+ *   - `X[k] === undefined`  /  `X[k] == undefined`  (strict/loose undefined)
+ *   - `X[k] === null`       /  `X[k] == null`       (strict/loose null; `== null` also catches undefined)
+ *   - `!(k in X)`           (key-existence negation)
  */
-function missingKeyAccess(cond: ts.Expression): ts.ElementAccessExpression | undefined {
+function missingKeyCondition(cond: ts.Expression): KeyAccess | undefined {
   if (ts.isPrefixUnaryExpression(cond) && cond.operator === ts.SyntaxKind.ExclamationToken) {
-    return ts.isElementAccessExpression(cond.operand) ? cond.operand : undefined;
+    const operand = ts.isParenthesizedExpression(cond.operand)
+      ? cond.operand.expression
+      : cond.operand;
+    const access = asKeyAccess(operand);
+    if (access !== undefined) return access;
+    return asInExpression(operand);
   }
   if (!ts.isBinaryExpression(cond)) return undefined;
   const tk = cond.operatorToken.kind;
   if (tk !== ts.SyntaxKind.EqualsEqualsEqualsToken && tk !== ts.SyntaxKind.EqualsEqualsToken) {
     return undefined;
   }
-  if (
-    ts.isElementAccessExpression(cond.left) &&
-    ts.isIdentifier(cond.right) &&
-    cond.right.text === "undefined"
-  ) {
-    return cond.left;
-  }
-  return undefined;
+  if (!isNullishLiteral(cond.right)) return undefined;
+  return asKeyAccess(cond.left);
+}
+
+function asKeyAccess(expr: ts.Expression): KeyAccess | undefined {
+  if (!ts.isElementAccessExpression(expr)) return undefined;
+  if (!ts.isIdentifier(expr.expression)) return undefined;
+  return { receiver: expr.expression.text, keyText: expr.argumentExpression.getText() };
+}
+
+function asInExpression(expr: ts.Expression): KeyAccess | undefined {
+  if (!ts.isBinaryExpression(expr)) return undefined;
+  if (expr.operatorToken.kind !== ts.SyntaxKind.InKeyword) return undefined;
+  if (!ts.isIdentifier(expr.right)) return undefined;
+  return { receiver: expr.right.text, keyText: expr.left.getText() };
+}
+
+function isNullishLiteral(expr: ts.Expression): boolean {
+  if (ts.isIdentifier(expr) && expr.text === "undefined") return true;
+  return expr.kind === ts.SyntaxKind.NullKeyword;
 }
 
 function matchGroupPush(stmt: ts.Statement, target: string, keyText: string): boolean {

@@ -45,6 +45,27 @@ class A {
     expect(runRule(rule, code)).toHaveLength(0);
   });
 
+  it("flags arrow-property iterators (L3: `next = () => {...}; [Symbol.iterator] = () => this`)", () => {
+    const code = `
+class R {
+  private i = 0;
+  next = () => ({ value: this.i++, done: false });
+  [Symbol.iterator] = () => this;
+}
+`;
+    expect(runRule(rule, code)).toHaveLength(1);
+  });
+
+  it("flags an iterator declared as a class expression (L1)", () => {
+    const code = `
+const R = class {
+  next() { return { value: 0, done: true }; }
+  [Symbol.iterator]() { return this; }
+};
+`;
+    expect(runRule(rule, code)).toHaveLength(1);
+  });
+
   it("does NOT flag a class with [Symbol.asyncIterator]() (different protocol)", () => {
     const code = `
 class A {

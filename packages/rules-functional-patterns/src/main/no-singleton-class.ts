@@ -1,5 +1,7 @@
 import ts from "typescript";
 import { defineRule } from "@tsnuke/rules-core-effect";
+import type { RuleContext } from "@tsnuke/rules-core-effect";
+import { extractClassInfo } from "./_shared.js";
 
 /**
  * SYN — flag the Singleton class shape: `class X { private static instance: X;
@@ -31,31 +33,32 @@ export const rule = defineRule(
       "Export a module-scope constant or lazy `??=` memo instead of a Singleton class. ES modules are already singletons — wrapping module state in a class with a private constructor + `static getInstance()` is anti-idiom in TS: harder to mock, harder to replace in tests, harder to tree-shake. Reach for the class form only when the singleton must survive HMR reloads with stable identity, or when test-time swap-by-registration is required.",
   },
   () => ({
-    [ts.SyntaxKind.ClassDeclaration]: (node, ctx) => {
-      if (!ts.isClassDeclaration(node)) return;
-      const name = node.name;
-      if (name === undefined) return;
-      const className = name.text;
-
-      const field = findEncapsulatedStaticSelfField(node, className);
-      if (field === undefined) return;
-      if (!ts.isIdentifier(field.name)) return;
-      const fieldName = field.name.text;
-
-      if (!classHasStaticReturnerOf(node, className, fieldName)) return;
-
-      const start = name.getStart(ctx.sourceFile);
-      const { line, character } = ctx.sourceFile.getLineAndCharacterOfPosition(start);
-      ctx.report({
-        filePath: ctx.filePath,
-        message: `Class \`${className}\` looks like a Singleton (private \`static ${fieldName}\` + \`static\` accessor). In ES modules a module-scope const is already a singleton.`,
-        help: "Replace `class X { static getInstance() { … } }` with `export const x = createX()` (or a lazy `??=` memo for deferred init).",
-        line: line + 1,
-        column: character + 1,
-      });
-    },
+    [ts.SyntaxKind.ClassDeclaration]: check,
+    [ts.SyntaxKind.ClassExpression]: check,
   }),
 );
+
+function check(node: ts.Node, ctx: RuleContext): void {
+  const info = extractClassInfo(node);
+  if (info === undefined) return;
+
+  const field = findEncapsulatedStaticSelfField(info.node, info.className);
+  if (field === undefined) return;
+  if (!ts.isIdentifier(field.name)) return;
+  const fieldName = field.name.text;
+
+  if (!classHasStaticReturnerOf(info.node, info.className, fieldName)) return;
+
+  const start = info.reportNode.getStart(ctx.sourceFile);
+  const { line, character } = ctx.sourceFile.getLineAndCharacterOfPosition(start);
+  ctx.report({
+    filePath: ctx.filePath,
+    message: `Class \`${info.className}\` looks like a Singleton (private \`static ${fieldName}\` + \`static\` accessor). In ES modules a module-scope const is already a singleton.`,
+    help: "Replace `class X { static getInstance() { … } }` with `export const x = createX()` (or a lazy `??=` memo for deferred init).",
+    line: line + 1,
+    column: character + 1,
+  });
+}
 
 const ENCAPSULATED = new Set<ts.SyntaxKind>([
   ts.SyntaxKind.PrivateKeyword,
@@ -63,7 +66,7 @@ const ENCAPSULATED = new Set<ts.SyntaxKind>([
 ]);
 
 function findEncapsulatedStaticSelfField(
-  cls: ts.ClassDeclaration,
+  cls: ts.ClassDeclaration | ts.ClassExpression,
   className: string,
 ): ts.PropertyDeclaration | undefined {
   return cls.members.find(
@@ -76,7 +79,7 @@ function findEncapsulatedStaticSelfField(
 }
 
 function classHasStaticReturnerOf(
-  cls: ts.ClassDeclaration,
+  cls: ts.ClassDeclaration | ts.ClassExpression,
   className: string,
   fieldName: string,
 ): boolean {

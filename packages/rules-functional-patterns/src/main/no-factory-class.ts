@@ -1,5 +1,7 @@
 import ts from "typescript";
 import { defineRule } from "@tsnuke/rules-core-effect";
+import type { RuleContext } from "@tsnuke/rules-core-effect";
+import { extractClassInfo } from "./_shared.js";
 
 const FACTORY_METHOD_NAMES = new Set(["create", "make", "build", "of", "from"]);
 
@@ -34,33 +36,35 @@ export const rule = defineRule(
       "Replace the Factory class with a factory FUNCTION returning a tagged object. `function notify(channel, message): Notification { switch (channel) { … } }` replaces an `abstract class Factory` + N concrete subclasses. The class form earns its keep only when callers rely on `instanceof`, when a runtime registry enumerates concrete factories, or when construction-invariant enforcement is paired with private fields.",
   },
   () => ({
-    [ts.SyntaxKind.ClassDeclaration]: (node, ctx) => {
-      if (!ts.isClassDeclaration(node)) return;
-      const name = node.name;
-      if (name === undefined) return;
-      if (isAbstract(node)) return;
-
-      const methodNames = node.members
-        .filter(ts.isMethodDeclaration)
-        .map((m) => (ts.isIdentifier(m.name) ? m.name.text : undefined))
-        .filter((n): n is string => n !== undefined);
-      if (methodNames.length !== 1) return;
-
-      const onlyName = methodNames[0]!;
-      if (!FACTORY_METHOD_NAMES.has(onlyName)) return;
-
-      const start = name.getStart(ctx.sourceFile);
-      const { line, character } = ctx.sourceFile.getLineAndCharacterOfPosition(start);
-      ctx.report({
-        filePath: ctx.filePath,
-        message: `Class \`${name.text}\` looks like a Factory (only method is \`${onlyName}\`). Prefer a factory FUNCTION returning a tagged object.`,
-        help: "Replace `class XFactory { create(...) { return new X(...) } }` with `function createX(...): X { return { kind: 'x', ... } }`.",
-        line: line + 1,
-        column: character + 1,
-      });
-    },
+    [ts.SyntaxKind.ClassDeclaration]: check,
+    [ts.SyntaxKind.ClassExpression]: check,
   }),
 );
+
+function check(node: ts.Node, ctx: RuleContext): void {
+  const info = extractClassInfo(node);
+  if (info === undefined) return;
+  if (isAbstract(info.node)) return;
+
+  const methodNames = info.node.members
+    .filter(ts.isMethodDeclaration)
+    .map((m) => (ts.isIdentifier(m.name) ? m.name.text : undefined))
+    .filter((n): n is string => n !== undefined);
+  if (methodNames.length !== 1) return;
+
+  const onlyName = methodNames[0]!;
+  if (!FACTORY_METHOD_NAMES.has(onlyName)) return;
+
+  const start = info.reportNode.getStart(ctx.sourceFile);
+  const { line, character } = ctx.sourceFile.getLineAndCharacterOfPosition(start);
+  ctx.report({
+    filePath: ctx.filePath,
+    message: `Class \`${info.className}\` looks like a Factory (only method is \`${onlyName}\`). Prefer a factory FUNCTION returning a tagged object.`,
+    help: "Replace `class XFactory { create(...) { return new X(...) } }` with `function createX(...): X { return { kind: 'x', ... } }`.",
+    line: line + 1,
+    column: character + 1,
+  });
+}
 
 function isAbstract(node: ts.Node): boolean {
   if (!ts.canHaveModifiers(node)) return false;
