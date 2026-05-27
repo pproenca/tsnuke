@@ -21,9 +21,7 @@ export interface FooterInput {
 }
 
 function affectedFileCount(diagnostics: readonly Diagnostic[]): number {
-  const set = new Set<string>();
-  for (const d of diagnostics) set.add(d.filePath);
-  return set.size;
+  return new Set(diagnostics.map((d) => d.filePath)).size;
 }
 
 /** Render the two-line footer (stats line + CTA). Returns the joined string. */
