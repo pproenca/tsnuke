@@ -39,8 +39,8 @@ export const rule = defineRule(
       const [arrow, init] = node.arguments;
       if (arrow === undefined || init === undefined) return;
       if (!ts.isArrowFunction(arrow) && !ts.isFunctionExpression(arrow)) return;
-      if (arrow.parameters.length < 1) return;
-      const accParam = arrow.parameters[0]!;
+      const accParam = arrow.parameters[0];
+      if (accParam === undefined) return;
       if (!ts.isIdentifier(accParam.name)) return;
       const accName = accParam.name.text;
 

@@ -50,9 +50,8 @@ function check(node: ts.Node, ctx: RuleContext): void {
     .filter(ts.isMethodDeclaration)
     .map((m) => (ts.isIdentifier(m.name) ? m.name.text : undefined))
     .filter((n): n is string => n !== undefined);
-  if (methodNames.length !== 1) return;
-
-  const onlyName = methodNames[0]!;
+  const [onlyName, ...rest] = methodNames;
+  if (onlyName === undefined || rest.length > 0) return;
   if (!FACTORY_METHOD_NAMES.has(onlyName)) return;
 
   const start = info.reportNode.getStart(ctx.sourceFile);

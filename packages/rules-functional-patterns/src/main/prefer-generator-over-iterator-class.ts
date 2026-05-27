@@ -43,9 +43,10 @@ function check(node: ts.Node, ctx: RuleContext): void {
   if (info === undefined) return;
 
   const instanceCallables = info.node.members.filter((m) => !isStatic(m) && isCallable(m));
-  const hasNext = instanceCallables.some(
-    (m) => ts.isIdentifier(m.name!) && m.name.text === "next",
-  );
+  const hasNext = instanceCallables.some((m) => {
+    const n = m.name;
+    return n !== undefined && ts.isIdentifier(n) && n.text === "next";
+  });
   if (!hasNext) return;
 
   const hasSymbolIterator = instanceCallables.some((m) => {

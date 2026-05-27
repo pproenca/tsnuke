@@ -24,8 +24,9 @@ export function extractClassInfo(node: ts.Node): ClassInfo | undefined {
   }
   if (!ts.isClassExpression(node)) return undefined;
 
-  const explicit = node.name?.text;
-  if (explicit !== undefined) return { node, className: explicit, reportNode: node.name! };
+  if (node.name !== undefined) {
+    return { node, className: node.name.text, reportNode: node.name };
+  }
 
   const parent = node.parent;
   if (ts.isVariableDeclaration(parent) && ts.isIdentifier(parent.name)) {
