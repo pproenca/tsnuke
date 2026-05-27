@@ -287,14 +287,14 @@ export const runEngine: (
     // relabel a skip the planner attributed to anything else (keeps the relabel honest if the
     // planner ever skips a TYP rule for a different reason while memory pressure also holds).
     // The skip SET and `scorePartial` stay exactly the planner's.
-    const skippedCheckReasons: Record<string, string> = { ...plan.skippedCheckReasons };
-    if (memoryPressure) {
-      for (const id of plan.skippedChecks) {
-        if (skippedCheckReasons[id] === SKIP_REASON_NO_DEEP) {
-          skippedCheckReasons[id] = SKIP_REASON_MEMORY;
-        }
-      }
-    }
+    const skippedCheckReasons: Record<string, string> = memoryPressure
+      ? Object.fromEntries(
+          Object.entries(plan.skippedCheckReasons).map(([id, reason]) => [
+            id,
+            reason === SKIP_REASON_NO_DEEP ? SKIP_REASON_MEMORY : reason,
+          ]),
+        )
+      : { ...plan.skippedCheckReasons };
 
     // Index activated rules by id so we can recover the `create` body.
     const ruleById = new Map<string, Rule>(rules.map((r) => [r.id, r]));
