@@ -172,15 +172,13 @@ export function planEngineRun(
     }
   }
 
-  const skippedCheckReasons: Record<string, string> = {};
-  const skippedChecks: string[] = [];
-  if (!tier2Enabled) {
-    const reason = !typecheckOk ? SKIP_REASON_NO_TYPECHECK : SKIP_REASON_NO_DEEP;
-    for (const meta of activatedTyp) {
-      skippedCheckReasons[meta.id] = reason;
-      skippedChecks.push(meta.id);
-    }
-  }
+  const reason = !typecheckOk ? SKIP_REASON_NO_TYPECHECK : SKIP_REASON_NO_DEEP;
+  const skippedChecks: readonly string[] = tier2Enabled
+    ? []
+    : activatedTyp.map((m) => m.id);
+  const skippedCheckReasons: Record<string, string> = Object.fromEntries(
+    skippedChecks.map((id) => [id, reason]),
+  );
 
   return {
     tier1,
