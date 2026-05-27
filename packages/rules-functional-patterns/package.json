@@ -1,0 +1,25 @@
+{
+  "name": "@tsnuke/rules-functional-patterns-effect",
+  "private": true,
+  "version": "0.1.0",
+  "description": "tsnuke's `functional-patterns` rule category: 7 SYN AST predicates that catch GoF/imperative class shapes a TS-speaker should write as a function, tagged union, or stream method (Singleton/Builder/Factory class shapes; manual Iterator class; `for`-loop accumulator/groupBy; `reduce(...,concat)`). Detects anti-patterns of the `implementation-functional-patterns` skill catalog. Plain-TS AST predicates on the `@tsnuke/rules-core-effect` substrate (NOT Effect-wrapped — visitors are sync).",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/main/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tsnuke/contracts-effect": "workspace:*",
+    "@tsnuke/rules-core-effect": "workspace:*",
+    "typescript": "^5.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "vitest": "^3.2.0"
+  }
+}

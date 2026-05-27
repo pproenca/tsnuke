@@ -2,7 +2,7 @@
 
 > **What this is.** `tsnuke` is an AI-native code-health linter and 0–100 scorer for **general TypeScript projects** — conceived as the `react-doctor` of TypeScript (lints + scores a codebase), rebuilt from extracted intent rather than ported. This file is the persistent context an agent or engineer loads first.
 >
-> **Implementation note.** The codebase is an **Effect-TS v3 strangler-fig rewrite**: **32 workspace packages** under `packages/*`, each named `@tsnuke/<dir>-effect`, each with a `src/main` + `src/test` layout. Behaviour was pinned to the original (pre-Effect) design via 14 `*equivalence.test.ts` oracles. The design history in [`docs/`](docs/) records the original *target* design (which described a 5-package, "no Effect" plain-TS scaffold); the **conceptual** content there (the two-tier engine, capabilities, the BC-01…BC-24 behaviour contract, scoring, security mechanisms) is still authoritative — the **implementation** is now Effect-TS.
+> **Implementation note.** The codebase is an **Effect-TS v3 strangler-fig rewrite**: **33 workspace packages** under `packages/*`, each named `@tsnuke/<dir>-effect`, each with a `src/main` + `src/test` layout. Behaviour was pinned to the original (pre-Effect) design via 14 `*equivalence.test.ts` oracles. The design history in [`docs/`](docs/) records the original *target* design (which described a 5-package, "no Effect" plain-TS scaffold); the **conceptual** content there (the two-tier engine, capabilities, the BC-01…BC-24 behaviour contract, scoring, security mechanisms) is still authoritative — the **implementation** is now Effect-TS.
 
 ---
 
@@ -17,11 +17,11 @@ The score is **local, deterministic, offline** — no network round-trip (react-
 
 ---
 
-## 2. Architecture (32 packages, Effect-TS strangler-fig)
+## 2. Architecture (33 packages, Effect-TS strangler-fig)
 
 ```
 tsnuke/ (pnpm workspace, strict ESM, Node >=22, Effect-TS v3.21)
-├── packages/                # 32 packages, each @tsnuke/<dir>-effect, src/main + src/test
+├── packages/                # 33 packages, each @tsnuke/<dir>-effect, src/main + src/test
 │   ├── contracts/ config/ errors/ exit-code/ scale/          # foundations (no @tsnuke deps)
 │   ├── capabilities/ rules-core/ score/ format/ fix-applier/  # tier 1
 │   │   filter-pipeline/ security/
@@ -69,7 +69,7 @@ Every package is `@tsnuke/<dir>-effect` (the directory name is the package name 
 | **`engine-plan-effect`** | Pure two-tier engine planner (RULE-018 partial-honesty, P0). Consumes `capabilities-effect`. | `EnginePlan.ts`, `index.ts` |
 | **`module-graph-effect`** | Pure GRAPH-tier module-graph builder: `buildModuleGraph(files)` parses each file via the TS compiler API, resolves relative specifiers against the in-project file set, assembles the cross-file `ModuleGraph` GRAPH rules consume. Pure (no IO — reading files is the engine's concern). | `buildModuleGraph.ts`, `index.ts` |
 | **`rules-*-effect` (12)** | One package per rule category (`rules-async`, `rules-declaration-api`, `rules-error-handling`, `rules-exhaustiveness`, `rules-generics`, `rules-graph`, `rules-module-boundaries`, `rules-naming-idioms`, `rules-security`, `rules-type-assertions`, `rules-type-performance`, `rules-type-safety`). Pure AST / type-aware predicates on the `rules-core` substrate (`defineRule`/`runRule`/`runTypeAwareRule`; `rules-graph` uses `defineGraphRule`/`runGraphRule`). One file per rule. | `<rule-id>.ts` per rule + `index.ts` |
-| **`rules-registry-effect`** | The GLOBAL registry: aggregates all 88 rules (86 per-file SYN/TYP/CFG + 2 GRAPH) into the two registries the engine consumes (`ruleRegistry` + `graphRuleRegistry`). Hand-assembled aggregator (replaces the legacy codegen `rule-registry.generated.ts`). | `registry.ts`, `index.ts` |
+| **`rules-registry-effect`** | The GLOBAL registry: aggregates all 95 rules (93 per-file SYN/TYP/CFG + 2 GRAPH) into the two registries the engine consumes (`ruleRegistry` + `graphRuleRegistry`). Hand-assembled aggregator (replaces the legacy codegen `rule-registry.generated.ts`). | `registry.ts`, `index.ts` |
 
 ### Orchestrator + shells
 
@@ -121,7 +121,7 @@ The authoritative *design* lives in [`docs/`](docs/) (read before changing behav
 ## 5. How to build / test / run
 
 ```bash
-pnpm install                 # one install at the root links all 32 workspaces
+pnpm install                 # one install at the root links all 33 workspaces
                              # (esbuild build is allow-listed in pnpm-workspace.yaml)
 
 pnpm -r run typecheck        # tsc --noEmit per package                 → all clean
@@ -152,14 +152,15 @@ Drop `packages/rules-<category>/src/main/<rule-id>.ts` exporting `defineRule({..
 
 ## 6. Catalog & acceptance-test status
 
-**32 packages · ~170 test files · ~1769 tests passing · all packages typecheck clean** under `strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `verbatimModuleSyntax` + `isolatedModules` (tsnuke eats its own dogfood). **All four emission tiers are live, and all 13 categories are populated.**
+**33 packages · ~177 test files · ~1900 tests passing · all packages typecheck clean** under `strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `verbatimModuleSyntax` + `isolatedModules` (tsnuke eats its own dogfood). **All four emission tiers are live, and all 14 categories are populated.**
 
-**Catalog: 88 rules across 13 categories** (the authoritative aggregation is `rules-registry`'s `registry.ts`; each rule has a colocated `src/test/*.test.ts`). Tier breakdown:
-- **SYN (64):** type-safety 6, type-assertions 12, generics 4, async 4, exhaustiveness 3, error-handling 6, naming-idioms 14, security 5, module-boundaries 3, declaration-api 4, type-performance 3. AST-only, always run. (The 4 CFG strictness rules are counted under CFG below.)
+**Catalog: 95 rules across 14 categories** (the authoritative aggregation is `rules-registry`'s `registry.ts`; each rule has a colocated `src/test/*.test.ts`). Tier breakdown:
+- **SYN (71):** type-safety 6, type-assertions 12, generics 4, async 4, exhaustiveness 3, error-handling 6, naming-idioms 14, security 5, module-boundaries 3, declaration-api 4, type-performance 3, functional-patterns 7. AST-only, always run. (The 4 CFG strictness rules are counted under CFG below.)
 - **TYP (18, all read the checker):** `no-floating-promises`, `switch-exhaustiveness-check`, `only-throw-error`, `no-unsafe-member-access`, `no-unsafe-call`, `no-unsafe-return`, `no-unsafe-argument`, `await-thenable`, `no-misused-promises`, `prefer-nullish-coalescing`, `no-unnecessary-boolean-literal-compare`, `no-unnecessary-condition`, `no-unnecessary-non-null-assertion`, `prefer-promise-reject-errors`, `no-unnecessary-typeof`, `no-unnecessary-instanceof`, `prefer-generic-over-any-passthrough`, `no-for-in-array`. Run under one shared `ts.Program` when `typecheck:ok`.
 - **CFG (4):** `enable-strict`, `enable-no-unchecked-indexed-access`, `enable-exact-optional-property-types`, `enable-use-unknown-in-catch` — inverted gating (fire when the flag is OFF), emitted project-level at `tsconfig.json:1:1`. Live in `rules-core/src/main/rules/strictness/`.
 - **GRAPH (2):** `no-import-cycles`, `no-unused-exports` (app-gated, conservative) — analyze the cross-file module graph (`module-graph`); structural, run even without `typecheck:ok`. Use `defineGraphRule` + a separate `graphRuleRegistry`.
 - **Anti-slop / responsibility-delegation family** (cross-cutting, tagged `ts-idiom`): `no-unnecessary-typeof`, `no-unnecessary-instanceof`, `prefer-type-guard-predicate`, `prefer-discriminated-union`, `prefer-generic-over-any-passthrough`, `no-record-string-unknown`, `no-unsafe-object-assertion`, `no-cast-after-guard`, `no-unknown-return`, `no-error-message-matching`, `prefer-array-methods`, `no-json-parse-stringify-clone`, `no-assertion-on-json-parse`, `prefer-satisfies-over-as`, `no-cast-in-return` — the rules that catch LLM-generated TS delegating to runtime/boilerplate what types, generics, native methods, and modern idioms should carry. `examples/sample-app/src/{cli-slop,store-slop}.ts` are real-world distillations.
+- **Functional-patterns family** (cross-cutting, tagged `ts-idiom`, `rules-functional-patterns`): `no-singleton-class`, `no-mutable-builder-class`, `no-factory-class`, `prefer-generator-over-iterator-class`, `prefer-reduce-over-imperative-sum`, `prefer-group-by-over-imperative-groups`, `prefer-flatmap-over-reduce-concat` — flags GoF / imperative class shapes a TS-speaker should write as a function, tagged union, or stream method. Inverts the patterns of the `implementation-functional-patterns` skill catalog: each rule's `recommendation` paraphrases the skill rule it enforces. All SYN, all `warning`, all `fixKind: manual` (no auto-fixes — each detection requires a real refactor).
 - **Convention family** (tagged `convention`): `no-var`, `pascal-case-types`, `explicit-member-accessibility`. **Google TS Style Guide family** (slop-focused): `triple-equals`, `no-array-constructor`, `no-wrapper-object-types`, `no-const-enum`, `no-inferrable-type-annotation`, `consistent-type-definitions`, `prefer-error-instantiation`, `no-for-in-array` (TYP). Demo: `examples/slop-demo/src/`.
 
 | BC | Behavior | Status | Home (`@tsnuke/…`) |
@@ -190,7 +191,7 @@ Drop `packages/rules-<category>/src/main/<rule-id>.ts` exporting `defineRule({..
 
 ## 7. Legacy → modern traceability
 
-tsnuke is itself a two-stage modernization. **Stage 1** reimagined react-doctor into a TypeScript doctor (the design in `docs/`, originally scaffolded as plain TS). **Stage 2** rewrote that scaffold as the current 32-package **Effect-TS** strangler-fig, pinned by equivalence oracles.
+tsnuke is itself a two-stage modernization. **Stage 1** reimagined react-doctor into a TypeScript doctor (the design in `docs/`, originally scaffolded as plain TS). **Stage 2** rewrote that scaffold as the current 33-package **Effect-TS** strangler-fig, pinned by equivalence oracles.
 
 | react-doctor (legacy) | tsnuke (current Effect-TS) | Change |
 |---|---|---|
@@ -210,11 +211,11 @@ tsnuke is itself a two-stage modernization. **Stage 1** reimagined react-doctor 
 
 ## 8. Deferred / forward path
 
-- **Catalog expansion** — all four tiers (SYN/TYP/CFG/GRAPH) are proven and all 13 categories populated (88 rules); author the rest of the spec taxonomy against the existing seams.
+- **Catalog expansion** — all four tiers (SYN/TYP/CFG/GRAPH) are proven and all 14 categories populated (95 rules); author the rest of the spec taxonomy against the existing seams.
 - **ESLint flat-config adapter** (C15) · **GitHub Action** (C17) · **optional remote telemetry/leaderboard** (C19, behind the proven request caps).
 - **Schema.TaggedError migration** — complete the signature-preserving move of `errors`/`security` tagged errors from `Data.TaggedError` to `Schema.TaggedError` where it stays compatible.
 - **Rust/oxlint Tier-1 fast-path** if parse latency demands it (same `defineRule` interface).
 
 ---
 
-*The 32-package Effect-TS rewrite proves the architecture end-to-end; the named pending work fills the broader catalog. Design history: `docs/`.*
+*The 33-package Effect-TS rewrite proves the architecture end-to-end; the named pending work fills the broader catalog. Design history: `docs/`.*

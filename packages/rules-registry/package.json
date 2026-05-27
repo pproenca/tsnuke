@@ -27,6 +27,7 @@
     "@tsnuke/rules-type-safety-effect": "workspace:*",
     "@tsnuke/rules-exhaustiveness-effect": "workspace:*",
     "@tsnuke/rules-module-boundaries-effect": "workspace:*",
+    "@tsnuke/rules-functional-patterns-effect": "workspace:*",
     "@tsnuke/rules-graph-effect": "workspace:*",
     "effect": "^3.21.2"
   },

@@ -1,8 +1,8 @@
 /**
  * `@tsnuke/rules-registry-effect` — the GLOBAL rule registry.
  *
- * Aggregates all 88 transformed rules into the two registries the engine consumes:
- *   - {@link ruleRegistry}      — the 86 per-file rules (SYN/TYP/CFG): SYN 64 + TYP 18 +
+ * Aggregates all 95 transformed rules into the two registries the engine consumes:
+ *   - {@link ruleRegistry}      — the 93 per-file rules (SYN/TYP/CFG): SYN 71 + TYP 18 +
  *     the 4 CFG strictness activation rules. The engine drives each once per source file
  *     via its `create(ctx)` visitor factory.
  *   - {@link graphRuleRegistry} — the 2 GRAPH rules (`no-import-cycles`,
@@ -27,8 +27,8 @@ import { graphRuleRegistry, ruleRegistry } from "./registry.js";
 
 /**
  * The total number of rules in the catalog: per-file (`ruleRegistry`) + GRAPH
- * (`graphRuleRegistry`). Currently 86 + 2 = 88. Computed (not hard-coded) so it tracks the
- * registries as slices grow; the exact 88 tally is the load-bearing invariant asserted in
+ * (`graphRuleRegistry`). Currently 93 + 2 = 95. Computed (not hard-coded) so it tracks the
+ * registries as slices grow; the exact 95 tally is the load-bearing invariant asserted in
  * `src/test/`.
  */
 export const totalRuleCount: number =

@@ -502,6 +502,25 @@ importers:
         specifier: ^3.2.0
         version: 3.2.4(@types/node@22.19.19)(yaml@2.9.0)
 
+  packages/rules-functional-patterns:
+    dependencies:
+      '@tsnuke/contracts-effect':
+        specifier: workspace:*
+        version: link:../contracts
+      '@tsnuke/rules-core-effect':
+        specifier: workspace:*
+        version: link:../rules-core
+      typescript:
+        specifier: ^5.8.0
+        version: 5.9.3
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.19.19
+      vitest:
+        specifier: ^3.2.0
+        version: 3.2.4(@types/node@22.19.19)(yaml@2.9.0)
+
   packages/rules-generics:
     dependencies:
       '@tsnuke/contracts-effect':
@@ -598,6 +617,9 @@ importers:
       '@tsnuke/rules-exhaustiveness-effect':
         specifier: workspace:*
         version: link:../rules-exhaustiveness
+      '@tsnuke/rules-functional-patterns-effect':
+        specifier: workspace:*
+        version: link:../rules-functional-patterns
       '@tsnuke/rules-generics-effect':
         specifier: workspace:*
         version: link:../rules-generics
