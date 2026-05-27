@@ -1,6 +1,6 @@
 {
   "name": "tsnuke",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "A code-health linter and 0–100 scorer for TypeScript projects — a two-tier engine (syntactic + type-aware) over the in-process TypeScript compiler, with config and module-graph rules, an anti-slop family for LLM-generated code, and a local deterministic score. Runs offline via npx.",
   "license": "MIT",
   "author": "Pedro Proença",

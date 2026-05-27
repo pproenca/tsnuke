@@ -324,3 +324,61 @@ describe("runEngine — RULE-013 (memory-ceiling guard, now WIRED)", () => {
     }),
   );
 });
+
+// =============================================================================
+// Compiler-options threading: real-tsconfig options reach `buildProgramFromFiles`
+// =============================================================================
+// Pre-fix: `buildProgramFromFiles` HARDCODED its compiler options
+// (`target/module/moduleResolution/strict/noEmit/skipLibCheck`), so any project that
+// relied on tsconfig features the hardcode didn't have (JSX, path aliases, custom
+// `lib`s) generated phantom errors → `typecheckOk = false` → Tier-2 silently skipped
+// on every non-trivial codebase (e.g. maddie-native, where one phantom `@/…` import
+// error suppressed Tier-2 entirely). The `compilerOptions` option now lets `diagnose`
+// forward `ts.parseJsonConfigFileContent`'s resolved options. These two tests pin
+// the wiring at the engine boundary.
+describe("runEngine — compilerOptions threading (Tier-2 honors project tsconfig)", () => {
+  it.effect("default options: unused local does not block typecheck → Tier-2 runs", () =>
+    Effect.gen(function* () {
+      // Defaults do not enable `noUnusedLocals`, so an unused `const` typechecks fine.
+      // This pins the "Tier-2 runs" baseline before the next test inverts it.
+      const res = yield* runScoped(
+        vfile("export function f(): number { const unused = 1; return 0; }\n"),
+        new Set<Capability>(["tsconfig"]),
+        NO_TAGS,
+        NO_OVERRIDES,
+        undefined,
+      );
+      expect(res.scorePartial).toBe(false);
+      expect(res.skippedChecks).toStrictEqual([]);
+    }),
+  );
+
+  it.effect("threading `noUnusedLocals: true` surfaces a real error → Tier-2 skipped", () =>
+    Effect.gen(function* () {
+      const ts = (yield* Effect.promise(() => import("typescript"))).default;
+      // Threading the project's stricter option turns the unused local into a real
+      // TS6133 error, which `getPreEmitDiagnostics` sees → `typecheckOk = false`.
+      // Proves the caller-supplied options actually reach the Program build.
+      const res = yield* runScoped(
+        vfile("export function f(): number { const unused = 1; return 0; }\n"),
+        new Set<Capability>(["tsconfig"]),
+        NO_TAGS,
+        NO_OVERRIDES,
+        undefined,
+        {
+          compilerOptions: {
+            target: ts.ScriptTarget.ESNext,
+            module: ts.ModuleKind.ESNext,
+            moduleResolution: ts.ModuleResolutionKind.Bundler,
+            strict: true,
+            noEmit: true,
+            skipLibCheck: true,
+            noUnusedLocals: true,
+          },
+        },
+      );
+      expect(res.scorePartial).toBe(true);
+      expect(res.skippedCheckReasons["no-floating-promises"]).toBe(SKIP_REASON_NO_TYPECHECK);
+    }),
+  );
+});

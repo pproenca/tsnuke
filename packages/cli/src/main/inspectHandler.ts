@@ -32,6 +32,7 @@ import type {
 import type { ApplyFilesResult } from "@tsnuke/fix-applier-effect";
 import {
   asRuleLookup,
+  derivePartialReason,
   explain,
   formatAgentReport,
   renderPretty,
@@ -311,7 +312,11 @@ export const runInspect = Effect.fn("Cli.inspect")(function* (
                     single.diagnostics,
                     single.score,
                     single.project.rootDirectory,
-                    { elapsedMs: single.elapsedMilliseconds, scorePartial: single.scorePartial },
+                    {
+                      elapsedMs: single.elapsedMilliseconds,
+                      scorePartial: single.scorePartial,
+                      partialReason: derivePartialReason(single.skippedCheckReasons),
+                    },
                   ),
                   null,
                   2,
@@ -324,6 +329,7 @@ export const runInspect = Effect.fn("Cli.inspect")(function* (
                   rulesChecked,
                   showScore: flags.showScore,
                   repoRoot: single.project.rootDirectory,
+                  partialReason: derivePartialReason(single.skippedCheckReasons),
                 })
         : flags.score
           ? renderScoreLine(summary, summary?.partial ?? false, { color: flags.color })
@@ -334,6 +340,11 @@ export const runInspect = Effect.fn("Cli.inspect")(function* (
                   formatAgentReport(allDiagnostics, summary, ws.rootDirectory, {
                     elapsedMs: ws.elapsedMilliseconds,
                     scorePartial: summary?.partial ?? false,
+                    // Workspace mode: per-project skip reasons can differ — derive from
+                    // the first partial project so the agent gets a representative cause.
+                    partialReason: derivePartialReason(
+                      ws.projects.find((p) => p.scorePartial)?.skippedCheckReasons,
+                    ),
                   }),
                   null,
                   2,

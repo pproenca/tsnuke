@@ -26,6 +26,7 @@ import type { RuleMeta } from "@tsnuke/contracts-effect";
 import { diagnoseNode } from "@tsnuke/engine-effect";
 import {
   formatAgentReport,
+  derivePartialReason,
   explain,
   asRuleLookup,
   type AgentReport,
@@ -57,17 +58,25 @@ export async function diagnoseTool(args: DiagnoseToolArgs): Promise<DiagnoseTool
   const result = await diagnoseNode(args.directory, {
     ...(args.deep !== undefined ? { deep: args.deep } : {}),
   });
+  const partialReason = derivePartialReason(result.skippedCheckReasons);
   const report = formatAgentReport(
     result.diagnostics,
     result.score,
     result.project.rootDirectory,
-    { elapsedMs: result.elapsedMilliseconds, scorePartial: result.scorePartial },
+    {
+      elapsedMs: result.elapsedMilliseconds,
+      scorePartial: result.scorePartial,
+      partialReason,
+    },
   );
   const score = result.score?.score ?? null;
-  const label = result.score?.label ?? "n/a";
-  const partial = result.scorePartial ? " (partial — type info unavailable)" : "";
+  // Drop the band label on partial scores — labels carry a confidence claim the
+  // partial-tier measurement can't make (RULE-018). Show the reason instead.
+  const headlineCoverage = result.scorePartial
+    ? ` (partial — ${partialReason ?? "tier-2 skipped"})`
+    : ` — ${result.score?.label ?? "n/a"}`;
   const headline =
-    `Score ${score ?? "n/a"}/100${partial} — ${label}. ` +
+    `Score ${score ?? "n/a"}/100${headlineCoverage}. ` +
     `${report.ruleCount} rule(s) fired across ${report.occurrenceCount} occurrence(s) ` +
     `in ${args.directory}.`;
   const summary = `${headline} Next: ${report.nextAction.summary}`;

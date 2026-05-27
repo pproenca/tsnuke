@@ -44,12 +44,37 @@ export const rule = defineRule(
       const start = node.name.getStart(ctx.sourceFile);
       const { line, character } =
         ctx.sourceFile.getLineAndCharacterOfPosition(start);
+      // P4 codemod: rewrite `type X = { … }` as `interface X { … }`. Splice the
+      // entire span from the first modifier (or `type` keyword) up to the body's
+      // `{` with the equivalent `[modifiers ]interface X[<generics>] ` prefix,
+      // preserving `export` / `declare` etc. A trailing `;` after `}` (legal in
+      // alias form, harmless after `interface`) is left in place.
+      const declStart = node.getStart(ctx.sourceFile);
+      const bodyStart = node.type.getStart(ctx.sourceFile);
+      const modifiersText = (ts.getModifiers(node) ?? [])
+        .map((m) => m.getText(ctx.sourceFile))
+        .join(" ");
+      const typeParamsText =
+        node.typeParameters !== undefined && node.typeParameters.length > 0
+          ? `<${node.typeParameters.map((p) => p.getText(ctx.sourceFile)).join(", ")}>`
+          : "";
+      const prefix = modifiersText.length > 0 ? `${modifiersText} ` : "";
       ctx.report({
         filePath: ctx.filePath,
         message: `Object-shape alias \`type ${node.name.text} = { ... }\` should be an \`interface\`.`,
         help: `Rewrite as \`interface ${node.name.text} { ... }\`. Interfaces give better errors and support \`extends\` / declaration merging.`,
         line: line + 1,
         column: character + 1,
+        fix: {
+          kind: "codemod",
+          edits: [
+            {
+              start: declStart,
+              end: bodyStart,
+              replacement: `${prefix}interface ${node.name.text}${typeParamsText} `,
+            },
+          ],
+        },
       });
     },
   }),

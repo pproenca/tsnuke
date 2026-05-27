@@ -27,13 +27,14 @@
 
 import { FileSystem, Path } from "@effect/platform";
 import { Effect, type Scope } from "effect";
+import ts from "typescript";
 import {
   collectSourceFiles,
   computeCapabilities,
   discoverTsProject,
   type ProjectInfo,
 } from "@tsnuke/discovery-effect";
-import { loadConfig } from "@tsnuke/config-effect";
+import { loadConfig, loadFalsePositives } from "@tsnuke/config-effect";
 import { computeScore } from "@tsnuke/score-effect";
 import { runFilterPipeline, type DiagnosticWithTags } from "@tsnuke/filter-pipeline-effect";
 import type { TsNukeConfig } from "@tsnuke/contracts-effect";
@@ -79,6 +80,46 @@ const readSourceFiles = (
       if (text !== undefined) out.push({ filePath, text });
     }
     return out;
+  });
+
+/**
+ * Resolve the project's TS compiler options via the compiler's own parser, so the
+ * Tier-2 `ts.Program` (built inside `runEngine`) sees the same configuration `tsc`
+ * sees: JSX setup, `paths` aliases, `lib`/`target`, and the strict-family flags. With
+ * the prior hardcode, any project with `jsx`, `@/…` path aliases, or non-default
+ * `lib`s reported phantom errors → `typecheckOk = false` → Tier-2 silently skipped on
+ * every non-trivial codebase.
+ *
+ * Reads through `@effect/platform` so an in-memory test FS works the same as disk.
+ * Returns `undefined` when the config can't be located or parsed — the engine then
+ * falls back to {@link DEFAULT_COMPILER_OPTIONS}.
+ */
+const resolveProjectCompilerOptions = (
+  directory: string,
+): Effect.Effect<ts.CompilerOptions | undefined, never, FileSystem.FileSystem | Path.Path> =>
+  Effect.gen(function* () {
+    const fs = yield* FileSystem.FileSystem;
+    const path = yield* Path.Path;
+    const tsconfigPath = path.join(directory, "tsconfig.json");
+    const text = yield* fs
+      .readFileString(tsconfigPath, "utf8")
+      .pipe(Effect.orElseSucceed(() => undefined as string | undefined));
+    if (text === undefined) return undefined;
+    const { config, error } = ts.parseConfigFileTextToJson(tsconfigPath, text);
+    if (error !== undefined || config === undefined) return undefined;
+    const parsed = ts.parseJsonConfigFileContent(
+      config as object,
+      ts.sys,
+      directory,
+      undefined,
+      tsconfigPath,
+    );
+    // Strip emit-mode-only flags: tsnuke uses the Program as a one-shot type-checker,
+    // so build-info / emit-driver flags become phantom errors (e.g. `incremental: true`
+    // without `tsBuildInfoFile` → TS5074, dropping `typecheckOk` to false). Force
+    // `noEmit: true` for the same reason — we never write declaration / source files.
+    const { incremental, tsBuildInfoFile, composite, ...rest } = parsed.options;
+    return { ...rest, noEmit: true };
   });
 
 /**
@@ -148,6 +189,10 @@ export const diagnose: (
     const files = yield* readSourceFiles(includePaths);
     emit({ kind: "reading-files", count: files.length, elapsedMs: Date.now() - readStartedAt });
 
+    const projectCompilerOptions = yield* resolveProjectCompilerOptions(
+      project.rootDirectory,
+    );
+
     const engineResult = yield* runEngine(
       files,
       caps,
@@ -156,19 +201,27 @@ export const diagnose: (
       options.deep,
       {
         configFilePath: path.join(project.rootDirectory, "tsconfig.json"),
+        ...(projectCompilerOptions !== undefined
+          ? { compilerOptions: projectCompilerOptions }
+          : {}),
         ...(options.memory !== undefined ? { memory: options.memory } : {}),
         ...(onProgress !== undefined ? { onProgress } : {}),
       },
     );
 
     // Filter pipeline (BC-11). Carry source text for the inline-disable stage. PURE.
+    // P5: load project-local `.tsnuke/false-positives.md` (empty array if absent)
+    // and pass alongside the built-in framework defaults so user-authored
+    // suppressions stack with what tsnuke ships.
     const sources = new Map<string, string>(files.map((f) => [f.filePath, f.text]));
+    const projectFalsePositives = yield* loadFalsePositives(project.rootDirectory);
     const filtered = runFilterPipeline(
       engineResult.diagnostics as DiagnosticWithTags[],
       config,
       {
         respectInlineDisables: options.respectInlineDisables !== false,
         sources,
+        frameworkSuppressions: projectFalsePositives,
       },
     );
 

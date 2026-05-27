@@ -40,6 +40,16 @@ export {
 // The orchestrator — the public entry point (RULE-023, BC-11).
 export { runFilterPipeline, type FilterPipelineOptions } from "./runFilterPipeline.js";
 
+// P5 — framework-aware defaults catalog + project-local FP support.
+export {
+  FRAMEWORK_SUPPRESSIONS,
+  compileGlob,
+  compileSuppressions,
+  getCompiledFrameworkSuppressions,
+  makeFrameworkDefaultsStage,
+  type FrameworkSuppression,
+} from "./frameworkDefaults.js";
+
 // Self-barrel: opt-in namespace import (`import { FilterPipeline } from "..."`). ADDITIVE —
 // the named re-exports above remain the byte-stable surface every consumer imports from.
 export * as FilterPipeline from "./index.js";

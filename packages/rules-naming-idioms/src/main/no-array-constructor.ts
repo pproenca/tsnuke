@@ -43,14 +43,25 @@ function check(
   if (isSingleNumericLength(args)) return; // allowed length form
 
   const start = node.getStart(ctx.sourceFile);
+  const end = node.getEnd();
   const { line, character } =
     ctx.sourceFile.getLineAndCharacterOfPosition(start);
+  // P4 codemod: rewrite `Array(...)` / `new Array(...)` as `[...]`. Safe for the
+  // zero-arg case (→ `[]`) and the multi-arg case (→ `[a, b, c]`); the
+  // single-numeric-literal LENGTH form is already returned-early above and not
+  // codemodded — that case needs `Array.from({ length: n })` semantics a textual
+  // splice can't safely produce.
+  const argsText = args.map((a) => a.getText(ctx.sourceFile)).join(", ");
   ctx.report({
     filePath: ctx.filePath,
     message: "Do not use the `Array(...)` constructor; use an array literal.",
     help: "Use `[]` / `[a, b]` to build arrays, or `Array.from({ length: n })` for a sized array. `Array(...)`'s meaning flips on argument count.",
     line: line + 1,
     column: character + 1,
+    fix: {
+      kind: "codemod",
+      edits: [{ start, end, replacement: `[${argsText}]` }],
+    },
   });
 }
 

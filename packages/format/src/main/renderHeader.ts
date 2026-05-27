@@ -14,9 +14,11 @@
  *   ≥ 50  yellow   ░░░ ╲│╱   smoke rising — early warning
  *   <  50 red      ▓█▓ ╱│╲   mushroom cloud — code has been nuked
  *
- * Partial scores (Tier-2 skipped, BC-03): the bar is dimmed and a `*` is appended,
- * the label becomes `Partial — type info unavailable`. Score `null` ⇒ a "not run"
- * card. No animation: the file remains pure and snapshot-stable.
+ * Partial scores (Tier-2 skipped, BC-03): the bar is dimmed, the band label is
+ * REPLACED by a coverage caveat ("partial: typecheck-failed" etc.) — the band carries
+ * an implicit confidence claim that a partial measurement can't make, so the named
+ * band is reserved for full-tier runs only. Score `null` ⇒ a "not run" card. No
+ * animation: the file remains pure and snapshot-stable.
  */
 import { bold, colorForScore, dim, gray } from "./theme.js";
 
@@ -29,6 +31,12 @@ export interface ScoreHeaderInput {
   readonly label: string | null;
   /** Tier-2 skipped → partial scale (BC-03). */
   readonly partial: boolean;
+  /**
+   * Machine-readable partial reason (matches `PartialReason` in format-agent). Used
+   * to render a specific coverage caveat instead of the band label when `partial`.
+   * Optional — when omitted, the caveat falls back to a generic message.
+   */
+  readonly partialReason?: "typecheck-failed" | "no-deep" | "memory" | "no-source-files" | null;
   /** Optional tag line under the bar (e.g. `tsnuke · 0.2.0`). */
   readonly tagline?: string;
   /** Enable ANSI colour. */
@@ -61,9 +69,26 @@ function buildBar(score: number | null, color: boolean): string {
   return colorForScore(score, color, bar);
 }
 
+/** Map a `PartialReason` to a short human caveat shown in the header. */
+function partialCaveat(reason: ScoreHeaderInput["partialReason"]): string {
+  switch (reason) {
+    case "typecheck-failed":
+      return "partial — type-aware skipped: project doesn't type-check";
+    case "no-deep":
+      return "partial — type-aware skipped: --no-deep";
+    case "memory":
+      return "partial — type-aware skipped: memory ceiling";
+    case "no-source-files":
+      return "partial — no source files";
+    case null:
+    case undefined:
+      return "partial — type-aware tier skipped";
+  }
+}
+
 /** Render the nuke-status score header. Returns 4 lines joined by `\n`. */
 export function renderHeader(input: ScoreHeaderInput): string {
-  const { score, label, partial, tagline, color } = input;
+  const { score, label, partial, partialReason, tagline, color } = input;
   const [faceTop, faceBot] = faceFor(score);
 
   const scoreText =
@@ -72,14 +97,17 @@ export function renderHeader(input: ScoreHeaderInput): string {
   const scoreCol =
     score === null ? gray(color, scoreText) : bold(color, colorForScore(score, color, scoreText));
 
+  // On partial, drop the band ("Great" / etc) and show the coverage caveat — the band
+  // is reserved for full-tier runs (RULE-018). The agent JSON does the same: it sets
+  // `scoreLabel: null` when partial, so prose UI and machine UI agree.
   const labelText =
-    label === null
+    label === null && !partial
       ? gray(color, "not scored")
       : partial
-        ? `${label}*  (partial — type info unavailable)`
-        : label;
+        ? partialCaveat(partialReason)
+        : label ?? "";
   const labelCol =
-    score === null ? labelText : colorForScore(score, color, labelText);
+    score === null ? labelText : partial ? gray(color, labelText) : colorForScore(score, color, labelText);
 
   const bar = buildBar(score, color);
   const dimmedBar = partial ? dim(color, bar) : bar;

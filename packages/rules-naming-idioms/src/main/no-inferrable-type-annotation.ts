@@ -17,8 +17,9 @@ import { defineRule } from "@tsnuke/rules-core-effect";
  *  - `new` expressions and `RegExp` literals are left alone (less clear-cut, and
  *    annotations there sometimes widen to a base class / interface on purpose).
  *
- * RULE-026 (broken auto-fix): declares `fixKind: "auto-fix"` but attaches NO
- * `fix` payload — preserved verbatim from the legacy rule.
+ * P4 (real codemod, supersedes RULE-026): emits a `fix.edits` payload that
+ * deletes the `: <type>` span, e.g. `const n: number = 5` → `const n = 5`.
+ * `--fix` applies this mechanically.
  */
 
 /** Map an annotation keyword kind to the literal it would trivially infer from. */
@@ -83,12 +84,22 @@ export const rule = defineRule(
       const start = type.getStart(ctx.sourceFile);
       const { line, character } =
         ctx.sourceFile.getLineAndCharacterOfPosition(start);
+      // P4 codemod: delete the `: <type>` span. Range is from RIGHT AFTER the
+      // identifier (`n`) to the end of the type node (`number`) — that span
+      // covers the colon, the optional surrounding whitespace, and the type
+      // keyword itself.
+      const deleteStart = node.name.getEnd();
+      const deleteEnd = type.getEnd();
       ctx.report({
         filePath: ctx.filePath,
         message: `Redundant \`: ${keyword(type)}\` annotation; it is trivially inferred from the literal.`,
         help: "Remove the annotation and let the compiler infer it (e.g. `const x = 5` instead of `const x: number = 5`).",
         line: line + 1,
         column: character + 1,
+        fix: {
+          kind: "auto-fix",
+          edits: [{ start: deleteStart, end: deleteEnd, replacement: "" }],
+        },
       });
     },
   }),

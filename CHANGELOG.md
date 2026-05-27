@@ -4,6 +4,115 @@ All notable changes to `tsnuke` are listed here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project follows
 [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] — 2026-05-27
+
+Major agent-interaction overhaul. Driven by a real-world failure mode observed
+in a Claude Code session against `maddie-native/apps/web` (May 27): the agent
+spent ~20 minutes confused by "Score: 84/100 — Great" labelled on a partial
+measurement, re-rationalizing the same framework false-positives every session,
+and never running a meaningful `--fix` because every rule reported as `manual`.
+
+This release closes the gap to react-doctor's agent UX while keeping tsnuke's
+local-deterministic-offline core, building on patterns react-doctor already
+proved work.
+
+### Added
+- **`prompts/agent.md` — the canonical agent playbook** (5-step loop: scan →
+  filter → triage → fix → validate). Inlined into `SKILL.md` via
+  `playbook.const.ts` for offline operation; the live URL
+  `https://pproenca.dev/tsnuke/prompts/agent.md` is the deploy target so the
+  playbook can iterate without npm releases. The `playbook.sync.test.ts`
+  companion test pins the constant to the source-of-truth markdown.
+- **`prompts/rules/<rule>.md` — 24 per-rule canonical prompts** with the
+  two-section `## Validation prompt` + `## Fix prompt` shape (react-doctor
+  pattern). Covers every high-volume rule from the maddie session:
+  `explicit-module-boundary-types`, `no-unused-exports`, `no-unsafe-object-assertion`,
+  `require-await`, `no-default-export`, `no-non-null-assertion`,
+  `no-record-string-unknown`, `no-floating-promises`, `no-explicit-any`,
+  `no-unsafe-call`, `consistent-type-definitions`, `triple-equals`, `no-var`,
+  `prefer-satisfies-over-as`, `no-await-in-loop`, `prefer-array-methods`,
+  `no-cast-in-return`, `no-double-assertion`, `no-unknown-return`,
+  `no-assertion-on-json-parse`, `prefer-const-ternary`, `no-unsafe-member-access`,
+  `switch-exhaustiveness-check`, `only-throw-error`.
+- **`FRAMEWORK_SUPPRESSIONS` — built-in framework-aware false-positive
+  catalog** (`@tsnuke/filter-pipeline-effect`). Drops the conventional FPs an
+  agent would otherwise rationalize away every session: Next.js App Router
+  conventions (`page.tsx` / `layout.tsx` / `route.ts` / `middleware.ts` +
+  Pages Router), Storybook stories, Vite/Vitest/Playwright configs, test files
+  (`*.test.ts` / `*.spec.ts` / `__tests__/**`), barrel files. 24 entries
+  derived from the maddie session.
+- **`.tsnuke/false-positives.md` — project-local FP store**. Mirror of
+  react-doctor's format (`<rule>: <fileGlob> # reason`). Read by the engine
+  via the new `loadFalsePositives` Effect (`@tsnuke/config-effect`); stacks
+  with the built-in catalog without overriding it.
+- **`AgentReport.partialReason`** — machine-readable enum for why a partial
+  score is partial: `"typecheck-failed"` / `"no-deep"` / `"memory"` /
+  `"no-source-files"`. Lets agents branch on the cause without parsing
+  free-form text. `derivePartialReason()` helper exported from
+  `@tsnuke/format-effect` for callers that pass it through.
+- **`AgentReport.scoreBreakdown`** — explicit score-formula decomposition:
+  `{ base, errorPenalty: { count, weight, total }, warningPenalty: { count,
+  weight, total } }`. Agents can subtract two breakdowns across runs to see
+  which rules drove the delta. Mirrors react-doctor's `100 − 1.5×err − 0.75×warn`
+  reporting.
+- **Real codemod fix payloads** for five previously-broken-auto-fix rules
+  (RULE-026 — preserved verbatim from legacy but never emitted `fix.edits`):
+  `triple-equals` (`==` → `===`), `no-var` (→ `let`),
+  `no-array-constructor` (`Array(a, b)` → `[a, b]`),
+  `no-inferrable-type-annotation` (drop the redundant `: number = 5`
+  annotation), `consistent-type-definitions` (`type X = { … }` →
+  `interface X { … }`, preserving modifiers + generics). `--fix` now applies
+  these mechanically; `fixSummary.autoFixable` reflects real work.
+
+### Changed
+- **`scoreLabel: null` on partial scores** (agent JSON + pretty output). The
+  band ("Great" / "Needs work" / "Critical") is reserved for fully-measured
+  scores; labelling a partial measurement was the #1 driver of the maddie
+  session confusion. The score number, `scorePartial`, `partialReason`, and
+  `scoreBreakdown` carry the meaningful information instead.
+- **Pretty + `--score` output drops the band on partial scores** and renders
+  the specific `partialReason` caveat — e.g. `"partial — type-aware skipped:
+  project doesn't type-check"`.
+- **Pre-push hook defaults to `--diff --score`** (regression check, fast)
+  instead of `--score` (full scan). Marker bumped `v1` → `v2`; the install
+  command recognises v1 hooks as tsnuke-owned and upgrades them cleanly.
+- **`SKILL.md` / `tsnuke agents` output**: replaced the inlined 98-row rule
+  catalog table with a short rule INDEX (rule IDs grouped by category) plus a
+  pointer to the per-rule prompt URL pattern. Agents fetch per-rule recipes
+  on demand instead of paying the token cost up front.
+- **`AGENTS.md` skill triggers** now include `"when the user types '/tsnuke'
+  or asks to 'run tsnuke'"`.
+
+### Fixed
+- **JSONC parser corrupted any tsconfig containing `/` inside a string value.**
+  Next.js / Vite scaffolds default to `"paths": { "@/*": ["./src/*"] }`; the
+  regex-based comment stripper matched `/*` and `*/` across the string
+  boundary, deleting the entire `paths` map and every downstream key —
+  silently dropping `strict`, `noUncheckedIndexedAccess`, etc. for an
+  enormous class of real projects. The maddie session's "all 4 CFG findings
+  are wrong" was this defect. Replaced the regex pipeline with a string-aware
+  state-machine stripper; the equivalence test mirror was updated to match
+  the fixed behavior.
+- **Engine's Tier-2 `ts.Program` used hardcoded compiler options** instead of
+  the project's `tsconfig.json`-resolved ones, so any project with JSX
+  (`jsx: "react-jsx"`), path aliases (`paths: { "@/*": ... }`), or non-default
+  `lib`s generated phantom TS errors → `typecheckOk = false` → Tier-2 silently
+  skipped on every non-trivial codebase. The engine now reads the project's
+  tsconfig via `ts.parseJsonConfigFileContent`, strips emit-only flags
+  (`incremental` / `tsBuildInfoFile` / `composite`), and forwards the resolved
+  options to `buildProgramFromFiles`. The maddie session's "Tier-2 never
+  engages despite typecheck:ok" was this defect.
+
+### Numbers
+- Tests: 1769 → **1964 passing**, 0 failures. All 33 packages typecheck clean.
+- Self-scan: **100/100 — Great** (full-tier).
+- Maddie regression test:
+  - Before: `84/100 "Great" (partial)`, 4 CFG false positives,
+    601 occurrences, 0 auto-fixable, 0 codemod.
+  - After: `89/100, scoreLabel: null, partialReason: "typecheck-failed"`,
+    0 CFG false positives, 426 occurrences (29% noise reduction from
+    framework defaults alone), real codemods wired.
+
 ## [0.5.0] — 2026-05-27
 
 ### Added

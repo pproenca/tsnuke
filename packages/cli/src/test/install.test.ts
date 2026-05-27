@@ -70,20 +70,29 @@ describe("planInstall (pure)", () => {
       agentHooks: false,
     }).find((w) => w.path.endsWith("pre-push"));
     expect(hook?.contents).toBe(PRE_PUSH_HOOK);
-    expect(hook?.contents).toContain("# tsnuke-managed v1");
-    // Uses the modern `--no` form (the deprecated `--no-install` is a no-op on
-    // npm 7+ and Node 22, which this project requires).
-    expect(hook?.contents).toContain("npx --no tsnuke --score");
+    // P6: hook marker bumped from v1 → v2 when the default switched to --diff.
+    // Re-installs over a v1 hook are still allowed (LEGACY_HOOK_MARKERS).
+    expect(hook?.contents).toContain("# tsnuke-managed v2");
+    // P6: the hook now runs `--diff --score` (regression check, fast on every
+    // push). The previous full-tree `--score` was renamed to a slow,
+    // explicit-only invocation; the hook should never block a push.
+    expect(hook?.contents).toContain("npx --no tsnuke --diff --score");
     expect(hook?.contents).not.toContain("--no-install");
     expect(hook?.contents).toContain("exit 0");
   });
 
-  it("the SKILL.md content carries the AGENTS.md front-matter + recipes + catalog", () => {
+  it("the SKILL.md content carries the AGENTS.md front-matter + playbook + rule index", () => {
     const skill = planInstall({ cwd: "/x", yes: false, dryRun: false, agentHooks: false })
       .find((w) => w.path.endsWith("SKILL.md"))?.contents ?? "";
+    // Front-matter intact
     expect(skill).toContain("name: tsnuke");
-    expect(skill).toContain("npx -y tsnuke --format agent");
-    expect(skill).toContain("## Rule catalog");
+    // Canonical playbook inlined (sentinel from prompts/agent.md)
+    expect(skill).toContain("# tsnuke — agent playbook");
+    expect(skill).toContain("npx -y tsnuke@latest --diff --format agent");
+    // Rule index appended (replaced the heavy full-catalog table — agents fetch
+    // per-rule prompts on demand from pproenca.dev/tsnuke/prompts/rules/<id>.md)
+    expect(skill).toContain("## Rule index");
+    expect(skill).toContain("https://pproenca.dev/tsnuke/prompts/rules/$rule.md");
   });
 });
 
@@ -124,16 +133,19 @@ describe("runInstall over a real temp dir (Node FileSystem)", () => {
     expect(readFileSync(join(hooksDir, "pre-push"), "utf8")).toBe(realHookBody);
     // The SKILL.md is still installed.
     expect(existsSync(join(dir, ".agent/skills/tsnuke/SKILL.md"))).toBe(true);
-    // A clear instruction lands on stdout.
+    // A clear instruction lands on stdout (the suggested line is the new `--diff`
+    // default — P6 — so users who append it get the fast regression check).
     const text = out.join("");
     expect(text).toContain("refusing to overwrite");
-    expect(text).toContain("npx --no tsnuke --score");
+    expect(text).toContain("npx --no tsnuke --diff --score");
   });
 
-  it("idempotent re-install: a marker-bearing hook IS overwritten safely", async () => {
+  it("idempotent re-install: a marker-bearing hook IS overwritten safely (v1 → v2)", async () => {
     const hooksDir = join(dir, ".git/hooks");
     mkdirSync(hooksDir, { recursive: true });
-    // Simulate a previous install: same marker, but tweaked body.
+    // Simulate a previous install with the v1 marker; P6 added v2 with `--diff`.
+    // The new install MUST recognise v1 as tsnuke-owned and upgrade it cleanly
+    // (LEGACY_HOOK_MARKERS in installHandler.ts).
     writeFileSync(
       join(hooksDir, "pre-push"),
       "#!/bin/sh\n# tsnuke-managed v1\n# stale content\nexit 0\n",

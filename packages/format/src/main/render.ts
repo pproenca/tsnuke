@@ -40,11 +40,19 @@ export interface RenderPrettyOptions {
   readonly showScore?: boolean;
   /** Strip a repo-root prefix from occurrence paths (purely cosmetic). */
   readonly repoRoot?: string;
+  /**
+   * Machine-readable reason `partial` is true. When provided, the header renders a
+   * specific caveat ("type-aware skipped: project doesn't type-check") instead of
+   * the generic message. Derived by the caller from `DiagnoseResult.skippedCheckReasons`.
+   */
+  readonly partialReason?: "typecheck-failed" | "no-deep" | "memory" | "no-source-files" | null;
 }
 
 /**
  * Single-line score header — preserved for `--score` mode. When `color`, the score
- * number + label are tinted by band (green/yellow/red). Partial → dim + `*`.
+ * number is tinted by band (green/yellow/red). Partial scores drop the named band
+ * ("Great" / etc) and show a coverage caveat instead — the band is reserved for
+ * fully-measured scores (RULE-018), so labels stay honest about what was checked.
  */
 export function renderScoreLine(
   score: RenderScoreResult | null,
@@ -53,12 +61,12 @@ export function renderScoreLine(
 ): string {
   const color = options.color ?? false;
   if (score === null) return `Score: ${gray(color, "n/a")}`;
-  const partialSuffix = scorePartial
-    ? ` ${dim(color, "(partial — type info unavailable, not comparable)")}`
-    : "";
   const num = colorForScore(score.score, color, `${score.score}/100`);
+  if (scorePartial) {
+    return `Score: ${num} ${dim(color, "(partial — type-aware tier skipped, not comparable to a full score)")}`;
+  }
   const lab = colorForScore(score.score, color, score.label);
-  return `Score: ${num} — ${lab}${partialSuffix}`;
+  return `Score: ${num} — ${lab}`;
 }
 
 /**
@@ -79,11 +87,13 @@ export function renderPretty(
   const rulesChecked = options.rulesChecked ?? 0;
   const repoRoot = options.repoRoot ?? "";
 
+  const partialReason = options.partialReason ?? null;
+
   const report: AgentReport = formatAgentReport(
     diagnostics,
     score === null ? null : { score: score.score, label: score.label },
     repoRoot,
-    { elapsedMs, scorePartial },
+    { elapsedMs, scorePartial, partialReason },
   );
 
   const lines: string[] = [];
@@ -94,6 +104,7 @@ export function renderPretty(
         score: score?.score ?? null,
         label: score?.label ?? null,
         partial: scorePartial,
+        partialReason,
         ...(version !== undefined ? { tagline: `tsnuke · ${version}` } : {}),
         color,
       }),

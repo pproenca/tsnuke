@@ -28,6 +28,10 @@
 import type { TsNukeConfig } from "./Config.js";
 import type { Diagnostic, DiagnosticWithTags } from "./Diagnostic.js";
 import {
+  makeFrameworkDefaultsStage,
+  type FrameworkSuppression,
+} from "./frameworkDefaults.js";
+import {
   makeIgnoreStage,
   makeInlineDisableStage,
   makeSeverityStage,
@@ -42,6 +46,13 @@ export interface FilterPipelineOptions {
   respectInlineDisables?: boolean;
   /** File text by absolute path, for the inline-disable stage. */
   sources?: SourceTextMap;
+  /**
+   * Project-local false-positive suppressions, typically loaded from a
+   * `.tsnuke/false-positives.md` file at the project root. Merged with the
+   * built-in framework defaults catalog (P5). Each entry pairs a rule id with
+   * a path glob; matches are dropped from the diagnostic set before scoring.
+   */
+  frameworkSuppressions?: ReadonlyArray<FrameworkSuppression>;
 }
 
 /**
@@ -58,10 +69,24 @@ export function runFilterPipeline(
 ): Diagnostic[] {
   const respectInline = options.respectInlineDisables !== false;
 
-  // Fixed, load-bearing stage order (RULE-023): auto-suppress (1) → severity (2) →
-  // ignore (3) → inline-disable (4, only when enabled). Order MUST NOT change.
+  // P5: build the framework-defaults filter ONCE per pipeline run; it's a pure
+  // predicate `(rule, filePath) → keep?` over the built-in catalog (plus any
+  // project-local additions from `.tsnuke/false-positives.md`). Wrapped as a
+  // Stage that returns `null` to drop.
+  const frameworkPredicate = makeFrameworkDefaultsStage(
+    options.frameworkSuppressions ?? [],
+  );
+  const frameworkStage: Stage = (d) =>
+    frameworkPredicate({ rule: d.rule, filePath: d.filePath }) ? d : null;
+
+  // Stage order (RULE-023, P5 extends): auto-suppress (1) → framework-defaults
+  // (1.5, NEW) → severity (2) → ignore (3) → inline-disable (4). Framework
+  // defaults run BEFORE severity overrides so a user can still resurrect a
+  // framework-suppressed rule via `config.rules.<rule>: "error"` — though that
+  // currently has no effect (suppressed = dropped). Resurrection is a follow-up.
   const stages: Stage[] = [
     stageAutoSuppress, // 1
+    frameworkStage, // 1.5 — P5 framework-aware defaults
     makeSeverityStage(config), // 2
     makeIgnoreStage(config), // 3
     ...(respectInline ? [makeInlineDisableStage(options.sources)] : []), // 4

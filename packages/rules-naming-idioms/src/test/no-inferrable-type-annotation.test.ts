@@ -38,12 +38,22 @@ describe("no-inferrable-type-annotation (SYN)", () => {
     ).toHaveLength(0);
   });
 
-  // RULE-026 (broken auto-fix): declares fixKind:"auto-fix" but attaches NO fix
-  // payload. Preserve verbatim — the diagnostic fires, but carries no `fix`.
-  it("declares fixKind auto-fix but emits NO fix payload (RULE-026)", () => {
+  // P4 (real codemod, supersedes RULE-026): emits a `fix.edits` payload that
+  // deletes the `: <type>` span.
+  it("emits a fix payload that deletes the redundant `: number` annotation", () => {
     expect(rule.fixKind).toBe("auto-fix");
-    const diags = runRule(rule, "const n: number = 5;\n");
+    const source = "const n: number = 5;\n";
+    const diags = runRule(rule, source);
     expect(diags).toHaveLength(1);
-    expect(diags[0]!.fix).toBeUndefined();
+    const fix = diags[0]!.fix;
+    expect(fix).toBeDefined();
+    expect(fix!.kind).toBe("auto-fix");
+    expect(fix!.edits).toHaveLength(1);
+    const edit = fix!.edits[0]!;
+    expect(source.slice(edit.start, edit.end)).toBe(": number");
+    expect(edit.replacement).toBe("");
+    // Verify the splice produces the expected code
+    const after = source.slice(0, edit.start) + edit.replacement + source.slice(edit.end);
+    expect(after).toBe("const n = 5;\n");
   });
 });

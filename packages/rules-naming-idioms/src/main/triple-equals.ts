@@ -11,9 +11,10 @@ import { defineRule } from "@tsnuke/rules-core-effect";
  * Loose equality delegates correctness to JavaScript's coercion rules rather
  * than the type system — the canonical coercion-shortcut "slop".
  *
- * RULE-026 (broken auto-fix): declares `fixKind: "auto-fix"` but attaches NO
- * `fix` payload — preserved verbatim from the legacy rule. (The `fixed` string is
- * embedded in the message text only; no `fix.edits` are produced.)
+ * P4 (real codemods): emits a `fix.edits` payload that replaces the loose
+ * operator token at its exact source position. `--fix` now applies this rule
+ * mechanically; the previous "auto-fix" claim was a vestigial RULE-026 lie
+ * (kind declared, no edits attached) — corrected here.
  */
 
 /** True if either operand is the literal `null` (or `undefined`), the allowed `== null` idiom. */
@@ -49,6 +50,7 @@ export const rule = defineRule(
       const opText = op === ts.SyntaxKind.EqualsEqualsToken ? "==" : "!=";
       const fixed = op === ts.SyntaxKind.EqualsEqualsToken ? "===" : "!==";
       const start = node.operatorToken.getStart(ctx.sourceFile);
+      const end = node.operatorToken.getEnd();
       const { line, character } =
         ctx.sourceFile.getLineAndCharacterOfPosition(start);
       ctx.report({
@@ -57,6 +59,10 @@ export const rule = defineRule(
         help: "Replace with strict equality; only `x == null` is allowed (to match both null and undefined).",
         line: line + 1,
         column: character + 1,
+        fix: {
+          kind: "auto-fix",
+          edits: [{ start, end, replacement: fixed }],
+        },
       });
     },
   }),

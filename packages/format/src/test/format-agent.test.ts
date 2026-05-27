@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Diagnostic } from "@tsnuke/contracts-effect";
-import { formatAgentReport } from "../main/index.js";
+import { derivePartialReason, formatAgentReport } from "../main/index.js";
 
 /** Build a plain Diagnostic literal for tests. */
 function diag(over: Partial<Diagnostic> & Pick<Diagnostic, "rule">): Diagnostic {
@@ -196,5 +196,91 @@ describe("formatAgentReport — agent-facing summaries", () => {
     const report = formatAgentReport([], null);
     expect(report.elapsedMs).toBe(0);
     expect(report.scorePartial).toBe(false);
+  });
+});
+
+// =============================================================================
+// P1 (honest scoring): partial scores never carry a band label, and the agent JSON
+// surfaces the partial reason + the score-formula breakdown so deltas are derivable.
+// =============================================================================
+describe("formatAgentReport — partial-score honesty (P1)", () => {
+  it("drops scoreLabel to null when scorePartial: true (no 'Great' on a partial measurement)", () => {
+    const report = formatAgentReport([], { score: 90, label: "Great" }, "", {
+      scorePartial: true,
+      partialReason: "typecheck-failed",
+    });
+    expect(report.score).toBe(90);
+    expect(report.scoreLabel).toBeNull();
+    expect(report.scorePartial).toBe(true);
+    expect(report.partialReason).toBe("typecheck-failed");
+  });
+
+  it("keeps scoreLabel when scorePartial: false (full-tier scores earn the band)", () => {
+    const report = formatAgentReport([], { score: 90, label: "Great" }, "", {
+      scorePartial: false,
+    });
+    expect(report.scoreLabel).toBe("Great");
+    expect(report.partialReason).toBeNull();
+  });
+
+  it("scoreBreakdown reproduces the score formula (100 − 1.5×err − 0.75×warn)", () => {
+    const errDiag = (n: number) =>
+      Array.from({ length: 1 }, (_, i) => ({
+        plugin: "tsnuke",
+        rule: `err${n}-${i}`,
+        severity: "error" as const,
+        tier: "SYN" as const,
+        category: "x",
+        message: "",
+        help: "",
+        filePath: "/a.ts",
+        line: 1,
+        column: 1,
+      }));
+    const warnDiag = (n: number) =>
+      Array.from({ length: 1 }, (_, i) => ({
+        plugin: "tsnuke",
+        rule: `warn${n}-${i}`,
+        severity: "warning" as const,
+        tier: "SYN" as const,
+        category: "x",
+        message: "",
+        help: "",
+        filePath: "/a.ts",
+        line: 1,
+        column: 1,
+      }));
+    const diags = [...errDiag(1), ...errDiag(2), ...warnDiag(1), ...warnDiag(2), ...warnDiag(3)];
+    const report = formatAgentReport(diags, { score: 95, label: "Great" });
+    // 2 distinct error rules × 1.5 = 3.0 ; 3 distinct warning rules × 0.75 = 2.25
+    expect(report.scoreBreakdown).toEqual({
+      base: 100,
+      errorPenalty: { count: 2, weight: 1.5, total: 3 },
+      warningPenalty: { count: 3, weight: 0.75, total: 2.25 },
+    });
+  });
+
+  it("scoreBreakdown is present even when score is null (zero counts)", () => {
+    const report = formatAgentReport([], null);
+    expect(report.scoreBreakdown).toEqual({
+      base: 100,
+      errorPenalty: { count: 0, weight: 1.5, total: 0 },
+      warningPenalty: { count: 0, weight: 0.75, total: 0 },
+    });
+  });
+});
+
+describe("derivePartialReason — engine reason → enum vocabulary", () => {
+  it("classifies the typecheck-failed sentinel", () => {
+    const reasons = { "tsnuke/no-floating-promises": "Tier-2 (type-aware) skipped: project does not type-check (typecheck:ok absent)." };
+    expect(derivePartialReason(reasons)).toBe("typecheck-failed");
+  });
+
+  it("classifies --no-deep, memory, returns null for unknown / empty", () => {
+    expect(derivePartialReason({ x: "Tier-2 (type-aware) skipped: --no-deep (type-aware pass disabled)." })).toBe("no-deep");
+    expect(derivePartialReason({ x: "Tier-2 (type-aware) skipped: memory ceiling would be exceeded (RULE-013 graceful degradation)." })).toBe("memory");
+    expect(derivePartialReason({})).toBeNull();
+    expect(derivePartialReason(undefined)).toBeNull();
+    expect(derivePartialReason({ x: "totally different reason" })).toBeNull();
   });
 });

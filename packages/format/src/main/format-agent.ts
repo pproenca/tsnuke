@@ -56,14 +56,54 @@ export interface TierBreakdown {
   readonly CFG: TierStat;
 }
 
+/**
+ * Machine-readable reason the score is partial — set when `scorePartial: true`.
+ * `null` when full-tier ran. The vocabulary mirrors the engine's `SKIP_REASON_*`
+ * sentinels so an agent can branch on it without parsing free-form text.
+ */
+export type PartialReason = "typecheck-failed" | "no-deep" | "memory" | "no-source-files";
+
+/**
+ * Explicit score-formula breakdown — lets an agent compute deltas across runs
+ * without rederiving the math from rule lists. Mirrors react-doctor's reporting
+ * (`100 − w_e × |err rules| − w_w × |warn rules|`).
+ */
+export interface ScoreBreakdown {
+  /** Base score before penalties (frozen at 100). */
+  readonly base: number;
+  /** Error-rule penalty: `count × weight = total`. */
+  readonly errorPenalty: { readonly count: number; readonly weight: number; readonly total: number };
+  /** Warning-rule penalty: `count × weight = total`. */
+  readonly warningPenalty: { readonly count: number; readonly weight: number; readonly total: number };
+}
+
 /** The full agent report payload. */
 export interface AgentReport {
   /** 0–100 score, or null when unscored. */
   score: number | null;
-  /** "Great" / "Needs work" / "Critical" / null. */
+  /**
+   * Band label ("Great" / "Needs work" / "Critical") — `null` when `scorePartial: true`
+   * OR `score === null`. Labels carry an implicit confidence claim about coverage and
+   * are reserved for fully-measured scores; on a partial score (TYP skipped) the band
+   * is not earned and is omitted so an agent can't read "Great" off a result that
+   * didn't run all checks. Use `partialReason` + `tierBreakdown` to render coverage.
+   */
   scoreLabel: string | null;
-  /** True when Tier-2 was skipped — score is on a partial scale. */
+  /** True when Tier-2 (TYP) was skipped — score is on a partial scale. */
   scorePartial: boolean;
+  /**
+   * Machine-readable reason for `scorePartial: true`; `null` when full-tier ran. The
+   * vocabulary is stable: `"typecheck-failed"` / `"no-deep"` / `"memory"` /
+   * `"no-source-files"`. Lets an agent branch on the reason rather than parse text.
+   */
+  partialReason: PartialReason | null;
+  /**
+   * Score formula breakdown — `base − errorPenalty.total − warningPenalty.total` = the
+   * raw score before rounding/clamping. Always present (set even when score is null,
+   * with zero counts). Agents can subtract two breakdowns across runs to see which
+   * rules changed the score.
+   */
+  scoreBreakdown: ScoreBreakdown;
   /** Distinct rules that fired. */
   ruleCount: number;
   /** Total occurrences across all rules. */
@@ -95,6 +135,8 @@ export interface AgentReportMeta {
   elapsedMs?: number;
   /** True when the type-aware tier was skipped (BC-03). */
   scorePartial?: boolean;
+  /** Reason `scorePartial` is true; `null` / omitted when full-tier ran. */
+  partialReason?: PartialReason | null;
 }
 
 /** Tier sort order: cheap/syntactic first, config last. */
@@ -136,6 +178,28 @@ function toRepoRelative(filePath: string, repoRoot: string): string {
   if (repoRoot.length === 0) return filePath;
   const root = repoRoot.endsWith("/") ? repoRoot : `${repoRoot}/`;
   return filePath.startsWith(root) ? filePath.slice(root.length) : filePath;
+}
+
+/**
+ * Map the engine's free-form skip-reason strings to the stable `PartialReason`
+ * vocabulary. Returns `null` when no TYP rules were skipped, or when the reason
+ * doesn't match a known sentinel. The engine carries the verbatim reason strings
+ * from `engine-plan-effect` (`SKIP_REASON_NO_TYPECHECK`, `SKIP_REASON_NO_DEEP`,
+ * `SKIP_REASON_MEMORY`); this function classifies them so agents can branch on a
+ * single discriminator instead of substring-matching prose that may shift.
+ */
+export function derivePartialReason(
+  skippedCheckReasons: Record<string, string> | undefined,
+): PartialReason | null {
+  if (skippedCheckReasons === undefined) return null;
+  const reasons = Object.values(skippedCheckReasons);
+  if (reasons.length === 0) return null;
+  const first = reasons[0] ?? "";
+  if (first.includes("does not type-check")) return "typecheck-failed";
+  if (first.includes("--no-deep")) return "no-deep";
+  if (first.includes("memory ceiling")) return "memory";
+  if (first.includes("no source files")) return "no-source-files";
+  return null;
 }
 
 /** Build a per-tier breakdown: rule count + occurrence count per tier. */
@@ -220,10 +284,43 @@ export function formatAgentReport(
     .map(([category, rules]) => ({ category, rules }))
     .sort((a, b) => a.category.localeCompare(b.category));
 
+  // Count distinct error / warning rules — same `plugin/rule` key the score uses
+  // (RULE-001 breadth-not-depth). Built locally so this slice stays decoupled
+  // from `score-effect`.
+  const errorRules = new Set<string>();
+  const warningRules = new Set<string>();
+  for (const d of diagnostics) {
+    const k = `${d.plugin}/${d.rule}`;
+    (d.severity === "error" ? errorRules : warningRules).add(k);
+  }
+  const ERROR_WEIGHT = 1.5;
+  const WARNING_WEIGHT = 0.75;
+  const scoreBreakdown: ScoreBreakdown = {
+    base: 100,
+    errorPenalty: {
+      count: errorRules.size,
+      weight: ERROR_WEIGHT,
+      total: errorRules.size * ERROR_WEIGHT,
+    },
+    warningPenalty: {
+      count: warningRules.size,
+      weight: WARNING_WEIGHT,
+      total: warningRules.size * WARNING_WEIGHT,
+    },
+  };
+
+  const scorePartial = meta.scorePartial ?? false;
+
   return {
     score: score?.score ?? null,
-    scoreLabel: score?.label ?? null,
-    scorePartial: meta.scorePartial ?? false,
+    // Drop the band label on partial scores — labels are reserved for fully-measured
+    // results. The agent already gets `scorePartial`, `partialReason`, and the score
+    // formula breakdown; a "Great" label on a partial score is what confused agents
+    // in production (the maddie-native 2026-05-27 session).
+    scoreLabel: scorePartial ? null : score?.label ?? null,
+    scorePartial,
+    partialReason: scorePartial ? meta.partialReason ?? null : null,
+    scoreBreakdown,
     ruleCount: byRule.size,
     occurrenceCount: diagnostics.length,
     elapsedMs: meta.elapsedMs ?? 0,

@@ -37,5 +37,12 @@ export {
   NodeContext,
 } from "./loadConfig.js";
 
+// ---- P5: project-local false-positive loader (.tsnuke/false-positives.md) ----
+export {
+  loadFalsePositives,
+  parseFalsePositives,
+  type ProjectLocalSuppression,
+} from "./loadFalsePositives.js";
+
 // ---- Self-barrel: THIS is the module's namespace ----
 export * as Config from "./index.js";

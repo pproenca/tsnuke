@@ -46,13 +46,27 @@ export interface PlannedWrite {
 }
 
 /** Marker line embedded in the hook so re-installs are idempotent. */
-const HOOK_MARKER = "# tsnuke-managed v1" as const;
+const HOOK_MARKER = "# tsnuke-managed v2" as const;
+/** Predecessor markers we still recognise as tsnuke-managed (safe to upgrade). */
+const LEGACY_HOOK_MARKERS = ["# tsnuke-managed v1"] as const;
+/** True if the existing hook body is one we wrote ourselves (any version). */
+const isTsnukeOwnedHook = (text: string): boolean =>
+  text.includes(HOOK_MARKER) || LEGACY_HOOK_MARKERS.some((m) => text.includes(m));
 
-/** The real pre-push hook body. Non-blocking: always exits 0. */
+/**
+ * The real pre-push hook body. Non-blocking: always exits 0.
+ *
+ * P6: defaults to `--diff` (regression check) so the hook runs fast on every
+ * push and surfaces a score line only for files changed in this push. The
+ * full-tree scan is a separate, explicit ask (`/tsnuke` → playbook → `full`
+ * scope). The marker version bump (`v1` → `v2`) lets the install command
+ * recognise + replace previous tsnuke-managed hooks without clobbering
+ * user-authored hooks.
+ */
 export const PRE_PUSH_HOOK = `#!/bin/sh
-${HOOK_MARKER} — non-blocking score visibility on push.
+${HOOK_MARKER} — non-blocking regression check on push.
 # Update by re-running \`npx tsnuke install\`.
-npx --no tsnuke --score 2>&1 || true
+npx --no tsnuke --diff --score 2>&1 || true
 exit 0
 ` as const;
 
@@ -120,7 +134,7 @@ export const runInstall = Effect.fn("Cli.install")(function* (
       if (flags.dryRun) {
         if (isPrePush) {
           const existing = yield* readIfExists(fs, w.path);
-          if (existing !== null && !existing.includes(HOOK_MARKER)) {
+          if (existing !== null && !isTsnukeOwnedHook(existing)) {
             yield* stdout(
               `[dry-run] would SKIP ${w.path} — existing non-tsnuke hook detected (would not clobber).\n`,
             );
@@ -133,11 +147,11 @@ export const runInstall = Effect.fn("Cli.install")(function* (
 
       if (isPrePush) {
         const existing = yield* readIfExists(fs, w.path);
-        if (existing !== null && !existing.includes(HOOK_MARKER)) {
+        if (existing !== null && !isTsnukeOwnedHook(existing)) {
           yield* stdout(
             `tsnuke: existing pre-push hook at ${w.path} — refusing to overwrite.\n` +
-              `       To enable tsnuke's check, append this line to the hook:\n` +
-              `       npx --no tsnuke --score 2>&1 || true\n`,
+              `       To enable tsnuke's regression check, append this line to the hook:\n` +
+              `       npx --no tsnuke --diff --score 2>&1 || true\n`,
           );
           continue;
         }

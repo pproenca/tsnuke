@@ -47,12 +47,31 @@ describe("triple-equals (SYN)", () => {
     ).toHaveLength(0);
   });
 
-  // RULE-026 (broken auto-fix): declares fixKind:"auto-fix" but attaches NO fix
-  // payload. The replacement text is in the MESSAGE only; no `fix.edits` exist.
-  it("declares fixKind auto-fix but emits NO fix payload (RULE-026)", () => {
+  // P4 (real codemod, supersedes RULE-026): the rule now emits a `fix.edits`
+  // payload that replaces the loose operator (`==` / `!=`) with its strict
+  // counterpart (`===` / `!==`) at the exact source position. `--fix` applies
+  // this mechanically. Previously the meta claimed `auto-fix` but no edits
+  // were attached, so the agent-JSON `fixSummary.autoFixable` counted as 0.
+  it("emits a fix payload that swaps `==` for `===` at the operator token", () => {
     expect(rule.fixKind).toBe("auto-fix");
-    const diags = runRule(rule, "const a = 1;\nconst x = a == 2;\n");
+    const source = "const a = 1;\nconst x = a == 2;\n";
+    const diags = runRule(rule, source);
     expect(diags).toHaveLength(1);
-    expect(diags[0]!.fix).toBeUndefined();
+    const fix = diags[0]!.fix;
+    expect(fix).toBeDefined();
+    expect(fix!.kind).toBe("auto-fix");
+    expect(fix!.edits).toHaveLength(1);
+    const edit = fix!.edits[0]!;
+    expect(source.slice(edit.start, edit.end)).toBe("==");
+    expect(edit.replacement).toBe("===");
+  });
+
+  it("emits a `!==` fix for `!=`", () => {
+    const source = "const a = 1;\nconst x = a != 2;\n";
+    const diags = runRule(rule, source);
+    expect(diags).toHaveLength(1);
+    const fix = diags[0]!.fix;
+    expect(fix).toBeDefined();
+    expect(fix!.edits[0]!.replacement).toBe("!==");
   });
 });

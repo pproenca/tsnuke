@@ -47,10 +47,36 @@ describe("consistent-type-definitions (SYN)", () => {
     expect(runRule(rule, "interface User { id: number }\n")).toHaveLength(0);
   });
 
-  // Edge: codemod fixKind => no auto-fix payload attached (advisory only).
-  it("declares fixKind codemod and emits no fix payload", () => {
+  // P4 (real codemod): rule now emits a `fix.edits` payload that rewrites
+  // `type X = { … }` as `interface X { … }`. The trailing `;` after `}` is
+  // legal in both forms — left in place.
+  it("emits a codemod fix that rewrites the alias as an interface", () => {
     expect(rule.fixKind).toBe("codemod");
-    const diags = runRule(rule, "type User = { id: number };\n");
-    expect(diags[0]!.fix).toBeUndefined();
+    const source = "type User = { id: number };\n";
+    const diags = runRule(rule, source);
+    expect(diags).toHaveLength(1);
+    const fix = diags[0]!.fix;
+    expect(fix).toBeDefined();
+    expect(fix!.kind).toBe("codemod");
+    expect(fix!.edits).toHaveLength(1);
+    const edit = fix!.edits[0]!;
+    const before = source.slice(edit.start, edit.end);
+    expect(before).toBe("type User = ");
+    expect(edit.replacement).toBe("interface User ");
+  });
+
+  it("preserves export modifier in the codemod", () => {
+    const source = "export type User = { id: number };\n";
+    const diags = runRule(rule, source);
+    const edit = diags[0]!.fix!.edits[0]!;
+    expect(source.slice(edit.start, edit.end)).toBe("export type User = ");
+    expect(edit.replacement).toBe("export interface User ");
+  });
+
+  it("preserves generic parameters in the codemod", () => {
+    const source = "type Box<T> = { value: T };\n";
+    const diags = runRule(rule, source);
+    const edit = diags[0]!.fix!.edits[0]!;
+    expect(edit.replacement).toBe("interface Box<T> ");
   });
 });

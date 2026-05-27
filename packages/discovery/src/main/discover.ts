@@ -66,6 +66,92 @@ interface RawTsconfig {
 const isObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
 
+// Strip JSONC comments + trailing commas with STRING AWARENESS — character-walking
+// state machine that knows when it's inside a "…" literal. The previous regex-based
+// stripper matched the first /-star and the last star-/ across the entire file, so
+// any tsconfig containing /-star inside a string (Next.js / Vite path mappings like
+// "@/star": ["./src/star"]) had its `paths` map and every downstream key deleted —
+// silently dropping `strict`, `noUncheckedIndexedAccess`, etc. for an enormous class
+// of real projects.
+//
+// Walks the input once: inside a string ("…", respecting backslash escapes) every
+// character is preserved; outside a string //…\n and /-star…star-/ are skipped, and
+// a trailing `,` before `}` or `]` is dropped. Result is valid JSON for any
+// well-formed JSONC input the previous pipeline would have parsed correctly.
+const stripJsonc = (text: string): string => {
+  // Pass 1: drop // and block comments, preserving everything inside "..." strings.
+  let cleaned = "";
+  let i = 0;
+  const n = text.length;
+  while (i < n) {
+    const c = text[i];
+    if (c === '"') {
+      cleaned += c;
+      i++;
+      while (i < n) {
+        const s = text[i];
+        cleaned += s;
+        i++;
+        if (s === "\\" && i < n) {
+          cleaned += text[i];
+          i++;
+          continue;
+        }
+        if (s === '"') break;
+      }
+      continue;
+    }
+    if (c === "/" && text[i + 1] === "/") {
+      while (i < n && text[i] !== "\n") i++;
+      continue;
+    }
+    if (c === "/" && text[i + 1] === "*") {
+      i += 2;
+      while (i < n && !(text[i] === "*" && text[i + 1] === "/")) i++;
+      i = Math.min(i + 2, n);
+      continue;
+    }
+    cleaned += c;
+    i++;
+  }
+
+  // Pass 2: drop trailing commas before `}` or `]`, still string-aware so a `,` that
+  // sits inside a string literal is preserved verbatim.
+  let out = "";
+  i = 0;
+  const m = cleaned.length;
+  while (i < m) {
+    const c = cleaned[i];
+    if (c === '"') {
+      out += c;
+      i++;
+      while (i < m) {
+        const s = cleaned[i];
+        out += s;
+        i++;
+        if (s === "\\" && i < m) {
+          out += cleaned[i];
+          i++;
+          continue;
+        }
+        if (s === '"') break;
+      }
+      continue;
+    }
+    if (c === ",") {
+      let j = i + 1;
+      while (j < m && (cleaned[j] === " " || cleaned[j] === "\t" || cleaned[j] === "\n" || cleaned[j] === "\r")) j++;
+      if (j < m && (cleaned[j] === "}" || cleaned[j] === "]")) {
+        i = j;
+        continue;
+      }
+    }
+    out += c;
+    i++;
+  }
+  return out;
+};
+
 /**
  * LENIENT JSON parse (legacy `readJsonFile`, `discover-ts-project.ts:47-56`): strip
  * block comments, line comments, and trailing commas, then `JSON.parse`. Tolerates the
@@ -87,12 +173,8 @@ const readJsonFile = (
       .readFileString(path, "utf8")
       .pipe(Effect.orElseSucceed(() => undefined as string | undefined));
     if (text === undefined) return undefined;
-    const stripped = text
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/(^|[^:])\/\/.*$/gm, "$1")
-      .replace(/,(\s*[}\]])/g, "$1");
     // tsnuke-disable-next-line no-unknown-return
-    const parsed = Either.try((): unknown => JSON.parse(stripped));
+    const parsed = Either.try((): unknown => JSON.parse(stripJsonc(text)));
     return Either.isRight(parsed) ? parsed.right : undefined;
   });
 

@@ -192,6 +192,55 @@ describe("discoverTsProject — lenient tsconfig parse", () => {
     );
     expect(info.strictFlags).toEqual({});
   });
+
+  // REGRESSION: the original regex-based stripper (`text.replace(/\/\*.*?\*\//g, "")`)
+  // matched `/*` and `*/` across string boundaries, corrupting any tsconfig that
+  // contained `/` inside a string value. Next.js / Vite scaffolds default to
+  // `"paths": { "@/*": ["./src/*"] }`, so the defect silently dropped `strict` and the
+  // rest of `compilerOptions` for an enormous class of real projects (e.g. maddie-native
+  // 2026-05-27 session — all 4 `enable-*` CFG rules fired on a fully-strict config).
+  // Now uses a string-aware state machine; this test pins the new behavior.
+  it("preserves `compilerOptions` when path mappings contain `/*` (Next.js / Vite shape)", async () => {
+    const tsconfig = `{
+      "compilerOptions": {
+        "strict": true,
+        "noUncheckedIndexedAccess": true,
+        "exactOptionalPropertyTypes": true,
+        "useUnknownInCatchVariables": true,
+        "paths": {
+          "@/*": ["./src/*"],
+          "@components/*": ["./src/components/*"]
+        }
+      }
+    }`;
+    const info = await runOk(
+      "/p",
+      makeTree({ "/p/tsconfig.json": tsconfig, "/p/a.ts": "" }),
+    );
+    expect(info.strictFlags).toEqual({
+      strict: true,
+      noUncheckedIndexedAccess: true,
+      exactOptionalPropertyTypes: true,
+      useUnknownInCatchVariables: true,
+    });
+  });
+
+  it("preserves comment-like sequences INSIDE strings", async () => {
+    const tsconfig = `{
+      "compilerOptions": {
+        "strict": true,
+        "paths": {
+          "url://prefix/*": ["./*"],
+          "block/*comment*/in-key/*": ["./*"]
+        }
+      }
+    }`;
+    const info = await runOk(
+      "/p",
+      makeTree({ "/p/tsconfig.json": tsconfig, "/p/a.ts": "" }),
+    );
+    expect(info.strictFlags).toEqual({ strict: true });
+  });
 });
 
 // ===========================================================================

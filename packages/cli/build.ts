@@ -25,6 +25,10 @@ await build({
   target: "node22",
   // `typescript` is the analysis backend — keep it external (a runtime dependency).
   external: ["typescript"],
+  // Inline markdown (the agent playbook at `prompts/agent.md`, future per-rule prompts
+  // at `prompts/rules/*.md`) as text constants so the bundled CLI ships them
+  // self-contained. Source of truth: `prompts/agent.md` at the repo root.
+  loader: { ".md": "text" },
   // Bake the real package version into the bundle so `--version` and the JSON report's
   // `version` field match what's published (source-mode/tests fall back to "0.0.0").
   define: { "process.env.TSNUKE_VERSION": JSON.stringify(version) },

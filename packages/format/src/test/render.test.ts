@@ -36,9 +36,14 @@ describe("renderScoreLine", () => {
     );
   });
 
-  it("appends a partial note when scorePartial is true", () => {
+  // P1 (honest scoring): a partial score MUST NOT display the band label ("Great" /
+  // "Needs work" / "Critical") — those carry an implicit confidence claim that a
+  // partial measurement can't make. The score line shows only the number + a
+  // coverage caveat. See AgentReport.scoreLabel (set to `null` on partial) for the
+  // same invariant on the machine surface.
+  it("drops the band label on a partial score; shows a coverage caveat instead", () => {
     expect(renderScoreLine({ score: 80, label: "Great", partial: true }, true)).toBe(
-      "Score: 80/100 — Great (partial — type info unavailable, not comparable)",
+      "Score: 80/100 (partial — type-aware tier skipped, not comparable to a full score)",
     );
   });
 
@@ -175,14 +180,27 @@ describe("renderPretty — tier line + rule grouping + footer", () => {
     expect(out).not.toContain("/repo/src/deep/x.ts");
   });
 
-  it("highlights partial-score state in the header", () => {
+  // P1: partial-score headers REPLACE the band label with a coverage caveat. Asserting
+  // that "Needs work" appears in a partial header would lock in the old (misleading)
+  // behavior where a partial measurement still claimed a confidence band.
+  it("partial-score header shows the coverage caveat and SUPPRESSES the band label", () => {
     const out = renderPretty(
       [diag({ rule: "r" })],
       { score: 70, label: "Needs work", partial: true },
       true,
     );
     expect(out).toContain("partial");
-    expect(out).toContain("Needs work");
+    expect(out).not.toContain("Needs work");
+  });
+
+  it("partial-score header surfaces the specific reason when supplied", () => {
+    const out = renderPretty(
+      [diag({ rule: "r" })],
+      { score: 70, label: "Needs work", partial: true },
+      true,
+      { partialReason: "typecheck-failed" },
+    );
+    expect(out).toContain("type-aware skipped: project doesn't type-check");
   });
 
   it("plain ASCII when color=false; embeds ANSI when color=true", () => {

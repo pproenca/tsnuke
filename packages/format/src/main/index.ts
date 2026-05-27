@@ -16,12 +16,15 @@
 
 export {
   formatAgentReport,
+  derivePartialReason,
   type AgentOccurrence,
   type AgentRuleEntry,
   type AgentCategoryGroup,
   type AgentReport,
   type AgentReportMeta,
   type AgentScoreInput,
+  type PartialReason,
+  type ScoreBreakdown,
   type TierStat,
   type TierBreakdown,
 } from "./format-agent.js";

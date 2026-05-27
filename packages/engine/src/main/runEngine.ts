@@ -112,6 +112,16 @@ export interface RunEngineOptions {
   readonly graphRules?: readonly GraphRule[];
   /** The tsconfig path CFG project-level findings are pinned to (default `tsconfig.json`). */
   readonly configFilePath?: string;
+  /**
+   * Compiler options for the Tier-2 `ts.Program`. When omitted, falls back to
+   * {@link DEFAULT_COMPILER_OPTIONS}. The caller (`diagnose`) reads the project's
+   * actual tsconfig.json via `ts.parseJsonConfigFileContent` and forwards the resolved
+   * options here — without this the Program's view of the project diverges from `tsc`'s
+   * (JSX, path aliases, lib targets, strict-family flags), every `.tsx` file or `@/…`
+   * import becomes a phantom error, `typecheckOk` collapses to `false`, and Tier-2 is
+   * silently skipped on every non-trivial project.
+   */
+  readonly compilerOptions?: ts.CompilerOptions;
   /** RULE-013 memory guard — injected RSS/ceiling. Default inert (never skips). */
   readonly memory?: MemoryGuard;
   /**
@@ -143,8 +153,13 @@ function walk(node: ts.Node, visit: (n: ts.Node) => void): void {
   node.forEachChild((child) => walk(child, visit));
 }
 
-/** The EXACT legacy CompilerOptions — preserved verbatim (engine.ts:130-137). */
-const COMPILER_OPTIONS: ts.CompilerOptions = {
+/**
+ * Default CompilerOptions used when the caller does not provide project-resolved ones.
+ * Kept identical to the legacy hardcode (engine.ts:130-137) so existing tests that don't
+ * pass `compilerOptions` see the same behavior. Real CLI runs go through `diagnose`,
+ * which parses the project's tsconfig and forwards those options here.
+ */
+export const DEFAULT_COMPILER_OPTIONS: ts.CompilerOptions = {
   target: ts.ScriptTarget.ESNext,
   module: ts.ModuleKind.ESNext,
   moduleResolution: ts.ModuleResolutionKind.Bundler,
@@ -157,12 +172,19 @@ const COMPILER_OPTIONS: ts.CompilerOptions = {
  * Build ONE `ts.Program` over the in-memory file set (§4.1). A virtual compiler host
  * serves the provided files from memory and delegates everything else (default lib,
  * real imports) to the default host, so the checker can resolve built-in types
- * (`Promise`, unions, …). Faithful port of legacy `buildProgramFromFiles`
- * (engine.ts:129-163). PURE/synchronous TS-API work — wrapped in `Effect.sync` only by
- * the caller (the `acquire` side of `scopedProgram`).
+ * (`Promise`, unions, …). PURE/synchronous TS-API work — wrapped in `Effect.sync` only
+ * by the caller (the `acquire` side of `scopedProgram`).
+ *
+ * `compilerOptions` are the project's resolved tsconfig options when available (so JSX,
+ * `paths`, `lib`, and the strict family match what `tsc` would see). Falls back to
+ * {@link DEFAULT_COMPILER_OPTIONS} when the caller passes nothing — keeps legacy tests
+ * unchanged.
  */
-function buildProgramFromFiles(files: readonly SourceFileInput[]): ts.Program {
-  const host = ts.createCompilerHost(COMPILER_OPTIONS, /* setParentNodes */ true);
+function buildProgramFromFiles(
+  files: readonly SourceFileInput[],
+  compilerOptions: ts.CompilerOptions = DEFAULT_COMPILER_OPTIONS,
+): ts.Program {
+  const host = ts.createCompilerHost(compilerOptions, /* setParentNodes */ true);
   const fileMap = new Map<string, string>(files.map((f) => [resolve(f.filePath), f.text]));
 
   const origGet = host.getSourceFile.bind(host);
@@ -183,7 +205,7 @@ function buildProgramFromFiles(files: readonly SourceFileInput[]): ts.Program {
 
   return ts.createProgram(
     files.map((f) => f.filePath),
-    COMPILER_OPTIONS,
+    compilerOptions,
     host,
   );
 }
@@ -243,7 +265,7 @@ export const runEngine: (
     const programStartedAt = Date.now();
     const program: ts.Program | undefined = buildProgram
       ? yield* scopedProgram(
-          Effect.sync(() => buildProgramFromFiles(files)),
+          Effect.sync(() => buildProgramFromFiles(files, options.compilerOptions)),
           // Release: drop the reference so the Program (and its parsed SourceFiles +
           // checker state) becomes eligible for GC before the next project's build —
           // never holding N Programs resident (the monorepo memory fix, RULE-036). The

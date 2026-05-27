@@ -107,13 +107,64 @@ interface RawTsconfig {
 const legacy = (fs: FS) => {
   const { join, dirname, isAbsolute, resolve, basename } = nodePath;
 
+  // String-aware JSONC stripper — mirrors discover.ts `stripJsonc`. The original
+  // legacy used a regex pipeline that corrupted any tsconfig containing `/` inside
+  // strings (e.g. `"@/*"` path maps). Equivalence now tracks the FIXED behavior.
+  const stripJsonc = (text: string): string => {
+    let cleaned = "";
+    let i = 0;
+    const n = text.length;
+    while (i < n) {
+      const c = text[i];
+      if (c === '"') {
+        cleaned += c; i++;
+        while (i < n) {
+          const s = text[i]; cleaned += s; i++;
+          if (s === "\\" && i < n) { cleaned += text[i]; i++; continue; }
+          if (s === '"') break;
+        }
+        continue;
+      }
+      if (c === "/" && text[i + 1] === "/") {
+        while (i < n && text[i] !== "\n") i++;
+        continue;
+      }
+      if (c === "/" && text[i + 1] === "*") {
+        i += 2;
+        while (i < n && !(text[i] === "*" && text[i + 1] === "/")) i++;
+        i = Math.min(i + 2, n);
+        continue;
+      }
+      cleaned += c; i++;
+    }
+
+    let out = "";
+    i = 0;
+    const m = cleaned.length;
+    while (i < m) {
+      const c = cleaned[i];
+      if (c === '"') {
+        out += c; i++;
+        while (i < m) {
+          const s = cleaned[i]; out += s; i++;
+          if (s === "\\" && i < m) { out += cleaned[i]; i++; continue; }
+          if (s === '"') break;
+        }
+        continue;
+      }
+      if (c === ",") {
+        let j = i + 1;
+        while (j < m && (cleaned[j] === " " || cleaned[j] === "\t" || cleaned[j] === "\n" || cleaned[j] === "\r")) j++;
+        if (j < m && (cleaned[j] === "}" || cleaned[j] === "]")) { i = j; continue; }
+      }
+      out += c; i++;
+    }
+    return out;
+  };
+
   const readJsonFile = (path: string): unknown => {
     const text = fs.readFileSync(path, "utf8");
-    const stripped = text
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/(^|[^:])\/\/.*$/gm, "$1")
-      .replace(/,(\s*[}\]])/g, "$1");
-    return JSON.parse(stripped);
+    return JSON.parse(stripJsonc(text));
   };
 
   const isObject = (v: unknown): v is Record<string, unknown> =>
