@@ -11,7 +11,10 @@
  *   - the inspect handler over the injectable IO seam (`runInspect`, `InspectIo`,
  *     `toDiagnoseOptions`, `buildJsonString`, `findDiagnosticAt`),
  *   - the install handler over `@effect/platform` FileSystem (`runInstall`, `planInstall`,
- *     `buildSkillMarkdown`, `InstallFlags`).
+ *     `PRE_PUSH_HOOK`, `InstallFlags`). The skill markdown is built by the shared
+ *     `buildAgentsMarkdown` (format slice) — single source of truth for `tsnuke agents`
+ *     output and the on-disk `SKILL.md` written by install.
+ *   - the `agents` command for the AGENTS.md discovery payload.
  *
  * Pure formatting/exit/score/fix logic is CONSUMED from the proven slices and is NOT
  * re-exported here (those stay owned by their slices).
@@ -21,6 +24,7 @@
 export { command, run } from "./cli.js";
 export { inspectCommand, resolveInspectFlags, VERSION } from "./inspectCommand.js";
 export { installCommand } from "./installCommand.js";
+export { agentsCommand } from "./agentsCommand.js";
 
 // ── Pure flag contract + RULE-028 validation ──
 export {
@@ -47,7 +51,7 @@ export {
 export {
   runInstall,
   planInstall,
-  buildSkillMarkdown,
+  PRE_PUSH_HOOK,
   type InstallFlags,
   type PlannedWrite,
 } from "./installHandler.js";

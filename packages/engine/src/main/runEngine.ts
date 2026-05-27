@@ -60,6 +60,8 @@ import {
   shouldSkipTier2ForMemory,
 } from "@tsnuke/scale-effect";
 import type { Diagnostic } from "@tsnuke/contracts-effect";
+import type { OnProgress } from "./types.js";
+import { safeEmit } from "./progress.js";
 
 export {
   planEngineRun,
@@ -118,6 +120,11 @@ export interface RunEngineOptions {
    * Program, rather than borrowing the scale slice's proof. Not called when no Program is built.
    */
   readonly onProgramRelease?: () => void;
+  /**
+   * Optional phase-level progress sink. Called synchronously at boundaries. Defaults
+   * to a no-op; a throwing renderer is silently caught — see {@link safeEmit}.
+   */
+  readonly onProgress?: OnProgress;
 }
 
 /** Map a file extension to the right ts.ScriptKind so JSX parses correctly. */
@@ -226,11 +233,14 @@ export const runEngine: (
     const estimatedProgramBytes = mem.estimatedProgramBytes ?? 0;
     const ceilingBytes = mem.ceilingBytes ?? DEFAULT_TIER2_MEMORY_CEILING_BYTES;
     const onProgramRelease = options.onProgramRelease;
+    const onProgress = options.onProgress;
+    const emit = (event: Parameters<OnProgress>[0]): void => safeEmit(onProgress, event);
 
     // --- Single Program build + typecheck:ok as a RESULT, not a pre-step (§4.1). ---
     // RULE-036: the Program is acquired into the Scope and released when it closes — the
     // OOM cure legacy never ran. The build/release are the one genuinely-effectful part.
     const buildProgram = deep !== false && files.length > 0;
+    const programStartedAt = Date.now();
     const program: ts.Program | undefined = buildProgram
       ? yield* scopedProgram(
           Effect.sync(() => buildProgramFromFiles(files)),
@@ -249,6 +259,14 @@ export const runEngine: (
       ts
         .getPreEmitDiagnostics(program)
         .filter((d) => d.category === ts.DiagnosticCategory.Error).length === 0;
+
+    if (program !== undefined) {
+      emit({ kind: "building-program", typecheckOk, elapsedMs: Date.now() - programStartedAt });
+    } else if (deep === false) {
+      emit({ kind: "program-skipped", reason: "--no-deep" });
+    } else if (files.length === 0) {
+      emit({ kind: "program-skipped", reason: "no source files" });
+    }
 
     // --- RULE-013 (WIRED, inert by default): under memory pressure, skip Tier-2. ---
     // We model "skip for memory" as forcing the planner's `deep` to false ONLY for the
@@ -362,6 +380,7 @@ export const runEngine: (
       });
     };
 
+    const tier1StartedAt = Date.now();
     for (const { filePath, text } of files) {
       const sourceFile = sourceFileFor(filePath, text);
 
@@ -371,14 +390,45 @@ export const runEngine: (
         const rule = ruleById.get(meta.id);
         if (rule !== undefined) runVisitors(rule, sourceFile, filePath, false);
       }
+    }
+    emit({
+      kind: "tier-1",
+      rules: perFileTier1.length + cfgTier1.length,
+      files: files.length,
+      elapsedMs: Date.now() - tier1StartedAt,
+    });
 
-      // Tier-2: TYP, with the single shared checker (§4.1).
-      if (checker !== undefined) {
+    // Tier-2: TYP, with the single shared checker (§4.1). Emitted as its own phase so
+    // the progress stream surfaces the (usually) longest part of the run.
+    if (checker !== undefined) {
+      const tier2StartedAt = Date.now();
+      for (const { filePath, text } of files) {
+        const sourceFile = sourceFileFor(filePath, text);
         for (const { meta } of plan.tier2) {
           const rule = ruleById.get(meta.id);
           if (rule !== undefined) runVisitors(rule, sourceFile, filePath, true);
         }
       }
+      emit({
+        kind: "tier-2",
+        rules: plan.tier2.length,
+        files: files.length,
+        elapsedMs: Date.now() - tier2StartedAt,
+      });
+    } else {
+      // Surface WHY tier-2 didn't run: NO_DEEP / NO_TYPECHECK / RULE-013 memory.
+      // Priority order matches user intent: an EMPTY project ("no source files")
+      // outranks `--no-deep`, which outranks the planner's per-rule reason, which
+      // outranks the generic fallback. Memory pressure beats them all.
+      const firstReason: string | undefined = Object.values(skippedCheckReasons)[0];
+      const reason = memoryPressure
+        ? SKIP_REASON_MEMORY
+        : files.length === 0
+          ? "no source files"
+          : deep === false
+            ? SKIP_REASON_NO_DEEP
+            : (firstReason ?? "tier-2 disabled");
+      emit({ kind: "tier-2-skipped", reason });
     }
 
     // --- GRAPH tier: whole-module-graph rules, run ONCE over the file set. They are
@@ -388,10 +438,12 @@ export const runEngine: (
         shouldActivate(g, effectiveCaps, ignoredTags, overrides.get(g.id)),
       );
       if (activeGraphRules.length > 0) {
+        const graphStartedAt = Date.now();
         const graph = buildModuleGraph(files);
         for (const g of activeGraphRules) {
           g.analyze(createGraphRuleContext(g, { graph, sink }));
         }
+        emit({ kind: "graph", rules: activeGraphRules.length, elapsedMs: Date.now() - graphStartedAt });
       }
     }
 

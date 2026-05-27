@@ -14,10 +14,11 @@
  * is what carries `partial`. See TRANSFORMATION_NOTES.md.
  */
 
-import type { Diagnostic, TsNukeConfig } from "@tsnuke/contracts-effect";
+import type { Diagnostic, OnProgress, TsNukeConfig } from "@tsnuke/contracts-effect";
 import type { ProjectInfo } from "@tsnuke/discovery-effect";
 
 export type { ProjectInfo };
+export type { ProgressEvent, OnProgress } from "@tsnuke/contracts-effect";
 
 /** The result of local scoring (§5, BC-01/04) — the LEGACY shape (label, not band). */
 export interface ScoreResult {
@@ -45,6 +46,13 @@ export interface DiagnoseOptions {
    * single workspace-root `tsnuke.config.json` uniformly across members.
    */
   readonly config?: TsNukeConfig;
+  /**
+   * Optional phase-level progress sink. Called synchronously at boundaries (discover,
+   * read, build-program, tier-1, tier-2, graph, score, done). Defaults to a no-op; an
+   * exception thrown by the sink is caught and discarded so a misbehaving renderer can
+   * never poison the engine.
+   */
+  readonly onProgress?: OnProgress;
 }
 
 /** The result of a single-project `diagnose()` call (the public boundary). */

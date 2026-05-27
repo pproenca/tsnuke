@@ -43,6 +43,8 @@ export {
 
 export { renderHeader, type ScoreHeaderInput } from "./renderHeader.js";
 
+export { renderFooter, type FooterInput } from "./renderFooter.js";
+
 export {
   renderWorkspacePretty,
   type WorkspaceView,
@@ -57,6 +59,13 @@ export {
   type RuleLookup,
   type ExplainContext,
 } from "./explain.js";
+
+export { renderProgressLine, type RenderProgressOptions } from "./renderProgress.js";
+
+export {
+  buildAgentsMarkdown,
+  type BuildAgentsMarkdownInput,
+} from "./buildAgentsMarkdown.js";
 
 // Theme helpers that external consumers need. The full palette
 // (red/green/yellow/blue/magenta/cyan) stays internal to the slice.

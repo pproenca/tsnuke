@@ -44,7 +44,8 @@ import type {
   TsconfigNotFoundError,
 } from "@tsnuke/errors-effect";
 import { runEngine, type RunEngineOptions, type SourceFileInput } from "./runEngine.js";
-import type { DiagnoseOptions, DiagnoseResult, ScoreResult } from "./types.js";
+import { safeEmit } from "./progress.js";
+import type { DiagnoseOptions, DiagnoseResult, OnProgress, ScoreResult } from "./types.js";
 
 /** Source file extensions read for analysis (legacy `SOURCE_EXTENSIONS`, index.ts:151). */
 const SOURCE_EXTENSIONS: ReadonlySet<string> = new Set([".ts", ".tsx"]);
@@ -126,8 +127,12 @@ export const diagnose: (
     const startedAt = yield* Effect.sync(() => Date.now());
 
     const path = yield* Path.Path;
+    const onProgress = options.onProgress;
+    const emit = (event: Parameters<OnProgress>[0]): void => safeEmit(onProgress, event);
 
+    const discoverStartedAt = Date.now();
     const project: ProjectInfo = yield* discoverTsProject(directory);
+    emit({ kind: "discovered", directory: project.rootDirectory, elapsedMs: Date.now() - discoverStartedAt });
     const caps = computeCapabilities(project);
     const config: TsNukeConfig =
       options.config ?? (yield* loadConfig(directory));
@@ -137,9 +142,11 @@ export const diagnose: (
 
     // Diff/staged modes pass an explicit include set; a full scan enumerates the
     // project's source tree (discovery's effectful `collectSourceFiles`).
+    const readStartedAt = Date.now();
     const includePaths =
       options.includePaths ?? (yield* collectSourceFiles(project.rootDirectory));
     const files = yield* readSourceFiles(includePaths);
+    emit({ kind: "reading-files", count: files.length, elapsedMs: Date.now() - readStartedAt });
 
     const engineResult = yield* runEngine(
       files,
@@ -150,6 +157,7 @@ export const diagnose: (
       {
         configFilePath: path.join(project.rootDirectory, "tsconfig.json"),
         ...(options.memory !== undefined ? { memory: options.memory } : {}),
+        ...(onProgress !== undefined ? { onProgress } : {}),
       },
     );
 
@@ -173,8 +181,10 @@ export const diagnose: (
       label: band,
       partial: engineResult.scorePartial,
     };
+    emit({ kind: "scoring", score, partial: engineResult.scorePartial });
 
     const elapsedMilliseconds = (yield* Effect.sync(() => Date.now())) - startedAt;
+    emit({ kind: "done", elapsedMs: elapsedMilliseconds });
 
     const result: DiagnoseResult = {
       diagnostics: filtered,

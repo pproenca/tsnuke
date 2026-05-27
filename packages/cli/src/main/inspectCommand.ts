@@ -26,9 +26,10 @@ import { Args, Command, Options, ValidationError } from "@effect/cli";
 import { HelpDoc } from "@effect/cli";
 import { Terminal } from "@effect/platform";
 import { Effect, Either, Option } from "effect";
-import type { RuleMeta } from "@tsnuke/contracts-effect";
+import type { OnProgress, RuleMeta } from "@tsnuke/contracts-effect";
 import { diagnoseWorkspaceNode } from "@tsnuke/engine-effect";
 import { applyFixesToFilesNode } from "@tsnuke/fix-applier-effect";
+import { renderProgressLine } from "@tsnuke/format-effect";
 import { graphRuleRegistry, ruleRegistry } from "@tsnuke/rules-registry-effect";
 import {
   FlagError,
@@ -322,14 +323,27 @@ export const resolveInspectFlags = Effect.fn("Cli.resolveFlags")(function* (
  * The PRODUCTION IO seam: `Terminal`-backed stdout/stderr + the Node runnables of the
  * engine + fix-applier slices + the global rule catalog. Built inside an Effect because
  * `stdout`/`stderr` need the `Terminal` service from context.
+ *
+ * `colorEnabled` decides whether the progress lines carry ANSI dim escapes. Progress
+ * goes through `process.stderr.write` directly so it is interleaved-visible with the
+ * report rather than buffered through `Terminal.display`.
  */
-const makeRealIo = (terminal: Terminal.Terminal): InspectIo => {
+const makeRealIo = (terminal: Terminal.Terminal, colorEnabled: boolean): InspectIo => {
   // A `Rule`/`GraphRule` is `RuleMeta & { create }`, so each registry entry IS a
   // structural `RuleMeta` — keyed by `id`. Include both per-file and graph rules so
   // `--explain <graph-rule>` resolves.
   const ruleCatalog: Record<string, RuleMeta> = Object.fromEntries(
     [...ruleRegistry, ...graphRuleRegistry].map((r): [string, RuleMeta] => [r.id, r]),
   );
+  // Progress sink: synchronous write to stderr so each phase line lands as it happens.
+  // Wrapped in try/catch defensively — an EPIPE on stderr would otherwise crash mid-run.
+  const onProgress: OnProgress = (event) => {
+    try {
+      process.stderr.write(`${renderProgressLine(event, { color: colorEnabled })}\n`);
+    } catch {
+      /* stderr broken — ignore so the engine completes */
+    }
+  };
   return {
     // `terminal.display` may fail with a `PlatformError`; a Terminal-write failure is
     // unexpected/fatal, so `orDie` it to satisfy the `Effect<void>` (never-error) seam.
@@ -338,6 +352,7 @@ const makeRealIo = (terminal: Terminal.Terminal): InspectIo => {
     // too (the `--fix` summary). The process edge keeps real stdout/stderr separation
     // for piping; tests assert on the captured text regardless of channel.
     stderr: (text) => terminal.display(text).pipe(Effect.orDie),
+    onProgress,
     // `diagnoseWorkspaceNode` CAN reject (e.g. `TsconfigNotFoundError` on a dir that is
     // neither a TS project nor a workspace), and `InspectIo.analyze` declares a typed error
     // channel for exactly that. Use `tryPromise` (NOT `promise`) so the rejection lands in
@@ -348,6 +363,9 @@ const makeRealIo = (terminal: Terminal.Terminal): InspectIo => {
     // `tryPromise` would wrap it in `UnknownException` and lose the message).
     analyze: (directory, options) =>
       Effect.tryPromise({
+        // `options` may already carry `onProgress` (the handler decides when to forward it
+        // based on output mode — see `inspectHandler.ts`). `diagnoseWorkspaceNode` accepts
+        // the same option shape and forwards it down to each per-project `diagnose`.
         try: () => diagnoseWorkspaceNode(directory, options),
         catch: (e) => e,
       }),
@@ -385,7 +403,7 @@ export const inspectCommand = Command.make(
       }
       const flags: InspectFlags = { ...resolved.right, directory };
       const rulesChecked = ruleRegistry.length + graphRuleRegistry.length;
-      const code = yield* runInspect(flags, makeRealIo(terminal), VERSION, rulesChecked);
+      const code = yield* runInspect(flags, makeRealIo(terminal, flags.color), VERSION, rulesChecked);
       // The process edge reads `process.exitCode`; set it here for the success path.
       // (Engine failures bypass this and are mapped to 1 at `bin.ts`.)
       process.exitCode = code;

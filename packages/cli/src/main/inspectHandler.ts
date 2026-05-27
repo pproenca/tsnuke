@@ -22,7 +22,7 @@
 
 import * as os from "node:os";
 import { Effect } from "effect";
-import type { Diagnostic, RuleMeta } from "@tsnuke/contracts-effect";
+import type { Diagnostic, OnProgress, RuleMeta } from "@tsnuke/contracts-effect";
 import type {
   DiagnoseOptions,
   DiagnoseResult,
@@ -59,11 +59,20 @@ export interface InspectIo {
    * comes back as a 1-entry, `isWorkspace:false` WorkspaceResult; a workspace ROOT as N
    * entries with `isWorkspace:true`. Tests inject a canned result. May fail with the
    * engine's tagged discovery errors (→ exit 1 at the process edge).
+   *
+   * `options.onProgress` (if set) receives phase events as the run progresses; the
+   * production seam wires this to a stderr renderer. Tests can omit it.
    */
   readonly analyze: (
     directory: string,
-    options: DiagnoseOptions,
+    options: DiagnoseOptions & { readonly onProgress?: OnProgress },
   ) => Effect.Effect<WorkspaceResult, unknown>;
+  /**
+   * Optional phase-level progress sink — surfaced by the handler so the renderer
+   * can show "discovering project…" / "tier-2: TYP over 124 files…" lines while
+   * the engine works. Default: undefined (tests don't need it).
+   */
+  readonly onProgress?: OnProgress;
   /**
    * Apply `--fix` edits over real files (fix-applier slice; CWE-59-safe, atomic).
    * Production wires `applyFixesToFilesNode(diagnostics, rootDir)`; tests inject a counter.
@@ -222,7 +231,21 @@ export const runInspect = Effect.fn("Cli.inspect")(function* (
     // 2. analyze (the one genuinely-effectful + possibly-failing step). The seam is
     //    monorepo-aware: a plain project comes back as a 1-entry, `isWorkspace:false`
     //    WorkspaceResult; a workspace ROOT as N entries with `isWorkspace:true`.
-    const ws = yield* io.analyze(flags.directory, toDiagnoseOptions(flags));
+    //    Progress streaming is suppressed for `--score` (already one line of output),
+    //    `--json` (would corrupt the JSON stream), `--format agent` (same), and
+    //    `--explain`/`--why` (engine result is discarded anyway).
+    const suppressProgress =
+      flags.score ||
+      flags.json ||
+      flags.format === "agent" ||
+      flags.explain !== undefined ||
+      flags.why !== undefined ||
+      io.onProgress === undefined;
+    const diagnoseOpts: DiagnoseOptions & { readonly onProgress?: OnProgress } = {
+      ...toDiagnoseOptions(flags),
+      ...(suppressProgress || io.onProgress === undefined ? {} : { onProgress: io.onProgress }),
+    };
+    const ws = yield* io.analyze(flags.directory, diagnoseOpts);
     const single = ws.isWorkspace ? undefined : ws.projects[0];
     const allDiagnostics = ws.projects.flatMap((p) => p.diagnostics);
 

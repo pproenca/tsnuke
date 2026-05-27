@@ -46,6 +46,8 @@ export type {
   WorkspaceResult,
   ScoreResult,
   ProjectInfo,
+  ProgressEvent,
+  OnProgress,
 } from "./types.js";
 
 // ---- Production runnable + Layer ----

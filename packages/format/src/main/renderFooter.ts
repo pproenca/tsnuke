@@ -24,7 +24,7 @@ function affectedFileCount(diagnostics: readonly Diagnostic[]): number {
   return new Set(diagnostics.map((d) => d.filePath)).size;
 }
 
-/** Render the two-line footer (stats line + CTA). Returns the joined string. */
+/** Render the two- or three-line footer (stats · CTA · agent hint). */
 export function renderFooter(input: FooterInput): string {
   const { diagnostics, fixSummary, nextAction, rulesChecked, elapsedMs, color } = input;
   const files = affectedFileCount(diagnostics);
@@ -36,9 +36,16 @@ export function renderFooter(input: FooterInput): string {
     `${bold(color, `${diagnostics.length} ${noun}`)} across ${files} ${fileNoun} · ` +
     `${rulesChecked} ${ruleNoun} checked · ${formatDuration(elapsedMs)}`;
 
+  // The agent-discovery hint — a third dim line pointing AI agents at the
+  // discovery payload (`tsnuke agents`) and the machine-readable output flag
+  // (`--format agent`). Shown whenever the human pretty output is rendered, so
+  // an agent piping output (which falls back to `--no-color` in non-TTY anyway)
+  // still sees the breadcrumb. Indented to match the CTA above.
+  const agentHint = `  ${dim(color, "ⓘ AI agents: `tsnuke agents` for a discovery payload · `--format agent` for JSON")}`;
+
   // CTA is only meaningful when there's a follow-up to take.
   if (diagnostics.length === 0) {
-    return `  ${stats}\n  ${dim(color, "✓ All clear — no issues found.")}`;
+    return `  ${stats}\n  ${dim(color, "✓ All clear — no issues found.")}\n${agentHint}`;
   }
 
   // Suffix detail when --fix can do useful work.
@@ -47,5 +54,5 @@ export function renderFooter(input: FooterInput): string {
       ? ` ${dim(color, `(${fixSummary.codemod} codemod, ${fixSummary.manual} manual remaining)`)}`
       : "";
 
-  return `  ${stats}\n  ${dim(color, "→")} ${nextAction.summary}${detail}`;
+  return `  ${stats}\n  ${dim(color, "→")} ${nextAction.summary}${detail}\n${agentHint}`;
 }

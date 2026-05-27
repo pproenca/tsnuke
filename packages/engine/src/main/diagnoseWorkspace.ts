@@ -33,6 +33,7 @@ import type {
   TsconfigNotFoundError,
 } from "@tsnuke/errors-effect";
 import { diagnose } from "./diagnose.js";
+import { safeEmit } from "./progress.js";
 import type { RunEngineOptions } from "./runEngine.js";
 import type { DiagnoseOptions, DiagnoseResult, WorkspaceResult } from "./types.js";
 
@@ -94,11 +95,15 @@ export const diagnoseWorkspace: (
 
   // Workspace: analyze each member SEQUENTIALLY, each under its own Scope so project N's
   // Program is released before N+1 (RULE-036 / BC-24 — bounded memory across the run).
-  const projects: DiagnoseResult[] = yield* Effect.forEach(
-    memberDirs,
-    (memberDir) => Effect.scoped(diagnose(memberDir, memberOptions)),
-    { concurrency: 1 },
-  );
+  // Per-project `project-start` events let the renderer show "3/12 packages/foo" headers.
+  const total = memberDirs.length;
+  const onProgress = options.onProgress;
+  const projects: DiagnoseResult[] = [];
+  for (const [i, memberDir] of memberDirs.entries()) {
+    safeEmit(onProgress, { kind: "project-start", index: i + 1, total, directory: memberDir });
+    const r = yield* Effect.scoped(diagnose(memberDir, memberOptions));
+    projects.push(r);
+  }
 
   const elapsedMilliseconds = (yield* Effect.sync(() => Date.now())) - startedAt;
   return {

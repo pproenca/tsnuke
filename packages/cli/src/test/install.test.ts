@@ -1,19 +1,26 @@
 /**
- * `install` (RULE-038) — behavioral tests over a REAL temp dir + the Node FileSystem
- * Layer. Asserts: writes the real SKILL.md + the INERT pre-push stub (verbatim body) +
- * the `{}` agent-hook config under `--agent-hooks`; `--dry-run` writes NOTHING; always
- * exit 0. PRESERVED-DEFECT: the inert/clobbering hook is asserted as-is, not "fixed".
+ * `install` — behavioral tests over a REAL temp dir + the Node FileSystem Layer.
+ *
+ * Asserts:
+ *   - Writes the real SKILL.md + a real non-blocking pre-push hook (no longer the
+ *     inert stub the legacy install shipped — the RULE-038 preserved defect is fixed).
+ *   - Refuses to clobber an existing non-tsnuke pre-push hook; emits a one-line
+ *     instruction instead.
+ *   - Idempotent re-install: a re-run overwrites our OWN marker-bearing hook safely.
+ *   - `--dry-run` writes NOTHING but describes the plan, including the SKIP for
+ *     an existing non-tsnuke hook.
+ *   - Always exit 0.
  */
 
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { NodeContext } from "@effect/platform-node";
 import { Effect } from "effect";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-  buildSkillMarkdown,
   planInstall,
+  PRE_PUSH_HOOK,
   runInstall,
   type InstallFlags,
 } from "../main/installHandler.js";
@@ -39,7 +46,7 @@ const run = (flags: Partial<InstallFlags>): Promise<0> =>
     ).pipe(Effect.provide(NodeContext.layer)),
   );
 
-describe("planInstall (pure) — RULE-038 plan", () => {
+describe("planInstall (pure)", () => {
   it("plans SKILL.md + pre-push always; agent-hook only with --agent-hooks", () => {
     const base = planInstall({ cwd: "/x", yes: false, dryRun: false, agentHooks: false });
     expect(base.map((w) => w.path)).toEqual([
@@ -55,38 +62,40 @@ describe("planInstall (pure) — RULE-038 plan", () => {
     expect(withHooks.map((w) => w.path)).toContain("/x/.claude/hooks/tsnuke.json");
   });
 
-  it("the pre-push body is the INERT stub (preserved defect, verbatim)", () => {
+  it("the pre-push body is the new non-blocking hook carrying the tsnuke marker", () => {
     const hook = planInstall({
       cwd: "/x",
       yes: false,
       dryRun: false,
       agentHooks: false,
     }).find((w) => w.path.endsWith("pre-push"));
-    expect(hook?.contents).toBe(
-      "#!/bin/sh\n# TODO(P1): non-blocking tsnuke pre-push check\nexit 0\n",
-    );
+    expect(hook?.contents).toBe(PRE_PUSH_HOOK);
+    expect(hook?.contents).toContain("# tsnuke-managed v1");
+    // Uses the modern `--no` form (the deprecated `--no-install` is a no-op on
+    // npm 7+ and Node 22, which this project requires).
+    expect(hook?.contents).toContain("npx --no tsnuke --score");
+    expect(hook?.contents).not.toContain("--no-install");
+    expect(hook?.contents).toContain("exit 0");
   });
 
-  it("buildSkillMarkdown is a real, deterministic SKILL.md", () => {
-    const md = buildSkillMarkdown();
-    expect(md).toContain("name: tsnuke");
-    expect(md).toContain("npx tsnuke --format agent");
-    expect(buildSkillMarkdown()).toBe(md); // deterministic
+  it("the SKILL.md content carries the AGENTS.md front-matter + recipes + catalog", () => {
+    const skill = planInstall({ cwd: "/x", yes: false, dryRun: false, agentHooks: false })
+      .find((w) => w.path.endsWith("SKILL.md"))?.contents ?? "";
+    expect(skill).toContain("name: tsnuke");
+    expect(skill).toContain("npx -y tsnuke --format agent");
+    expect(skill).toContain("## Rule catalog");
   });
 });
 
 describe("runInstall over a real temp dir (Node FileSystem)", () => {
-  it("writes the real SKILL.md + inert pre-push; returns 0", async () => {
+  it("writes SKILL.md + the real non-blocking pre-push hook; returns 0", async () => {
     const code = await run({});
     expect(code).toBe(0);
     const skill = join(dir, ".agent/skills/tsnuke/SKILL.md");
     const hook = join(dir, ".git/hooks/pre-push");
     expect(existsSync(skill)).toBe(true);
     expect(readFileSync(skill, "utf8")).toContain("name: tsnuke");
-    // PRESERVED DEFECT: the hook exists but is inert.
-    expect(readFileSync(hook, "utf8")).toBe(
-      "#!/bin/sh\n# TODO(P1): non-blocking tsnuke pre-push check\nexit 0\n",
-    );
+    expect(readFileSync(hook, "utf8")).toBe(PRE_PUSH_HOOK);
     expect(out.join("")).toContain("wrote");
   });
 
@@ -104,16 +113,40 @@ describe("runInstall over a real temp dir (Node FileSystem)", () => {
     expect(out.join("")).toContain("[dry-run] would write");
   });
 
-  it("CONFIRMED DEFECT: clobbers an existing pre-push hook unconditionally", async () => {
-    // Pre-seed an existing, meaningful hook directly via node fs.
+  it("refuses to clobber an existing non-tsnuke pre-push hook; SKILL.md still written", async () => {
     const hooksDir = join(dir, ".git/hooks");
-    const { mkdirSync, writeFileSync } = await import("node:fs");
+    const realHookBody = "#!/bin/sh\necho real-hook\nexit 1\n";
     mkdirSync(hooksDir, { recursive: true });
-    writeFileSync(join(hooksDir, "pre-push"), "#!/bin/sh\necho real-hook\nexit 1\n");
+    writeFileSync(join(hooksDir, "pre-push"), realHookBody);
+    const code = await run({});
+    expect(code).toBe(0);
+    // The user's pre-existing hook is INTACT — the defect is fixed.
+    expect(readFileSync(join(hooksDir, "pre-push"), "utf8")).toBe(realHookBody);
+    // The SKILL.md is still installed.
+    expect(existsSync(join(dir, ".agent/skills/tsnuke/SKILL.md"))).toBe(true);
+    // A clear instruction lands on stdout.
+    const text = out.join("");
+    expect(text).toContain("refusing to overwrite");
+    expect(text).toContain("npx --no tsnuke --score");
+  });
+
+  it("idempotent re-install: a marker-bearing hook IS overwritten safely", async () => {
+    const hooksDir = join(dir, ".git/hooks");
+    mkdirSync(hooksDir, { recursive: true });
+    // Simulate a previous install: same marker, but tweaked body.
+    writeFileSync(
+      join(hooksDir, "pre-push"),
+      "#!/bin/sh\n# tsnuke-managed v1\n# stale content\nexit 0\n",
+    );
     await run({});
-    // The real hook was overwritten with the inert stub — the documented defect.
-    const after = readFileSync(join(hooksDir, "pre-push"), "utf8");
-    expect(after).toContain("exit 0");
-    expect(after).not.toContain("real-hook");
+    expect(readFileSync(join(hooksDir, "pre-push"), "utf8")).toBe(PRE_PUSH_HOOK);
+  });
+
+  it("--dry-run with an existing non-tsnuke hook reports it as SKIP", async () => {
+    const hooksDir = join(dir, ".git/hooks");
+    mkdirSync(hooksDir, { recursive: true });
+    writeFileSync(join(hooksDir, "pre-push"), "#!/bin/sh\necho real-hook\n");
+    await run({ dryRun: true });
+    expect(out.join("")).toContain("would SKIP");
   });
 });

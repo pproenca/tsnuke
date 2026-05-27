@@ -14,11 +14,14 @@
  */
 
 import { Command } from "@effect/cli";
+import { agentsCommand } from "./agentsCommand.js";
 import { inspectCommand, VERSION } from "./inspectCommand.js";
 import { installCommand } from "./installCommand.js";
 
-/** The full command tree: `inspect` root + `install` subcommand. */
-export const command = inspectCommand.pipe(Command.withSubcommands([installCommand]));
+/** The full command tree: `inspect` root + `install` / `agents` subcommands. */
+export const command = inspectCommand.pipe(
+  Command.withSubcommands([installCommand, agentsCommand]),
+);
 
 /**
  * Build the argv runner. Returns a function `argv → Effect<void, …, Environment>`. The

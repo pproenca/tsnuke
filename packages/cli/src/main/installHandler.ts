@@ -1,26 +1,32 @@
 /**
- * `tsnuke install` (RULE-038) — re-imagined over `@effect/platform` `FileSystem`.
+ * `tsnuke install` — write the agent skill + a real, non-blocking git pre-push hook.
  *
- * PRESERVED-DEFECT NOTICE (RULE-038, confirmed): the git `pre-push` hook this writes is
- * INERT — its body is `# TODO …\nexit 0`, so a user who runs `install` gets a hook that
- * silently does nothing (false CI/local protection), AND it CLOBBERS any existing
- * `pre-push` unconditionally (assessment Security Low). This is preserved VERBATIM here
- * (the equivalence bar) and flagged as a follow-up in TRANSFORMATION_NOTES.md — NOT
- * silently "fixed", per the brief.
+ * `buildSkillMarkdown` is now a thin wrapper that delegates to the shared
+ * `buildAgentsMarkdown` (format slice) — the SAME markdown the `tsnuke agents`
+ * subcommand emits to stdout. One builder, two consumers: the on-demand
+ * briefing and the on-disk SKILL.md never drift.
  *
- * `buildSkillMarkdown` / `planInstall` are PURE + deterministic (ported verbatim from
- * legacy `commands/install.ts`); `runInstall` is the effectful shell over the
- * `@effect/platform` `FileSystem` + `Path` services (production: `NodeContext`; tests:
- * in-memory Layer). `install` ALWAYS returns exit 0; `--dry-run` describes without
- * writing. Writes go through `makeDirectory({ recursive })` + `writeFileString` (mirrors
- * legacy's `mkdirSync(dirname,…)` + `writeFileSync`).
+ * ── Pre-push hook (was: preserved-defect RULE-038) ────────────────────────────
+ * The old install wrote `# TODO\nexit 0` (inert) and silently CLOBBERED any
+ * existing hook. That false-protection footgun is now fixed:
+ *
+ *   - If `.git/hooks/pre-push` does not exist, write a real non-blocking hook:
+ *     `npx --no tsnuke --score || true; exit 0`. Always exits 0 so a
+ *     push is never blocked; surfaces the score so a drop is visible.
+ *   - If `.git/hooks/pre-push` exists and carries our marker line
+ *     (`# tsnuke-managed v1`), treat as idempotent — overwrite is safe.
+ *   - If `.git/hooks/pre-push` exists with a DIFFERENT body, REFUSE to clobber:
+ *     emit a one-line warning telling the user how to integrate manually, and
+ *     return exit 0 (install never gates — RULE-038).
  */
 
 import { FileSystem, Path } from "@effect/platform";
-import type { PlatformError } from "@effect/platform/Error";
 import { Effect } from "effect";
+import type { RuleMeta } from "@tsnuke/contracts-effect";
+import { buildAgentsMarkdown } from "@tsnuke/format-effect";
+import { graphRuleRegistry, ruleRegistry } from "@tsnuke/rules-registry-effect";
 
-/** Flags for `install` (legacy `install.ts:15-24`). */
+/** Flags for `install`. */
 export interface InstallFlags {
   /** Target directory (default cwd). */
   cwd: string;
@@ -28,83 +34,56 @@ export interface InstallFlags {
   yes: boolean;
   /** Print planned actions without writing anything. */
   dryRun: boolean;
-  /** Also install native agent hooks (Claude Code / Cursor). */
+  /** Also install native agent hooks (Claude Code / Cursor) — still a stub. */
   agentHooks: boolean;
 }
 
-/** A planned file write (so dry-run can describe it without performing it). */
+/** A planned file write — kept for `--dry-run` to describe without performing. */
 export interface PlannedWrite {
   path: string;
   contents: string;
   description: string;
 }
 
-/**
- * Build the agent skill markdown. Pure + deterministic. Ported VERBATIM from legacy
- * `install.ts:69-108` (the SKILL.md trigger-spec + command-recipe shape).
- */
-export function buildSkillMarkdown(): string {
-  return [
-    "---",
-    "name: tsnuke",
-    "description: >-",
-    "  Run a TypeScript health check before finishing a change. Surfaces type-safety,",
-    "  async, module-boundary, and strictness issues with machine-applicable fixes.",
-    "triggers:",
-    "  - after editing one or more .ts/.tsx files",
-    "  - before opening a PR or pushing",
-    "  - when asked to 'check types' or 'audit the TypeScript'",
-    "---",
-    "",
-    "# tsnuke",
-    "",
-    "Run tsnuke in agent mode for a deduplicated, fix-sorted report:",
-    "",
-    "```sh",
-    "npx tsnuke --format agent",
-    "```",
-    "",
-    "Regression-check only what changed (diff against the base branch):",
-    "",
-    "```sh",
-    "npx tsnuke --diff",
-    "```",
-    "",
-    "Apply the safe auto-fixes, then re-scan and loop until the score stops improving:",
-    "",
-    "```sh",
-    "npx tsnuke --fix --format agent",
-    "```",
-    "",
-    "Notes:",
-    "- The score is local and deterministic; compare only same-scale scores",
-    "  (a `scorePartial` run is NOT comparable to a full run).",
-    "- Apply `auto-fix` edits first (cheapest), then `codemod`, then `manual`.",
-    "",
-  ].join("\n");
-}
+/** Marker line embedded in the hook so re-installs are idempotent. */
+const HOOK_MARKER = "# tsnuke-managed v1" as const;
+
+/** The real pre-push hook body. Non-blocking: always exits 0. */
+export const PRE_PUSH_HOOK = `#!/bin/sh
+${HOOK_MARKER} — non-blocking score visibility on push.
+# Update by re-running \`npx tsnuke install\`.
+npx --no tsnuke --score 2>&1 || true
+exit 0
+` as const;
 
 /**
- * Compute the set of writes `install` would perform (no IO). Pure/testable. Ported
- * VERBATIM from legacy `install.ts:111-139` — INCLUDING the inert pre-push stub body
- * (RULE-038 preserved-defect) and the `{}` agent-hook config under `--agent-hooks`.
+ * The full tsnuke rule catalog (per-file + graph) — the input to the shared
+ * `buildAgentsMarkdown` builder. The same two lines appear in `agentsCommand.ts`;
+ * both call sites read from the global registries so the briefing emitted to
+ * stdout (`tsnuke agents`) and the SKILL.md written to disk (`tsnuke install`)
+ * are byte-identical.
+ */
+const allRules = (): ReadonlyArray<RuleMeta> => [...ruleRegistry, ...graphRuleRegistry];
+
+/**
+ * Compute the set of writes `install` would perform IF the pre-push hook is
+ * absent or marker-owned. Pure; the actual hook-existence check happens in
+ * {@link runInstall}, so callers using `planInstall` for `--dry-run` still get
+ * the canonical write set.
  */
 export function planInstall(flags: InstallFlags): PlannedWrite[] {
   const writes: PlannedWrite[] = [
     {
       path: `${flags.cwd}/.agent/skills/tsnuke/SKILL.md`,
-      contents: buildSkillMarkdown(),
-      description: "agent skill (trigger spec + command recipe)",
+      contents: buildAgentsMarkdown({ rules: allRules() }),
+      description: "agent skill (trigger spec + recipes + rule catalog)",
+    },
+    {
+      path: `${flags.cwd}/.git/hooks/pre-push`,
+      contents: PRE_PUSH_HOOK,
+      description: "git pre-push hook (non-blocking score visibility)",
     },
   ];
-
-  // PRESERVED DEFECT (RULE-038): an inert, clobbering pre-push hook. TODO(P1): real,
-  // non-blocking, hook-chain-respecting install — see TRANSFORMATION_NOTES Follow-up.
-  writes.push({
-    path: `${flags.cwd}/.git/hooks/pre-push`,
-    contents: "#!/bin/sh\n# TODO(P1): non-blocking tsnuke pre-push check\nexit 0\n",
-    description: "git pre-push hook (STUB — non-blocking)",
-  });
 
   // TODO(P1): when --agent-hooks, emit Claude Code / Cursor native hook configs.
   if (flags.agentHooks) {
@@ -119,12 +98,10 @@ export function planInstall(flags: InstallFlags): PlannedWrite[] {
 }
 
 /**
- * Run `install` over the `@effect/platform` `FileSystem` + `Path` services. In
- * `--dry-run` it only DESCRIBES the planned writes (writes nothing). Returns 0 always
- * (install never gates — RULE-038). Each real write ensures its parent directory
- * (`makeDirectory({ recursive: true })`) then `writeFileString`s, mirroring legacy's
- * `mkdirSync(dirname, { recursive }) + writeFileSync`. `stdout` is the injected writer
- * (Terminal in production, an in-memory sink in tests).
+ * Run `install`. Writes the agent skill always; writes the pre-push hook iff the
+ * file is absent OR carries the tsnuke marker (idempotent re-install). When a
+ * non-tsnuke pre-push hook already exists, REFUSES to clobber and prints a clear
+ * one-line instruction. Always returns 0 (install never gates).
  */
 export const runInstall = Effect.fn("Cli.install")(function* (
   flags: InstallFlags,
@@ -133,14 +110,68 @@ export const runInstall = Effect.fn("Cli.install")(function* (
     const fs = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
 
-    yield* Effect.forEach(planInstall(flags), (w) =>
-      flags.dryRun
-        ? stdout(`[dry-run] would write ${w.path} — ${w.description}\n`)
-        : Effect.gen(function* () {
-            yield* fs.makeDirectory(path.dirname(w.path), { recursive: true });
-            yield* fs.writeFileString(w.path, w.contents);
-            yield* stdout(`wrote ${w.path} — ${w.description}\n`);
-          }),
-    );
+    const writes = planInstall(flags);
+
+    for (const w of writes) {
+      // Pre-push gets the existing-hook check; every other write is a simple
+      // "create-if-needed" (SKILL.md is overwrite-on-re-install — it's our file).
+      const isPrePush = w.path.endsWith(".git/hooks/pre-push");
+
+      if (flags.dryRun) {
+        if (isPrePush) {
+          const existing = yield* readIfExists(fs, w.path);
+          if (existing !== null && !existing.includes(HOOK_MARKER)) {
+            yield* stdout(
+              `[dry-run] would SKIP ${w.path} — existing non-tsnuke hook detected (would not clobber).\n`,
+            );
+            continue;
+          }
+        }
+        yield* stdout(`[dry-run] would write ${w.path} — ${w.description}\n`);
+        continue;
+      }
+
+      if (isPrePush) {
+        const existing = yield* readIfExists(fs, w.path);
+        if (existing !== null && !existing.includes(HOOK_MARKER)) {
+          yield* stdout(
+            `tsnuke: existing pre-push hook at ${w.path} — refusing to overwrite.\n` +
+              `       To enable tsnuke's check, append this line to the hook:\n` +
+              `       npx --no tsnuke --score 2>&1 || true\n`,
+          );
+          continue;
+        }
+      }
+
+      yield* fs.makeDirectory(path.dirname(w.path), { recursive: true });
+      yield* fs.writeFileString(w.path, w.contents);
+      yield* stdout(`wrote ${w.path} — ${w.description}\n`);
+    }
+
     return 0 as const;
   });
+
+/**
+ * Read a file as utf-8 — returning `null` ONLY when the file is genuinely absent
+ * (NotFound). Other errors (EACCES, EISDIR, EIO, …) propagate to a "treat as
+ * existing-but-unreadable" branch: the caller {@link runInstall} then returns
+ * the "refusing to overwrite" message and leaves the file untouched. This
+ * narrowing is what the comment in the prior version CLAIMED but the
+ * `orElseSucceed(null)` implementation did NOT — it silently collapsed every
+ * read failure to "absent", and the next step OVERWROTE the file.
+ */
+const readIfExists = (
+  fs: FileSystem.FileSystem,
+  filePath: string,
+): Effect.Effect<string | null> =>
+  fs.readFileString(filePath, "utf8").pipe(
+    Effect.catchTag("SystemError", (e) =>
+      e.reason === "NotFound"
+        ? Effect.succeed(null as string | null)
+        // Any other system error: surface the file as a sentinel non-empty
+        // string so the marker check fails → install refuses to clobber.
+        : Effect.succeed("<unreadable>"),
+    ),
+    // Bad file path / encoding errors fall here too; same conservative answer.
+    Effect.orElseSucceed(() => "<unreadable>" as string | null),
+  );
