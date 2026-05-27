@@ -54,11 +54,10 @@ function pickFocusRule(diagnostics: readonly Diagnostic[]): string | undefined {
 
 /** Distinct auto-fixable rule ids in deterministic (alphabetical) order. */
 function autoFixableRuleIds(diagnostics: readonly Diagnostic[]): readonly string[] {
-  const set = new Set<string>();
-  for (const d of diagnostics) {
-    if (fixKindOf(d) === "auto-fix") set.add(d.rule);
-  }
-  return [...set].sort((a, b) => a.localeCompare(b));
+  const rules = diagnostics
+    .filter((d) => fixKindOf(d) === "auto-fix")
+    .map((d) => d.rule);
+  return [...new Set(rules)].sort((a, b) => a.localeCompare(b));
 }
 
 /**
