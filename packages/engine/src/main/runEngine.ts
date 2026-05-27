@@ -307,9 +307,9 @@ export const runEngine: (
     // --- CFG rules are PROJECT-LEVEL: they don't walk a file AST. Each activated CFG
     // rule emits exactly one diagnostic at the config file (line 1), carrying its
     // `message` (the inverted-gating "enable this flag" finding, §C9/BC-09). ---
+    const cfgTier1 = plan.tier1.filter((e) => e.meta.tier === "CFG");
     const perFileTier1 = plan.tier1.filter((e) => e.meta.tier !== "CFG");
-    for (const { meta, severity } of plan.tier1) {
-      if (meta.tier !== "CFG") continue;
+    for (const { meta, severity } of cfgTier1) {
       sink({
         plugin: PLUGIN_NAME,
         rule: meta.id,
