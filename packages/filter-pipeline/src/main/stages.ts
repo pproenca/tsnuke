@@ -99,20 +99,20 @@ export function makeIgnoreStage(config: TsNukeConfig): Stage {
     if (ignoredRules.has(d.rule) || ignoredRules.has(`${d.plugin}/${d.rule}`)) {
       return null;
     }
-    for (const f of ignoredFiles) {
-      if (fileMatches(d.filePath, f)) return null;
-    }
-    for (const ov of overrides) {
-      const fileHit = ov.files.some((f) => fileMatches(d.filePath, f));
-      if (!fileHit) continue;
-      // overrides with rules: drop only those rules in those files;
-      // overrides without rules: drop all diagnostics in those files.
-      if (ov.rules === undefined) return null;
-      if (ov.rules.includes(d.rule) || ov.rules.includes(`${d.plugin}/${d.rule}`)) {
-        return null;
-      }
-    }
-    return d;
+    if (ignoredFiles.some((f) => fileMatches(d.filePath, f))) return null;
+    // overrides with rules: drop only those rules in those files;
+    // overrides without rules: drop all diagnostics in those files.
+    // ANY matching override drops — earlier overrides that match the file but
+    // not the rule must not short-circuit later ones.
+    const dropped = overrides.some((ov) => {
+      if (!ov.files.some((f) => fileMatches(d.filePath, f))) return false;
+      if (ov.rules === undefined) return true;
+      return (
+        ov.rules.includes(d.rule) ||
+        ov.rules.includes(`${d.plugin}/${d.rule}`)
+      );
+    });
+    return dropped ? null : d;
   };
 }
 
