@@ -3,18 +3,20 @@ import {
   noEvalOrFunctionConstructor,
   noImpliedEval,
   noInsecureUrl,
+  noMathRandomForId,
   noNewBuffer,
   noSecretsInSource,
   securityRules,
 } from "../main/index.js";
 
 describe("security rule barrel", () => {
-  it("exports exactly the 5 security rules in the registry", () => {
-    expect(securityRules).toHaveLength(5);
+  it("exports exactly the 6 security rules in the registry", () => {
+    expect(securityRules).toHaveLength(6);
     expect(securityRules.map((r) => r.id)).toEqual([
       "no-eval-or-function-constructor",
       "no-implied-eval",
       "no-insecure-url",
+      "no-math-random-for-id",
       "no-new-buffer",
       "no-secrets-in-source",
     ]);
@@ -33,15 +35,17 @@ describe("security rule barrel", () => {
     expect(securityRules).toContain(noEvalOrFunctionConstructor);
     expect(securityRules).toContain(noImpliedEval);
     expect(securityRules).toContain(noInsecureUrl);
+    expect(securityRules).toContain(noMathRandomForId);
     expect(securityRules).toContain(noNewBuffer);
     expect(securityRules).toContain(noSecretsInSource);
   });
 
-  it("severities match the legacy meta (4 error, 1 warning)", () => {
+  it("severities match the legacy meta (4 error, 2 warning)", () => {
     const errors = securityRules.filter((r) => r.severity === "error");
     const warnings = securityRules.filter((r) => r.severity === "warning");
     expect(errors).toHaveLength(4);
-    expect(warnings).toHaveLength(1);
+    expect(warnings).toHaveLength(2);
     expect(noInsecureUrl.severity).toBe("warning");
+    expect(noMathRandomForId.severity).toBe("warning");
   });
 });

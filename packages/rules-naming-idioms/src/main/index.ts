@@ -1,7 +1,10 @@
 /**
  * `@tsnuke/rules-naming-idioms-effect` — the `naming-idioms` SYN rule category
  * (RULE-025), the LARGEST SYN category: 14 plain-TS AST/token predicates ported
- * verbatim from the legacy `packages/tsnuke-rules/src/rules/naming-idioms/**`.
+ * verbatim from the legacy `packages/tsnuke-rules/src/rules/naming-idioms/**`,
+ * plus 2 SYN rules extracted from the `opencode-ts` skill catalog
+ * (`no-useless-else`, `prefer-const-ternary` — both tagged `ts-idiom`) for a
+ * total of 16.
  *
  * Each rule is a pure `SyntaxKind → visitor` map plugging into the rule substrate
  * (`defineRule` / `RuleContext` / `runRule`) from `@tsnuke/rules-core-effect`. The
@@ -28,9 +31,11 @@ import { rule as noInferrableTypeAnnotation } from "./no-inferrable-type-annotat
 import { rule as noJsonParseStringifyClone } from "./no-json-parse-stringify-clone.js";
 import { rule as noNamespace } from "./no-namespace.js";
 import { rule as noUnnecessaryTemplateLiteral } from "./no-unnecessary-template-literal.js";
+import { rule as noUselessElse } from "./no-useless-else.js";
 import { rule as noVar } from "./no-var.js";
 import { rule as pascalCaseTypes } from "./pascal-case-types.js";
 import { rule as preferArrayMethods } from "./prefer-array-methods.js";
+import { rule as preferConstTernary } from "./prefer-const-ternary.js";
 import { rule as preferOptionalChain } from "./prefer-optional-chain.js";
 import { rule as preferUnionOverEnum } from "./prefer-union-over-enum.js";
 import { rule as tripleEquals } from "./triple-equals.js";
@@ -45,15 +50,17 @@ export {
   noJsonParseStringifyClone,
   noNamespace,
   noUnnecessaryTemplateLiteral,
+  noUselessElse,
   noVar,
   pascalCaseTypes,
   preferArrayMethods,
+  preferConstTernary,
   preferOptionalChain,
   preferUnionOverEnum,
   tripleEquals,
 };
 
-/** The 14 `naming-idioms` SYN rules, in id order — the category bundle the engine registers. */
+/** The 16 `naming-idioms` SYN rules, in id order — the category bundle the engine registers. */
 export const namingIdiomsRules: ReadonlyArray<Rule> = [
   consistentTypeDefinitions,
   noArrayConstructor,
@@ -63,9 +70,11 @@ export const namingIdiomsRules: ReadonlyArray<Rule> = [
   noJsonParseStringifyClone,
   noNamespace,
   noUnnecessaryTemplateLiteral,
+  noUselessElse,
   noVar,
   pascalCaseTypes,
   preferArrayMethods,
+  preferConstTernary,
   preferOptionalChain,
   preferUnionOverEnum,
   tripleEquals,

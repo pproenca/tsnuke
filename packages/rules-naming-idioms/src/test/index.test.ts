@@ -3,8 +3,8 @@ import { namingIdiomsRules } from "../main/index.js";
 
 // Category-level META invariants (RULE-025 shape + RULE-026 broken-auto-fix tally).
 describe("namingIdiomsRules barrel", () => {
-  it("exports exactly the 14 naming-idioms rules", () => {
-    expect(namingIdiomsRules).toHaveLength(14);
+  it("exports exactly the 16 naming-idioms rules", () => {
+    expect(namingIdiomsRules).toHaveLength(16);
     expect(namingIdiomsRules.map((r) => r.id)).toEqual([
       "consistent-type-definitions",
       "no-array-constructor",
@@ -14,9 +14,11 @@ describe("namingIdiomsRules barrel", () => {
       "no-json-parse-stringify-clone",
       "no-namespace",
       "no-unnecessary-template-literal",
+      "no-useless-else",
       "no-var",
       "pascal-case-types",
       "prefer-array-methods",
+      "prefer-const-ternary",
       "prefer-optional-chain",
       "prefer-union-over-enum",
       "triple-equals",

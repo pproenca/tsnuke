@@ -2,7 +2,7 @@
  * Tests for the GLOBAL rule registry aggregator.
  *
  * These assertions pin the catalog invariants the engine relies on:
- *   - the exact 86 + 2 = 88 tally (a missing/extra slice import would change it);
+ *   - the exact 96 + 2 = 98 tally (a missing/extra slice import would change it);
  *   - GLOBALLY-UNIQUE rule ids across BOTH registries (a duplicate id would double-count
  *     a rule or shadow another — the load-bearing correctness invariant);
  *   - clean tier partitioning (`ruleRegistry` = SYN/TYP/CFG only; `graphRuleRegistry` =
@@ -24,20 +24,20 @@ import {
 // --- Catalog tally ---------------------------------------------------------
 
 describe("catalog tally", () => {
-  it("ruleRegistry has exactly 93 per-file rules", () => {
-    expect(ruleRegistry).toHaveLength(93);
+  it("ruleRegistry has exactly 96 per-file rules", () => {
+    expect(ruleRegistry).toHaveLength(96);
   });
 
   it("graphRuleRegistry has exactly 2 GRAPH rules", () => {
     expect(graphRuleRegistry).toHaveLength(2);
   });
 
-  it("combined catalog is exactly 95 rules", () => {
-    expect(ruleRegistry.length + graphRuleRegistry.length).toBe(95);
+  it("combined catalog is exactly 98 rules", () => {
+    expect(ruleRegistry.length + graphRuleRegistry.length).toBe(98);
   });
 
-  it("totalRuleCount helper reports the combined 95", () => {
-    expect(totalRuleCount).toBe(95);
+  it("totalRuleCount helper reports the combined 98", () => {
+    expect(totalRuleCount).toBe(98);
   });
 });
 
@@ -56,7 +56,7 @@ describe("globally-unique rule ids", () => {
       [],
     );
     expect(uniqueIds.size).toBe(allRules.length);
-    expect(uniqueIds.size).toBe(95);
+    expect(uniqueIds.size).toBe(98);
   });
 
   it("every id is a non-empty string", () => {
@@ -83,7 +83,7 @@ describe("tier partitioning", () => {
     }
   });
 
-  it("per-tier counts match the catalog (CFG 4, SYN 71, TYP 18, GRAPH 2)", () => {
+  it("per-tier counts match the catalog (CFG 4, SYN 74, TYP 18, GRAPH 2)", () => {
     const tierCount = (rules: ReadonlyArray<{ tier: Tier }>): Record<string, number> => {
       const counts: Record<string, number> = {};
       for (const r of rules) counts[r.tier] = (counts[r.tier] ?? 0) + 1;
@@ -92,7 +92,7 @@ describe("tier partitioning", () => {
 
     const perFile = tierCount(ruleRegistry);
     expect(perFile["CFG"]).toBe(4);
-    expect(perFile["SYN"]).toBe(71);
+    expect(perFile["SYN"]).toBe(74);
     expect(perFile["TYP"]).toBe(18);
     expect(perFile["GRAPH"]).toBeUndefined();
 

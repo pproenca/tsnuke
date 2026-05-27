@@ -16,9 +16,9 @@
  * (`Diagnostic` / `RuleMeta`) live transitively in `@tsnuke/contracts-effect`.
  *
  * Catalog tally (frozen invariant, asserted in `src/test/`):
- *   - `ruleRegistry`      = 93 per-file rules (SYN 71 + TYP 18 + CFG 4 strictness)
+ *   - `ruleRegistry`      = 96 per-file rules (SYN 74 + TYP 18 + CFG 4 strictness)
  *   - `graphRuleRegistry` =  2 GRAPH rules
- *   - combined            = 95, with ALL ids globally unique (no collision across the two
+ *   - combined            = 98, with ALL ids globally unique (no collision across the two
  *     registries — a duplicate id would double-count or shadow a rule).
  */
 
@@ -51,7 +51,7 @@ import { graphRules } from "@tsnuke/rules-graph-effect";
  * rules-core's own `ruleRegistry` (its v1 manual seam); the rest are the per-category
  * SYN/TYP slices. Contains NO GRAPH rules — those live in {@link graphRuleRegistry}.
  *
- * Total: 93 (CFG 4 + SYN 71 + TYP 18).
+ * Total: 96 (CFG 4 + SYN 74 + TYP 18).
  */
 export const ruleRegistry: ReadonlyArray<Rule> = [
   ...strictnessRules,
