@@ -205,8 +205,9 @@ export function formatAgentReport(
   );
 
   const byCategory = new Map<string, AgentRuleEntry[]>();
-  const ruleCategory = new Map<string, string>();
-  for (const d of diagnostics) ruleCategory.set(`${d.plugin}/${d.rule}`, d.category);
+  const ruleCategory = new Map<string, string>(
+    diagnostics.map((d) => [`${d.plugin}/${d.rule}`, d.category]),
+  );
 
   for (const entry of sortedEntries) {
     const category = ruleCategory.get(`${entry.plugin}/${entry.rule}`) ?? "";
