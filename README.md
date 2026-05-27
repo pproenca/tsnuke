@@ -13,10 +13,15 @@ TypeScript domain. It runs a **two-tier engine** over the TypeScript compiler:
 rules** (import cycles, unused exports). The score is computed **locally and
 deterministically** — no network round-trip — so an agent can loop on it offline.
 
-> **88 rules across 13 categories** (64 syntactic · 18 type-aware · 4 config · 2 graph),
+> **95 rules across 14 categories** (71 syntactic · 18 type-aware · 4 config · 2 graph),
 > including an **anti-slop family** (`ts-idiom`) that catches LLM-generated TypeScript
 > delegating to runtime/boilerplate what types, native methods, and modern idioms
-> should carry — try `node packages/cli/dist/cli.js examples/slop-demo`.
+> should carry, and a **functional-patterns family** that flags GoF / imperative class
+> shapes a TS-speaker should write as a function, tagged union, or stream method
+> (`no-singleton-class`, `no-mutable-builder-class`, `no-factory-class`,
+> `prefer-generator-over-iterator-class`, `prefer-reduce-over-imperative-sum`,
+> `prefer-group-by-over-imperative-groups`, `prefer-flatmap-over-reduce-concat`).
+> Try `node packages/cli/dist/cli.js examples/slop-demo`.
 > The authoritative rule list lives in `@tsnuke/rules-registry-effect`.
 
 ## Quick start
@@ -74,7 +79,7 @@ node packages/cli/dist/cli.js examples/sample-app
       src/store-slop.ts:5:40
     …
 
-  25 issues across 7 files · 88 rules checked · 255ms
+  25 issues across 7 files · 95 rules checked · 255ms
   → Run `tsnuke --fix` to auto-resolve 1 issue. (0 codemod, 24 manual remaining)
 ```
 
@@ -214,12 +219,12 @@ deterministic — no network, so an agent can loop on the score offline.
 
 ## Packages
 
-An Effect-TS v3 strangler-fig monorepo — **32 packages** (`@tsnuke/<dir>-effect`,
+An Effect-TS v3 strangler-fig monorepo — **33 packages** (`@tsnuke/<dir>-effect`,
 each with a `src/main` + `src/test` layout), built with `pnpm` + `turbo`.
 
 | Package | Role |
 |---|---|
-| `@tsnuke/rules-*-effect` (13 slices) + `@tsnuke/rules-core-effect` | Rule catalog + activation substrate; `defineRule` / `defineGraphRule` |
+| `@tsnuke/rules-*-effect` (14 slices) + `@tsnuke/rules-core-effect` | Rule catalog + activation substrate; `defineRule` / `defineGraphRule` |
 | `@tsnuke/rules-registry-effect` | The aggregated, authoritative rule catalog |
 | `@tsnuke/engine-effect` | Discovery → capabilities → two-tier engine → module graph → filter pipeline → local score → report; the `diagnose()` boundary |
 | `@tsnuke/mcp-effect` | MCP server (stdio) exposing tsnuke to coding agents (`tsnuke-mcp`) |

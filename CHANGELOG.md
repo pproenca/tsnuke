@@ -4,9 +4,38 @@ All notable changes to `tsnuke` are listed here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project follows
 [SemVer](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.0] — 2026-05-26
+## [0.4.0] — 2026-05-27
 
 ### Added
+- **`rules-functional-patterns` category — 7 SYN rules.** Inverts the patterns of
+  the `implementation-functional-patterns` skill catalog: each rule fires on the
+  GoF / imperative class shape the skill says a TS-speaker should write as a
+  function, tagged union, or stream method. All `warning` + `fixKind: manual`
+  (every detection requires a real refactor — `--explain` carries each
+  recipe). Tagged `ts-idiom`, joining the existing anti-slop family.
+  - `no-singleton-class` — `class X { private/protected static instance; static getInstance() }`
+    (use a module-scope const or lazy `??=` memo).
+  - `no-mutable-builder-class` — class with ≥2 `return this` methods + a
+    `build`/`create`/`finish`/`make` finisher (use an object literal + optional
+    fields, or a fluent immutable builder).
+  - `no-factory-class` — non-abstract class whose only method (static OR
+    instance) is `create`/`make`/`build`/`of`/`from` (use a factory function
+    returning a tagged object).
+  - `prefer-generator-over-iterator-class` — class with instance `next` AND
+    instance `[Symbol.iterator]` (use a generator function).
+  - `prefer-reduce-over-imperative-sum` — `for`/`for-of` with single-statement
+    `IDENT += EXPR` body (use `.reduce`). Skips `for await` correctly.
+  - `prefer-group-by-over-imperative-groups` — 2-statement
+    `if (!g[k]) g[k] = []; g[k].push(x)` loop (use `Object.groupBy` /
+    `Map.groupBy`). Accepts `!X[k]`, `=== undefined`/`== undefined`,
+    `=== null`/`== null`, and `!(k in X)` condition shapes; unwraps `!` non-null
+    assertions on the push receiver.
+  - `prefer-flatmap-over-reduce-concat` — `reduce((acc, x) => acc.concat(...), [])`
+    O(n²) trap (use `.flatMap`).
+  - All four class detectors recognize `const X = class { … }` expressions in
+    addition to declarations; the builder + iterator detectors recognize
+    `PropertyDeclaration` with arrow-function initializer as instance methods
+    (`size = (s) => { …; return this }`, `next = () => …`).
 - **Workspace-root `tsnuke.config.json`.** When the CLI is pointed at a workspace
   root, `diagnoseWorkspace` now loads a single `tsnuke.config.json` at the root
   and applies it to every member project (BC-05 extension) instead of requiring
@@ -54,7 +83,7 @@ All notable changes to `tsnuke` are listed here. Format follows
   of `buildWorkspaceJsonString` for symmetry with `buildJsonString`.
 
 ### Self-score
-- tsnuke now scores itself **100/100** across all 32 packages (was 93/100*).
+- tsnuke now scores itself **100/100** across all 33 packages (was 93/100*).
   Policy is expressed in the new workspace-root `tsnuke.config.json` —
   documented per-glob overrides for test code, vitest configs, frozen oracle
   copies (verbatim legacy code kept for differential equivalence proofs), and

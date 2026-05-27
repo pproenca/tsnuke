@@ -2,7 +2,7 @@
 
 *Phase A output of `/modernize-reimagine react-doctor "equivalent tool but for TypeScript, like react-doctor is for React projects"`. Generated 2026-05-24.*
 
-> **Implementation note (added after the rewrite).** This is the **specification**; it remains the authority for *what* the tool must do — the 20 capabilities, the domain model, and the **BC-01…BC-24 behavior contract are current and binding**. The shipped implementation is an **Effect-TS v3.21 strangler-fig rewrite** across **32 `@tsnuke/<dir>-effect` packages** (see root `CLAUDE.md` §2; build/wire details in `ARCHITECTURE.md`). Two concrete claims in this file have been overtaken by the implementation: (1) §2.3's "~45–62 initial rules" estimate is now **88 rules** across 13 categories; (2) §6's Phase-B "build the seam, stub Tier-2" decision is **superseded** — all four tiers are live, including the 18 type-aware TYP rules. Where this file says "zod or hand-rolled validator", the implementation uses `effect/Schema`.
+> **Implementation note (added after the rewrite).** This is the **specification**; it remains the authority for *what* the tool must do — the 20 capabilities, the domain model, and the **BC-01…BC-24 behavior contract are current and binding**. The shipped implementation is an **Effect-TS v3.21 strangler-fig rewrite** across **33 `@tsnuke/<dir>-effect` packages** (see root `CLAUDE.md` §2; build/wire details in `ARCHITECTURE.md`). Two concrete claims in this file have been overtaken by the implementation: (1) §2.3's "~45–62 initial rules" estimate is now **95 rules** across 14 categories; (2) §6's Phase-B "build the seam, stub Tier-2" decision is **superseded** — all four tiers are live, including the 18 type-aware TYP rules. Where this file says "zod or hand-rolled validator", the implementation uses `effect/Schema`.
 
 > **This is a rebuild from extracted intent, not a port.** `react-doctor` is the **specification source** — the proven *mechanisms* (scoring, the diagnostic filter pipeline, capability-gated rule activation, the security trust boundaries, the distribution surfaces). The React **domain** (286 React/JSX/RN rules, framework+version gating, a mandatory remote score round-trip) is replaced by a **TypeScript** domain designed AI-native for 2026.
 >
@@ -184,7 +184,7 @@ erDiagram
 | 12 | Naming & Idioms (`interface` vs `type`, enum vs union) | naming conventions / design | SYN |
 | 13 | Security (secrets, `eval`, `any`→sink flow) | security | Mixed |
 
-Buckets that vanish (React-only): Design, A11y, JSX, React-Native, framework-builtins, Tailwind. Categories that grow: the type-semantic ones (1, 4, 5, 6, 11) — exactly where Tier-2 earns its keep. Initial estimate was **~45–62 rules**; the **shipped catalog is 88 rules** (64 SYN / 18 TYP / 2 GRAPH / 4 CFG), aggregated in `rules-registry-effect`'s `registry.ts`; representative P0 rules are pinned in §5.
+Buckets that vanish (React-only): Design, A11y, JSX, React-Native, framework-builtins, Tailwind. Categories that grow: the type-semantic ones (1, 4, 5, 6, 11) — exactly where Tier-2 earns its keep. Initial estimate was **~45–62 rules**; the **shipped catalog is 95 rules** (71 SYN / 18 TYP / 2 GRAPH / 4 CFG), aggregated in `rules-registry-effect`'s `registry.ts`; representative P0 rules are pinned in §5.
 
 ---
 
