@@ -53,25 +53,13 @@ export function shouldActivate(
   if (explicit === "off") return false;
 
   // 2. requires: ALL must be present (AND-gate).
-  if (rule.requires) {
-    for (const cap of rule.requires) {
-      if (!caps.has(cap)) return false;
-    }
-  }
+  if (rule.requires?.some((cap) => !caps.has(cap))) return false;
 
   // 3. disabledBy: ANY present disables (the inverted-gating mechanism, RULE-020).
-  if (rule.disabledBy) {
-    for (const cap of rule.disabledBy) {
-      if (caps.has(cap)) return false;
-    }
-  }
+  if (rule.disabledBy?.some((cap) => caps.has(cap))) return false;
 
   // 4. ignored tags: ANY overlap disables.
-  if (rule.tags) {
-    for (const tag of rule.tags) {
-      if (ignoredTags.has(tag)) return false;
-    }
-  }
+  if (rule.tags?.some((tag) => ignoredTags.has(tag))) return false;
 
   // 5. opt-in rules need an explicit severity to turn on.
   //    KNOWN DEAD BRANCH (preserved): no rule in the catalog currently sets
