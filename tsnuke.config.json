@@ -8,6 +8,8 @@
           "no-non-null-assertion",
           "no-unnecessary-non-null-assertion",
           "no-unsafe-object-assertion",
+          "no-unsafe-member-access",
+          "no-unsafe-call",
           "no-record-string-unknown",
           "no-default-export",
           "no-unknown-return"

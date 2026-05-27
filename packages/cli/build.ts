@@ -14,7 +14,7 @@
 import { build } from "esbuild";
 import { chmodSync, readFileSync } from "node:fs";
 
-const { version } = JSON.parse(readFileSync(new URL("./package.json", import.meta.url)));
+const { version } = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf-8"));
 
 await build({
   entryPoints: ["src/main/bin.ts"],
