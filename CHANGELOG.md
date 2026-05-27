@@ -4,6 +4,52 @@ All notable changes to `tsnuke` are listed here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project follows
 [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] — 2026-05-27
+
+### Added
+- **3 SYN rules extracted from the `opencode-ts` skill catalog.** Same
+  precedent as the `rules-functional-patterns` family in 0.4.0: each rule's
+  `recommendation` paraphrases the source skill section
+  (`opencode-ts/references/style-dna.md`). All `warning` + `fixKind: manual`;
+  the two naming-idioms additions are tagged `ts-idiom`, the security one
+  tagged `security`.
+  - `no-useless-else` (naming-idioms) — flag `else` after a consequent that
+    already terminates control flow (`return` / `throw` / `continue` /
+    `break`). Conservative: doesn't flag when the consequent can fall through;
+    chained `else if` after `return` still fires.
+  - `prefer-const-ternary` (naming-idioms) — flag `let X;` (no init)
+    immediately followed by `if (c) X = a; else X = b;` where both branches
+    are bare single-statement assignments. Skips multi-statement blocks,
+    chained `else if`, multi-binding `let`, destructuring.
+  - `no-math-random-for-id` (security, CWE-330) — flag the canonical
+    "fake ID" chain `Math.random().toString(36|16)` (also catches
+    `Math["random"]()` bracket-notation form from minifier output).
+    `Math.random()` alone is not flagged — legitimate uses (jittering,
+    sampling, simulation) keep working.
+
+### Changed
+- **Catalog: 95 → 98 rules** across the same 14 categories (SYN 71 → 74;
+  naming-idioms 14 → 16; security 5 → 6). Registry tally invariants and the
+  per-slice barrel tests are updated in lock-step.
+- **`tsnuke.config.json` test override expanded.** `no-unsafe-member-access`
+  and `no-unsafe-call` added to the `/src/test/` override, matching the
+  precedent already set for `no-non-null-assertion` /
+  `no-record-string-unknown`. Tests doing structural assertions on serialized
+  output (`JSON.parse(out).foo`) don't need a Schema decode.
+
+### Fixed
+- **`packages/cli/build.ts` latent typecheck bug.** `readFileSync(url)`
+  without an encoding returns `Buffer`, which `JSON.parse` doesn't accept.
+  The per-pkg `tsc --noEmit` never caught it because the pkg's `tsconfig.json`
+  includes only `"src"` and `build.ts` lives at the pkg root. The engine
+  walks the whole pkg (BC-06), so it was failing the typecheck probe and
+  silently demoting the cli package to a partial score. Fix: pass `"utf-8"`.
+
+### Self-score
+- 33/33 projects at **100/100**, no partial flag. (Was `100*` on the cli
+  pkg — the asterisk was the partial-Tier-2 marker hiding the latent
+  `build.ts` bug above.)
+
 ## [0.4.0] — 2026-05-27
 
 ### Added
