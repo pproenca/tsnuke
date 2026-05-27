@@ -140,18 +140,13 @@ function toRepoRelative(filePath: string, repoRoot: string): string {
 
 /** Build a per-tier breakdown: rule count + occurrence count per tier. */
 export function buildTierBreakdown(diagnostics: readonly Diagnostic[]): TierBreakdown {
-  const rulesByTier = new Map<Tier, Set<string>>();
-  const occByTier = new Map<Tier, number>();
-  for (const d of diagnostics) {
-    const set = rulesByTier.get(d.tier) ?? new Set<string>();
-    set.add(`${d.plugin}/${d.rule}`);
-    rulesByTier.set(d.tier, set);
-    occByTier.set(d.tier, (occByTier.get(d.tier) ?? 0) + 1);
-  }
-  const stat = (tier: Tier): TierStat => ({
-    rules: rulesByTier.get(tier)?.size ?? 0,
-    occurrences: occByTier.get(tier) ?? 0,
-  });
+  const stat = (tier: Tier): TierStat => {
+    const matches = diagnostics.filter((d) => d.tier === tier);
+    return {
+      rules: new Set(matches.map((d) => `${d.plugin}/${d.rule}`)).size,
+      occurrences: matches.length,
+    };
+  };
   return {
     SYN: stat("SYN"),
     TYP: stat("TYP"),
