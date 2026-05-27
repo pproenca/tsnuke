@@ -24,9 +24,7 @@ export const rule = defineRule(
     [ts.SyntaxKind.SourceFile]: (node, ctx) => {
       if (!ts.isSourceFile(node)) return;
       const text = node.getFullText();
-      BARE.lastIndex = 0;
-      let match: RegExpExecArray | null = BARE.exec(text);
-      while (match !== null) {
+      for (const match of text.matchAll(BARE)) {
         const { line, character } = node.getLineAndCharacterOfPosition(match.index);
         ctx.report({
           filePath: ctx.filePath,
@@ -35,7 +33,6 @@ export const rule = defineRule(
           line: line + 1,
           column: character + 1,
         });
-        match = BARE.exec(text);
       }
     },
   }),
