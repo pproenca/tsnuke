@@ -16,6 +16,7 @@
 import { it } from "@effect/vitest";
 import { resolve } from "node:path";
 import { Effect } from "effect";
+import ts from "typescript";
 import { describe, expect } from "vitest";
 import type { Capability } from "@tsnuke/contracts-effect";
 import { shouldActivate } from "@tsnuke/capabilities-effect";
@@ -355,7 +356,6 @@ describe("runEngine — compilerOptions threading (Tier-2 honors project tsconfi
 
   it.effect("threading `noUnusedLocals: true` surfaces a real error → Tier-2 skipped", () =>
     Effect.gen(function* () {
-      const ts = (yield* Effect.promise(() => import("typescript"))).default;
       // Threading the project's stricter option turns the unused local into a real
       // TS6133 error, which `getPreEmitDiagnostics` sees → `typecheckOk = false`.
       // Proves the caller-supplied options actually reach the Program build.
