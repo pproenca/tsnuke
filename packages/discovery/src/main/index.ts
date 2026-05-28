@@ -30,7 +30,7 @@ export {
   countSourceFiles,
 } from "./enumerate.js";
 
-export { discoverTsProject } from "./discover.js";
+export { STRICT_FLAGS, discoverTsProject } from "./discover.js";
 
 export {
   enumerateWorkspaceProjects,

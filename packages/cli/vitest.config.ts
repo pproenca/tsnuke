@@ -3,6 +3,14 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     include: ["src/test/**/*.test.ts"],
+    // Tests deliberately exercise the default-pretty path of the CLI and the
+    // `resolveInspectFlags` decode. When developers run `pnpm test` from inside a
+    // coding-agent shell (Claude Code, Cursor, OpenCode), `CLAUDECODE`/`CURSOR_AGENT`/
+    // `OPENCODE` are inherited and would auto-engage `--format agent`, breaking the
+    // assertions. The `TSNUKE_NO_AUTO_AGENT` opt-out (documented in `inspectCommand.ts`)
+    // suppresses that detection — set it for the test process so behavior is the same
+    // whether tests run in CI, in a vanilla terminal, or inside a coding-agent session.
+    env: { TSNUKE_NO_AUTO_AGENT: "1" },
     // The e2e tests build a REAL `ts.Program` per case (3-8s each under load); the 5s
     // Vitest default times them out non-deterministically when the machine is busy. Raise
     // the per-test timeout so the real-compile cases run reliably (they assert real engine

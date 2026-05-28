@@ -43,6 +43,7 @@ export { diagnoseWorkspace } from "./diagnoseWorkspace.js";
 export type {
   DiagnoseOptions,
   DiagnoseResult,
+  TypecheckErrorInfo,
   WorkspaceResult,
   ScoreResult,
   ProjectInfo,

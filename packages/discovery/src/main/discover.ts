@@ -38,8 +38,13 @@ import type { BuildTool, ModuleSystem, ProjectInfo, ProjectKind } from "./Projec
 /**
  * Strict-family tsconfig flags surfaced as capability tokens (RULE-021, 15 members).
  * Legacy `STRICT_FLAGS` (`discover-ts-project.ts:24-40`) — order preserved.
+ *
+ * Exported so the engine can reconcile capability tokens from `ts.parseJsonConfigFileContent`'s
+ * fully-extends-resolved `CompilerOptions` (discovery's own walk is shallow — one level).
+ * Without that reconciliation, projects that inherit `strict` through a multi-level
+ * `extends` chain (a Next.js / Vercel-style scaffold) fire phantom CFG strictness rules.
  */
-const STRICT_FLAGS = [
+export const STRICT_FLAGS = [
   "strict",
   "noImplicitAny",
   "strictNullChecks",

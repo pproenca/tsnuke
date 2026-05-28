@@ -316,6 +316,16 @@ export const runInspect = Effect.fn("Cli.inspect")(function* (
                       elapsedMs: single.elapsedMilliseconds,
                       scorePartial: single.scorePartial,
                       partialReason: derivePartialReason(single.skippedCheckReasons),
+                      ...(single.typecheckErrors !== undefined
+                        ? {
+                            typecheckErrors: single.typecheckErrors.map((e) => ({
+                              ...e,
+                              filePath: e.filePath.startsWith(`${single.project.rootDirectory}/`)
+                                ? e.filePath.slice(single.project.rootDirectory.length + 1)
+                                : e.filePath,
+                            })),
+                          }
+                        : {}),
                     },
                   ),
                   null,
@@ -336,19 +346,31 @@ export const runInspect = Effect.fn("Cli.inspect")(function* (
           : flags.json
             ? buildWorkspaceJsonString(ws, flags, version)
             : flags.format === "agent"
-              ? JSON.stringify(
-                  formatAgentReport(allDiagnostics, summary, ws.rootDirectory, {
-                    elapsedMs: ws.elapsedMilliseconds,
-                    scorePartial: summary?.partial ?? false,
-                    // Workspace mode: per-project skip reasons can differ — derive from
-                    // the first partial project so the agent gets a representative cause.
-                    partialReason: derivePartialReason(
-                      ws.projects.find((p) => p.scorePartial)?.skippedCheckReasons,
-                    ),
-                  }),
-                  null,
-                  2,
-                )
+              ? (() => {
+                  const firstPartial = ws.projects.find((p) => p.scorePartial);
+                  const tcErrs = firstPartial?.typecheckErrors;
+                  return JSON.stringify(
+                    formatAgentReport(allDiagnostics, summary, ws.rootDirectory, {
+                      elapsedMs: ws.elapsedMilliseconds,
+                      scorePartial: summary?.partial ?? false,
+                      // Workspace mode: per-project skip reasons can differ — derive from
+                      // the first partial project so the agent gets a representative cause.
+                      partialReason: derivePartialReason(firstPartial?.skippedCheckReasons),
+                      ...(tcErrs !== undefined
+                        ? {
+                            typecheckErrors: tcErrs.map((e) => ({
+                              ...e,
+                              filePath: e.filePath.startsWith(`${ws.rootDirectory}/`)
+                                ? e.filePath.slice(ws.rootDirectory.length + 1)
+                                : e.filePath,
+                            })),
+                          }
+                        : {}),
+                    }),
+                    null,
+                    2,
+                  );
+                })()
               : renderWorkspacePretty(toWorkspaceView(ws), summary, {
                   color: flags.color,
                   verbose: flags.verbose,

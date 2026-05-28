@@ -259,7 +259,40 @@ export const resolveInspectFlags = Effect.fn("Cli.resolveFlags")(function* (
     // `--json-compact` implies `--json`; `--format json` implies `--json` (legacy: both
     // set `flags.json = true` and `format = "json"`).
     const json = raw.json || raw.jsonCompact || raw.format === "json";
-    const format: OutputFormat = json ? "json" : raw.format;
+    // Auto-engage `--format agent` when a coding-agent env var is set (CLAUDECODE,
+    // CURSOR_AGENT, OPENCODE, AGENT) and no explicit output mode was chosen — copies
+    // react-doctor's "detect the consumer, render for them" trick so an agent doesn't
+    // have to remember the flag. JSON / score / annotations / pr-comment / explain
+    // remain authoritative if explicitly requested. `--format pretty` collapses to the
+    // raw.format === "pretty" default; we can't distinguish explicit-pretty from
+    // default-pretty (the CLI library defaults the option), so explicit `--format pretty`
+    // in a coding-agent env will be upgraded to agent — acceptable, since agent JSON is
+    // a strict superset of pretty for machine consumers and explicit `--format json`
+    // remains the escape hatch.
+    //
+    // `TSNUKE_NO_AUTO_AGENT` is the opt-out: tsnuke's OWN tests run inside an agent
+    // session, so they set it; anyone who wants pretty output inside a coding-agent env
+    // (e.g. interactive use of `tsnuke` from Claude Code's `!` prefix) can set it too.
+    const codingAgentEnv =
+      process.env["TSNUKE_NO_AUTO_AGENT"] === undefined &&
+      (process.env["CLAUDECODE"] !== undefined ||
+        process.env["CURSOR_AGENT"] !== undefined ||
+        process.env["OPENCODE"] !== undefined ||
+        process.env["AGENT"] !== undefined);
+    const noExplicitOutputMode =
+      !json &&
+      !raw.score &&
+      !raw.annotations &&
+      !raw.prComment &&
+      Option.isNone(raw.explain) &&
+      Option.isNone(raw.why);
+    const autoAgent =
+      codingAgentEnv && raw.format === "pretty" && noExplicitOutputMode;
+    const format: OutputFormat = json
+      ? "json"
+      : autoAgent
+        ? "agent"
+        : raw.format;
 
     const projects = Option.match(raw.project, {
       onNone: (): string[] => [],

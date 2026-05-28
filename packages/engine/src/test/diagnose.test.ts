@@ -180,6 +180,88 @@ describe("diagnose — RULE-018 two-tier / partial honesty", () => {
   );
 });
 
+// =============================================================================
+// Agent-leverage regressions (2026-05-27 maddie-native session):
+//   - CFG strictness rules must NOT fire when strict flags are inherited via `extends`
+//     (engine reconciles capability tokens from the parsed CompilerOptions, which
+//     walks the extends chain to arbitrary depth — discovery's own walk is shallow).
+//   - When the project does NOT type-check, diagnose() must surface the top TS pre-emit
+//     errors on `typecheckErrors` so the agent has concrete files to fix to unlock Tier-2.
+// =============================================================================
+describe("diagnose — extends-resolved capabilities (CFG false-positive guard)", () => {
+  it.effect(
+    "strict inherited via `extends` → CFG strictness rules do NOT fire (no false positives at tsconfig.json:1:1)",
+    () =>
+      Effect.gen(function* () {
+        const tree = makeTree({
+          // Base config carries the strict family.
+          "/proj/tsconfig.base.json": JSON.stringify({
+            compilerOptions: {
+              strict: true,
+              noUncheckedIndexedAccess: true,
+              exactOptionalPropertyTypes: true,
+              target: "ESNext",
+              module: "ESNext",
+            },
+          }),
+          // Child does NOT redeclare the strict family — it inherits them. Discovery's
+          // shallow walk DOES handle this single level too, so use a clean source file
+          // and assert NO CFG strictness rule fires.
+          "/proj/tsconfig.json": JSON.stringify({ extends: "./tsconfig.base.json" }),
+          "/proj/src/clean.ts":
+            "export const greet = (name: string): string => `hi ${name}`;\n",
+        });
+        const result = yield* run(tree, "/proj");
+
+        const cfgRuleIds = result.diagnostics
+          .filter((d) => d.tier === "CFG")
+          .map((d) => d.rule);
+        expect(cfgRuleIds).toEqual([]);
+      }),
+  );
+});
+
+describe("diagnose — typecheckErrors plumbing (agent observability)", () => {
+  it.effect(
+    "broken project → result.typecheckErrors[] populated with file:line:column + readable message + ts code",
+    () =>
+      Effect.gen(function* () {
+        const tree = makeTree({
+          "/proj/tsconfig.json": STRICT_TSCONFIG,
+          "/proj/src/broken.ts":
+            "const x: number = 'this is a string';\nexport const y = x;\n",
+        });
+        const result = yield* run(tree, "/proj");
+
+        expect(result.scorePartial).toBe(true);
+        expect(result.typecheckErrors).toBeDefined();
+        const errors = result.typecheckErrors ?? [];
+        expect(errors.length).toBeGreaterThan(0);
+        const first = errors[0]!;
+        expect(first.filePath).toContain("broken.ts");
+        expect(first.line).toBe(1);
+        expect(first.message).toContain("not assignable");
+        expect(first.code).toBe(2322);
+      }),
+  );
+
+  it.effect(
+    "clean project → result.typecheckErrors is absent (no observability noise when Tier-2 ran)",
+    () =>
+      Effect.gen(function* () {
+        const tree = makeTree({
+          "/proj/tsconfig.json": STRICT_TSCONFIG,
+          "/proj/src/clean.ts":
+            "export const greet = (name: string): string => `hi ${name}`;\n",
+        });
+        const result = yield* run(tree, "/proj");
+
+        expect(result.scorePartial).toBe(false);
+        expect(result.typecheckErrors).toBeUndefined();
+      }),
+  );
+});
+
 describe("diagnose — discovery error channel", () => {
   it.effect("no tsconfig.json → fails with TsconfigNotFoundError on the error channel", () =>
     Effect.gen(function* () {

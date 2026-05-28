@@ -240,6 +240,58 @@ describe("RULE-028 as an Options CONSTRAINT (resolveInspectFlags → ValidationE
     expect(off.deep).toBe(false);
   });
 
+  // --- Coding-agent env auto-engage (P2, maddie-native 2026-05-27 session) ---------
+  // Vitest sets `TSNUKE_NO_AUTO_AGENT=1` globally (see vitest.config.ts), which
+  // suppresses the detection. We toggle it off WITHIN the test (restoring it in a
+  // finally) to exercise the production behavior.
+  it("auto-engages --format agent when CLAUDECODE is set and no explicit output mode is chosen", () => {
+    const prevOpt = process.env["TSNUKE_NO_AUTO_AGENT"];
+    const prevAgent = process.env["CLAUDECODE"];
+    delete process.env["TSNUKE_NO_AUTO_AGENT"];
+    process.env["CLAUDECODE"] = "1";
+    try {
+      const flags = Effect.runSync(resolveInspectFlags(rawDefaults()));
+      expect(flags.format).toBe("agent");
+    } finally {
+      if (prevOpt !== undefined) process.env["TSNUKE_NO_AUTO_AGENT"] = prevOpt;
+      if (prevAgent === undefined) delete process.env["CLAUDECODE"];
+      else process.env["CLAUDECODE"] = prevAgent;
+    }
+  });
+
+  it("does NOT auto-engage when TSNUKE_NO_AUTO_AGENT is set (explicit opt-out)", () => {
+    const prevOpt = process.env["TSNUKE_NO_AUTO_AGENT"];
+    const prevAgent = process.env["CLAUDECODE"];
+    process.env["TSNUKE_NO_AUTO_AGENT"] = "1";
+    process.env["CLAUDECODE"] = "1";
+    try {
+      const flags = Effect.runSync(resolveInspectFlags(rawDefaults()));
+      expect(flags.format).toBe("pretty");
+    } finally {
+      if (prevOpt === undefined) delete process.env["TSNUKE_NO_AUTO_AGENT"];
+      else process.env["TSNUKE_NO_AUTO_AGENT"] = prevOpt;
+      if (prevAgent === undefined) delete process.env["CLAUDECODE"];
+      else process.env["CLAUDECODE"] = prevAgent;
+    }
+  });
+
+  it("does NOT auto-engage when --json is set (explicit output mode wins)", () => {
+    const prevOpt = process.env["TSNUKE_NO_AUTO_AGENT"];
+    const prevAgent = process.env["CLAUDECODE"];
+    delete process.env["TSNUKE_NO_AUTO_AGENT"];
+    process.env["CLAUDECODE"] = "1";
+    try {
+      const flags = Effect.runSync(
+        resolveInspectFlags({ ...rawDefaults(), json: true }),
+      );
+      expect(flags.format).toBe("json");
+    } finally {
+      if (prevOpt !== undefined) process.env["TSNUKE_NO_AUTO_AGENT"] = prevOpt;
+      if (prevAgent === undefined) delete process.env["CLAUDECODE"];
+      else process.env["CLAUDECODE"] = prevAgent;
+    }
+  });
+
   it("--project splits + trims comma-separated paths; --diff sets the mode label", () => {
     const flags = Effect.runSync(
       resolveInspectFlags({

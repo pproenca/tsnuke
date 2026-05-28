@@ -32,8 +32,10 @@ import {
   collectSourceFiles,
   computeCapabilities,
   discoverTsProject,
+  STRICT_FLAGS,
   type ProjectInfo,
 } from "@tsnuke/discovery-effect";
+import type { Capability } from "@tsnuke/contracts-effect";
 import { loadConfig, loadFalsePositives } from "@tsnuke/config-effect";
 import { computeScore } from "@tsnuke/score-effect";
 import { runFilterPipeline, type DiagnosticWithTags } from "@tsnuke/filter-pipeline-effect";
@@ -123,6 +125,32 @@ const resolveProjectCompilerOptions = (
   });
 
 /**
+ * Union strict-family capability tokens into `caps` from a fully-resolved
+ * `ts.CompilerOptions` (RULE-021 reconciliation). `ts.parseJsonConfigFileContent`
+ * walks the `extends` chain to arbitrary depth, so its `options.strict`/etc. reflect
+ * inherited values that discovery's shallow one-level walk would miss.
+ *
+ * The inverted-gating CFG strictness rules (`enable-strict`, `enable-no-unchecked-…`)
+ * fire when their `disabledBy` token is absent (RULE-020). Reconciling here makes them
+ * see the same compilerOptions `tsc` does — eliminating the false-positive class where
+ * a project inherits `strict: true` through a base config.
+ *
+ * Pure; never removes a token, only adds. (Discovery's own derivation stays
+ * authoritative for everything else — module system, kind, build tool — so the existing
+ * RULE-021 contract is preserved.)
+ */
+const reconcileStrictCaps = (
+  caps: ReadonlySet<Capability>,
+  compilerOptions: ts.CompilerOptions,
+): Set<Capability> => {
+  const out = new Set<Capability>(caps);
+  for (const flag of STRICT_FLAGS) {
+    if (compilerOptions[flag] === true) out.add(flag);
+  }
+  return out;
+};
+
+/**
  * Build the per-rule severity-override map from config (id → sev | "off") — port of
  * legacy `overridesFromConfig` (index.ts:168-176), preserving the `warn` → `warning`
  * normalization (RULE-040 vocabulary split). PURE.
@@ -193,9 +221,21 @@ export const diagnose: (
       project.rootDirectory,
     );
 
+    // Reconcile capability tokens with the TS compiler's view of strictness. Discovery's
+    // own `extends` walk is shallow (one level), so a project that inherits `strict` etc.
+    // through a multi-level chain (e.g. `extends: "@vercel/style-guide/typescript/next"`
+    // which itself extends `@tsconfig/strictest`) loses the token and the inverted-gating
+    // CFG strictness rules fire as false positives. `ts.parseJsonConfigFileContent` already
+    // resolved the full chain when building `projectCompilerOptions` — surface every
+    // strict-family flag it proved true as the matching capability token here, so the CFG
+    // rules' `disabledBy` gate sees the same world as `tsc`.
+    const reconciledCaps = projectCompilerOptions !== undefined
+      ? reconcileStrictCaps(caps, projectCompilerOptions)
+      : caps;
+
     const engineResult = yield* runEngine(
       files,
-      caps,
+      reconciledCaps,
       ignoredTags,
       overrides,
       options.deep,
@@ -248,6 +288,9 @@ export const diagnose: (
       elapsedMilliseconds,
       ...(Object.keys(engineResult.skippedCheckReasons).length > 0
         ? { skippedCheckReasons: engineResult.skippedCheckReasons }
+        : {}),
+      ...(engineResult.typecheckErrors !== undefined && engineResult.typecheckErrors.length > 0
+        ? { typecheckErrors: engineResult.typecheckErrors }
         : {}),
     };
     return result;

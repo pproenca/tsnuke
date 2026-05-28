@@ -77,8 +77,37 @@ export interface ScoreBreakdown {
   readonly warningPenalty: { readonly count: number; readonly weight: number; readonly total: number };
 }
 
+/**
+ * One TypeScript pre-emit diagnostic surfaced to the agent so it has concrete files to
+ * fix in order to unlock Tier-2 (the type-aware tier). Populated only when
+ * `partialReason === "typecheck-failed"`; truncated to the first N (see {@link
+ * TYPECHECK_ERRORS_LIMIT}) to keep the JSON token-cheap.
+ */
+export interface TypecheckError {
+  /** Repo-relative file path (same projection as occurrences). */
+  readonly filePath: string;
+  /** 1-based line. */
+  readonly line: number;
+  /** 1-based column. */
+  readonly column: number;
+  /** Human-readable message (TS diagnostic `messageText`, flattened). */
+  readonly message: string;
+  /** TypeScript diagnostic code (e.g. 2304 for "Cannot find name"). */
+  readonly code: number;
+}
+
+/** Maximum typecheck errors embedded in the agent report. Keeps the payload small. */
+export const TYPECHECK_ERRORS_LIMIT = 10;
+
 /** The full agent report payload. */
 export interface AgentReport {
+  /**
+   * Standing prompt-engineering preamble: short, agent-tuned guidance the consumer should
+   * follow when acting on this report. Ports the react-doctor pattern (hypotheses, not
+   * verdicts; confidence labels; no suppression without evidence) into the JSON so the
+   * guidance survives MCP/tool-result transport intact. Stable across runs.
+   */
+  guidance: readonly string[];
   /** 0–100 score, or null when unscored. */
   score: number | null;
   /**
@@ -116,6 +145,16 @@ export interface AgentReport {
   tierBreakdown: TierBreakdown;
   /** The first move an agent should take on this report. */
   nextAction: NextAction;
+  /**
+   * Top-N TypeScript pre-emit errors. Populated ONLY when
+   * `partialReason === "typecheck-failed"` — the project doesn't compile, so the
+   * type-aware tier was skipped (BC-03). These are the concrete files the agent
+   * should fix to unlock Tier-2; without them an agent has no actionable lead and
+   * tends to chase the score by adding annotations elsewhere.
+   *
+   * Empty array when full-tier ran or the cause isn't typecheck failure.
+   */
+  typecheckErrors: readonly TypecheckError[];
   /** Diagnostics grouped by category, then by tier + fix-kind. */
   categories: AgentCategoryGroup[];
 }
@@ -137,7 +176,34 @@ export interface AgentReportMeta {
   scorePartial?: boolean;
   /** Reason `scorePartial` is true; `null` / omitted when full-tier ran. */
   partialReason?: PartialReason | null;
+  /**
+   * Top-N TypeScript pre-emit errors carried in from the engine when the project failed
+   * to type-check. Surfaced in the agent report so an agent has concrete files to fix to
+   * unlock Tier-2 — without them, `partialReason: "typecheck-failed"` is unactionable.
+   * The engine truncates the list; this slice just relays it.
+   */
+  typecheckErrors?: readonly TypecheckError[];
 }
+
+/**
+ * Default guidance preamble — react-doctor's "Agent guidance" block, adapted for tsnuke.
+ * Targets the specific failure modes seen in production (the 2026-05-27 maddie-native
+ * session): score-chasing on a partial scale, agent ignoring `nextAction` because it
+ * pointed at boilerplate, agent inventing flags to unlock Tier-2, agent applying
+ * mechanical fixes without reading the surrounding code. Each line targets one of those.
+ */
+export const DEFAULT_AGENT_GUIDANCE: readonly string[] = [
+  "Treat tsnuke diagnostics as starting hypotheses. Read the file before confirming or suppressing each finding.",
+  "Assign a confidence (high/medium/low) per rule before acting; never suppress without code-level evidence.",
+  "When `scorePartial: true`, the score is on a degraded scale and labels are withheld — fix `partialReason` before chasing the number.",
+  "When `partialReason: \"typecheck-failed\"`, fix the items in `typecheckErrors[]` first — they block the type-aware tier from running.",
+  "Follow `nextAction`: errors lead over warnings; `--fix` lands cheap wins; high-occurrence cleanups come last.",
+  "Many slop-tagged rules (`ts-idiom`) flag REMOVING boilerplate (redundant `typeof`/`instanceof`, push-loops, `JSON.parse(JSON.stringify(...))`). Don't paper over them with new annotations.",
+  "Don't refactor to gain score points. Score is a coarse signal — focus on real bugs and unsafe patterns.",
+  "Use `tsnuke --explain <file>:<line>` to see the rationale and the suggested fix for any diagnostic.",
+  "Investigate root causes for security-, async-, and type-flow rules (`no-floating-promises`, `no-unsafe-*`, `no-misused-promises`) before mass-editing.",
+  "Split unrelated, broad, or behavior-changing work into separate PRs. Stop and ask if a fix requires an API or architecture decision.",
+];
 
 /** Tier sort order: cheap/syntactic first, config last. */
 function tierOrder(tier: Tier): number {
@@ -310,8 +376,17 @@ export function formatAgentReport(
   };
 
   const scorePartial = meta.scorePartial ?? false;
+  const partialReason = scorePartial ? meta.partialReason ?? null : null;
+  // Only surface typecheck errors when the cause IS a typecheck failure — emitting them
+  // on (say) `--no-deep` would be misleading (deep was off; nothing to fix). Bound the
+  // list defensively in case the engine sent more than the limit.
+  const typecheckErrors: readonly TypecheckError[] =
+    partialReason === "typecheck-failed"
+      ? (meta.typecheckErrors ?? []).slice(0, TYPECHECK_ERRORS_LIMIT)
+      : [];
 
   return {
+    guidance: DEFAULT_AGENT_GUIDANCE,
     score: score?.score ?? null,
     // Drop the band label on partial scores — labels are reserved for fully-measured
     // results. The agent already gets `scorePartial`, `partialReason`, and the score
@@ -319,7 +394,7 @@ export function formatAgentReport(
     // in production (the maddie-native 2026-05-27 session).
     scoreLabel: scorePartial ? null : score?.label ?? null,
     scorePartial,
-    partialReason: scorePartial ? meta.partialReason ?? null : null,
+    partialReason,
     scoreBreakdown,
     ruleCount: byRule.size,
     occurrenceCount: diagnostics.length,
@@ -327,6 +402,7 @@ export function formatAgentReport(
     fixSummary: summarizeFixes(diagnostics),
     tierBreakdown: buildTierBreakdown(diagnostics),
     nextAction: deriveNextAction(diagnostics),
+    typecheckErrors,
     categories,
   };
 }

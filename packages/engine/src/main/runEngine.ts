@@ -60,8 +60,11 @@ import {
   shouldSkipTier2ForMemory,
 } from "@tsnuke/scale-effect";
 import type { Diagnostic } from "@tsnuke/contracts-effect";
-import type { OnProgress } from "./types.js";
+import type { OnProgress, TypecheckErrorInfo } from "./types.js";
 import { safeEmit } from "./progress.js";
+
+/** Hard cap on captured TS pre-emit errors. Keeps memory + JSON payload bounded. */
+const TYPECHECK_ERRORS_CAPTURE_LIMIT = 10;
 
 export {
   planEngineRun,
@@ -87,6 +90,19 @@ export interface EngineResult {
   readonly skippedChecks: string[];
   readonly skippedCheckReasons: Record<string, string>;
   readonly scorePartial: boolean;
+  /**
+   * Top-N TS pre-emit errors captured from the single `typecheck:ok` probe (BC-03/§4.1).
+   * Populated only when the probe ran (i.e. a `ts.Program` was built) AND there were
+   * errors — i.e. exactly when Tier-2 will be skipped due to a typecheck failure.
+   * Empty / omitted otherwise (clean build OR `--no-deep` OR no source files).
+   *
+   * OPTIONAL so the frozen legacy-equivalence oracle (which doesn't model this — legacy
+   * never captured the errors) stays signature-stable. Real `runEngine` always populates
+   * the field, but callers defensively read `?? []`. Surfaced so the agent-format report
+   * can point the agent at the FILES they need to fix to unlock Tier-2 — without this
+   * the `partialReason: "typecheck-failed"` signal is unactionable.
+   */
+  readonly typecheckErrors?: ReadonlyArray<TypecheckErrorInfo>;
 }
 
 /**
@@ -276,11 +292,32 @@ export const runEngine: (
         )
       : undefined;
 
+    // Single `getPreEmitDiagnostics` probe: drives `typecheck:ok` AND captures the first
+    // N error diagnostics for the agent payload. The TS API returns ALL diagnostics
+    // (errors + warnings + suggestions); we filter to errors so a warning never breaks
+    // the typecheck gate, and we collect file-positioned hits for the agent (skipping
+    // any diagnostic without a file — those are emit/global errors that can't be acted
+    // on at a file:line).
+    const preEmit = program !== undefined ? ts.getPreEmitDiagnostics(program) : [];
     const typecheckOk =
       program !== undefined &&
-      ts
-        .getPreEmitDiagnostics(program)
-        .filter((d) => d.category === ts.DiagnosticCategory.Error).length === 0;
+      preEmit.filter((d) => d.category === ts.DiagnosticCategory.Error).length === 0;
+    const typecheckErrors: TypecheckErrorInfo[] = [];
+    if (program !== undefined && !typecheckOk) {
+      for (const d of preEmit) {
+        if (typecheckErrors.length >= TYPECHECK_ERRORS_CAPTURE_LIMIT) break;
+        if (d.category !== ts.DiagnosticCategory.Error) continue;
+        if (d.file === undefined || d.start === undefined) continue;
+        const { line, character } = d.file.getLineAndCharacterOfPosition(d.start);
+        typecheckErrors.push({
+          filePath: d.file.fileName,
+          line: line + 1,
+          column: character + 1,
+          message: ts.flattenDiagnosticMessageText(d.messageText, "\n"),
+          code: d.code,
+        });
+      }
+    }
 
     if (program !== undefined) {
       emit({ kind: "building-program", typecheckOk, elapsedMs: Date.now() - programStartedAt });
@@ -474,6 +511,7 @@ export const runEngine: (
       skippedChecks: [...plan.skippedChecks],
       skippedCheckReasons,
       scorePartial: plan.scorePartial,
+      typecheckErrors,
     } satisfies EngineResult;
   },
 );

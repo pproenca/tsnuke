@@ -55,6 +55,21 @@ export interface DiagnoseOptions {
   readonly onProgress?: OnProgress;
 }
 
+/**
+ * One TypeScript pre-emit diagnostic. Surfaced to the agent (via the agent-format report)
+ * so it has concrete files to fix in order to unlock Tier-2. The engine captures these
+ * during the single `getPreEmitDiagnostics()` probe that derives `typecheck:ok`; nothing
+ * about scoring or rule activation depends on the list — it is observability for the
+ * agent loop.
+ */
+export interface TypecheckErrorInfo {
+  readonly filePath: string;
+  readonly line: number;
+  readonly column: number;
+  readonly message: string;
+  readonly code: number;
+}
+
 /** The result of a single-project `diagnose()` call (the public boundary). */
 export interface DiagnoseResult {
   readonly diagnostics: Diagnostic[];
@@ -64,6 +79,13 @@ export interface DiagnoseResult {
   readonly skippedChecks: string[];
   /** Per-skipped-check human reason, e.g. why TYP rules were skipped (RULE-018). */
   readonly skippedCheckReasons?: Record<string, string>;
+  /**
+   * Top-N TS pre-emit errors when the project failed to type-check. Empty / omitted when
+   * the project compiled (Tier-2 ran), when `--no-deep` was passed, or when there were no
+   * source files. The engine bounds the list; the format slice trims it further before
+   * embedding into the agent payload.
+   */
+  readonly typecheckErrors?: ReadonlyArray<TypecheckErrorInfo>;
   readonly project: ProjectInfo;
   /** The ONE non-deterministic field (timing telemetry) — never feeds the score. */
   readonly elapsedMilliseconds: number;

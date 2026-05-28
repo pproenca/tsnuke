@@ -270,6 +270,108 @@ describe("formatAgentReport — partial-score honesty (P1)", () => {
   });
 });
 
+// =============================================================================
+// P2 (agent-leverage hardening): `guidance[]` preamble + severity-aware nextAction +
+// typecheckErrors plumbing. Regression-pins the three fixes for the maddie-native
+// 2026-05-27 confusion: agent ignored nextAction because it pointed at boilerplate,
+// score-chased on a partial scale, had no concrete files to fix to unlock Tier-2.
+// =============================================================================
+describe("formatAgentReport — guidance + severity-aware nextAction + typecheckErrors (P2)", () => {
+  it("includes a guidance[] preamble of >= 5 lines on every report", () => {
+    const report = formatAgentReport([], { score: 100, label: "Great" });
+    expect(report.guidance.length).toBeGreaterThanOrEqual(5);
+    // The two highest-leverage lines must be present verbatim — they target the two
+    // failure modes from the maddie-native session (score chasing on partial + no
+    // typecheck error visibility).
+    expect(report.guidance.some((g) => g.includes("scorePartial"))).toBe(true);
+    expect(report.guidance.some((g) => g.includes("typecheckErrors"))).toBe(true);
+  });
+
+  it("nextAction.summary mentions error count when an auto-fixable error exists", () => {
+    const diagnostics: Diagnostic[] = [
+      diag({
+        rule: "no-floating-promises",
+        severity: "error",
+        fix: { kind: "auto-fix", edits: [] },
+      }),
+      diag({ rule: "manual-warn" }),
+    ];
+    const report = formatAgentReport(diagnostics, null);
+    expect(report.nextAction.kind).toBe("run-fix");
+    expect(report.nextAction.summary).toContain("error");
+  });
+
+  it("nextAction picks the ERROR rule over a higher-occurrence warning rule", () => {
+    const diagnostics: Diagnostic[] = [
+      // 1 error rule (1 occurrence) — should still win over the warning with 10.
+      diag({ rule: "real-error", severity: "error" }),
+      ...Array.from({ length: 10 }, (_, i) =>
+        diag({ rule: "high-volume-warn", line: i + 1 }),
+      ),
+    ];
+    const report = formatAgentReport(diagnostics, null);
+    expect(report.nextAction.kind).toBe("address-rule");
+    expect(report.nextAction.focusRule).toBe("real-error");
+    expect(report.nextAction.focusSeverity).toBe("error");
+    expect(report.nextAction.summary).toContain("error");
+  });
+
+  it("nextAction falls back to warning by occurrence when no errors exist", () => {
+    const diagnostics: Diagnostic[] = [
+      diag({ rule: "warn-a" }),
+      diag({ rule: "warn-b", line: 2 }),
+      diag({ rule: "warn-b", line: 3 }),
+    ];
+    const report = formatAgentReport(diagnostics, null);
+    expect(report.nextAction.focusRule).toBe("warn-b");
+    expect(report.nextAction.focusSeverity).toBe("warning");
+  });
+
+  it("typecheckErrors[] is populated only when partialReason === 'typecheck-failed'", () => {
+    const errs = [
+      { filePath: "src/x.ts", line: 1, column: 7, message: "boom", code: 2322 },
+    ];
+    const onTypecheck = formatAgentReport([], null, "", {
+      scorePartial: true,
+      partialReason: "typecheck-failed",
+      typecheckErrors: errs,
+    });
+    expect(onTypecheck.typecheckErrors).toEqual(errs);
+
+    // When the partial reason is something else (e.g. --no-deep), don't emit them — they
+    // came from a probe that wasn't run for typecheck-gating.
+    const onNoDeep = formatAgentReport([], null, "", {
+      scorePartial: true,
+      partialReason: "no-deep",
+      typecheckErrors: errs,
+    });
+    expect(onNoDeep.typecheckErrors).toEqual([]);
+
+    // When the run was full-tier (scorePartial false), suppress them entirely.
+    const onFull = formatAgentReport([], null, "", {
+      scorePartial: false,
+      typecheckErrors: errs,
+    });
+    expect(onFull.typecheckErrors).toEqual([]);
+  });
+
+  it("typecheckErrors[] is bounded to TYPECHECK_ERRORS_LIMIT", () => {
+    const many = Array.from({ length: 50 }, (_, i) => ({
+      filePath: "src/x.ts",
+      line: i + 1,
+      column: 1,
+      message: "err",
+      code: 2322,
+    }));
+    const report = formatAgentReport([], null, "", {
+      scorePartial: true,
+      partialReason: "typecheck-failed",
+      typecheckErrors: many,
+    });
+    expect(report.typecheckErrors.length).toBe(10);
+  });
+});
+
 describe("derivePartialReason — engine reason → enum vocabulary", () => {
   it("classifies the typecheck-failed sentinel", () => {
     const reasons = { "tsnuke/no-floating-promises": "Tier-2 (type-aware) skipped: project does not type-check (typecheck:ok absent)." };
