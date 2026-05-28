@@ -37,6 +37,15 @@ export {
   type InlineDirective,
 } from "./stages.js";
 
+// Set-level stage (2026-05-28 catalog hygiene): suppression hierarchy that collapses
+// documented rule-cluster overlap (e.g. `no-assertion-on-json-parse` suppressing
+// `no-cast-in-return` + `no-unsafe-return` on the same line). Exported so tests can
+// pin it in isolation and callers can shadow `DEFAULT_SUPPRESSION_HIERARCHY`.
+export {
+  DEFAULT_SUPPRESSION_HIERARCHY,
+  suppressByHierarchy,
+} from "./setStages.js";
+
 // The orchestrator — the public entry point (RULE-023, BC-11).
 export { runFilterPipeline, type FilterPipelineOptions } from "./runFilterPipeline.js";
 

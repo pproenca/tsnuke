@@ -13,10 +13,11 @@ import { defineRule } from "@tsnuke/rules-core-effect";
  * function type, tuple, conditional, indexed access, or a bare reference are NOT
  * flagged: those legitimately can't (or shouldn't) be interfaces.
  *
- * NOTE: overlaps with `prefer-interface-for-large-object-type`, which flags only
- * LARGE object-type aliases. This is the GENERAL form (any size). Tagged
- * `convention` so it can be opted out independently where the narrower size-gated
- * rule is preferred.
+ * NOTE: the now-retired `prefer-interface-for-large-object-type` (RULE-010) was a
+ * size-gated subset of this rule (fired only on >12-member aliases) and is gone as
+ * of the 2026-05-28 catalog audit — keeping both produced duplicate findings on the
+ * same alias. Tagged `convention` so users can opt out the whole style family with
+ * `config.ignore.tags: ["convention"]`.
  */
 
 export const rule = defineRule(

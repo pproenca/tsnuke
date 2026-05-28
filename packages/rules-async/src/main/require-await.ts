@@ -58,7 +58,13 @@ export const rule = defineRule(
     category: "Async / Promises",
     tier: "SYN",
     fixKind: "manual",
-    tags: ["async"],
+    // Tagged `convention` (in addition to `async`) so users can opt out the whole
+    // style family via `config.ignore.tags: ["convention"]`. The 2026-05-28 catalog
+    // audit pinned this rule as a high-volume noise driver (119 of 957 occurrences
+    // on maddie-native) with no correctness payoff — `no-floating-promises` (TYP)
+    // catches the actual async bugs. Keeping `require-await` on by default for
+    // backwards compatibility; the tag lets it be silenced project-wide cheaply.
+    tags: ["async", "convention"],
     recommendation:
       "Drop the `async` keyword if the function never awaits, or add the missing `await`. (`async` wraps the return value in a Promise unnecessarily.)",
   },

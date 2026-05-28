@@ -39,6 +39,7 @@ import {
   type SourceTextMap,
   type Stage,
 } from "./stages.js";
+import { suppressByHierarchy } from "./setStages.js";
 
 /** Options controlling pipeline behavior. */
 export interface FilterPipelineOptions {
@@ -92,17 +93,27 @@ export function runFilterPipeline(
     ...(respectInline ? [makeInlineDisableStage(options.sources)] : []), // 4
   ];
 
-  // Thread each diagnostic through the stages in order; once a stage drops it
-  // (returns null) the later stages never see it (short-circuit). Survivors keep
-  // input order; the engine-only `tags` field is stripped before emit.
-  return diagnostics.flatMap((d) => {
+  // Thread each diagnostic through the per-diagnostic stages in order; once a
+  // stage drops it (returns null) the later stages never see it (short-circuit).
+  // Survivors keep input order; the engine-only `tags` field is stripped after
+  // the set-level stages run.
+  const perDiagnosticSurvivors = diagnostics.flatMap<DiagnosticWithTags>((d) => {
     const survivor = stages.reduce<DiagnosticWithTags | null>(
       (current, stage) => (current === null ? null : stage(current)),
       d,
     );
-    if (survivor === null) return [];
+    return survivor === null ? [] : [survivor];
+  });
+
+  // Set-level stage (2026-05-28 catalog audit) — collapse cross-rule duplication that
+  // the per-diagnostic stages cannot see: when a "more specific" rule fires on a line,
+  // drop its documented downstream rules on the same line.
+  const afterHierarchy = suppressByHierarchy(perDiagnosticSurvivors);
+
+  // Strip the engine-only `tags` field before emitting the public Diagnostic.
+  return afterHierarchy.map((survivor) => {
     const { tags: _tags, ...rest } = survivor;
     void _tags;
-    return [rest];
+    return rest;
   });
 }
